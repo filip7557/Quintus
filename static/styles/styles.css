@@ -1,0 +1,240 @@
+html {
+  scroll-behavior: smooth;
+}
+
+:root {
+  --primary-blue: #007bff;
+  --primary-hover: #0056b3;
+  --bg-dark: #ffffff;
+  --bg-surface: #ffffff;
+  --text-light: #eaeaea;
+  --text-muted: #a9b1bd;
+  --border-color: #333a3d;
+  --font-headings: "Poppins", sans-serif;
+  --font-body: "Open Sans", sans-serif;
+  --container-width: 1140px;
+  --border-radius: 8px;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+  font-size: 16px;
+  line-height: 1.7;
+  overflow-x: hidden;
+  margin: 0;
+}
+
+h1 {
+  font-size: 3.2rem;
+  margin-bottom: 1rem;
+  font-weight: 900;
+  text-shadow: rgba(0, 0, 0, 0.5) 0px 2px 8px;
+  font-family: var(--font-headings);
+  color: var(--text-light);
+}
+
+h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 800;
+  text-shadow: rgba(0, 0, 0, 0.5) 0px 2px 8px;
+  font-family: var(--font-headings);
+  color: var(--text-light);
+}
+
+h3 {
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  text-shadow: rgba(0, 0, 0, 0.5) 0px 2px 8px;
+  font-family: var(--font-headings);
+  color: var(--text-light);
+}
+
+a {
+  font-family: var(--font-headings);
+}
+
+p {
+  font-family: var(--font-headings);
+}
+
+section {
+  min-height: 100vh;
+  scroll-margin-top: 108px;
+}
+
+.services,
+.about,
+.contact {
+  height: 100vh;
+  background-color: #333a3d;
+}
+
+header {
+  background-color: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  padding: 15px 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.logo img {
+  height: 45px;
+  padding: 0.75rem;
+  border-radius: 8px;
+  transition: background 0.3s;
+}
+
+.logo img:hover {
+  background-color: #ffffff;
+}
+
+.nav-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 25%;
+}
+
+.nav-main .nav-link {
+  text-decoration: none;
+  font-size: large;
+  font-weight: 200;
+  font-family: var(--font-body);
+  color: #000;
+  transition: color 0.3s;
+  padding: 0.35rem 0.2rem;
+}
+
+.nav-main .nav-link:hover {
+  color: #ffffff;
+}
+
+.nav-main a.active {
+  color: #fff;
+  border-bottom: 2px solid var(--primary-hover);
+}
+
+.hero {
+  padding: 200px 0;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  position: relative;
+  background-image: linear-gradient(
+      rgba(18, 24, 27, 0.8),
+      rgba(18, 24, 27, 0.85)
+    ),
+    url(/static/images/hero.png);
+  background-size: cover;
+  background-position: center center;
+  background-attachment: fixed;
+}
+
+.hero-container {
+  max-width: var(--container-width);
+  width: 700px;
+  margin: 0px auto;
+  padding: 0px 20px;
+  opacity: 0;
+  transition: all 1.5s ease-in-out;
+}
+
+.hero-container.animate-in {
+  opacity: 1;
+}
+
+.hero h1 {
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.hero p {
+  font-size: 1em;
+  margin-bottom: 30px;
+  color: var(--text-light);
+  text-shadow: rgba(0, 0, 0, 0.4) 0px 2px 5px;
+}
+
+.hero-container .hero-title {
+  font-size: 2rem;
+}
+
+.hero-container .hero-subtitle {
+  color: var(--text-muted);
+}
+
+.hero-container .hero-button {
+  border-radius: 2rem;
+  background-color: rgba(0, 123, 255, 0.25);
+  border: none;
+  color: #fff;
+  font-size: 1rem;
+  padding: 1rem;
+  transition: ease-in-out 0.3s;
+  text-decoration: none;
+}
+
+.hero-container .hero-button:hover {
+  cursor: pointer;
+  background-color: rgba(0, 123, 255, 0.5);
+}
+
+.services {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+}
+
+.services-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  gap: 1rem;
+}
+
+.services-container .service {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--border-radius);
+  border: var(--border-color) solid 2px;
+  background-color: #2e3336;
+  padding: 0 1rem;
+  width: 19rem;
+  height: 29rem;
+  text-align: justify;
+  align-items: center;
+}
+
+.services-container .service img {
+    border-radius: var(--border-radius);
+    height: 15rem;
+    width: 19rem;
+}
+
+.services-container .service .first-text {
+    font-size: 0.75rem;
+    font-weight: 50;
+    color: var(--text-muted);
+}
+
+.services-container .service .second-text {
+    font-size: 0.55rem;
+    font-weight: 50;
+    color: var(--text-muted);
+}
