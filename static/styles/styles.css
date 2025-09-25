@@ -196,7 +196,7 @@ header {
   text-decoration: none;
 }
 
-.hero-container .hero-button:hover {
+.hero-button:hover {
   cursor: pointer;
   background-color: rgba(0, 123, 255, 0.5);
 }
@@ -412,7 +412,7 @@ footer {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    background-color: var(--primary-blue);
+    background-color: var(--primary-hover);
     color: rgb(255, 255, 255);
     width: 45px;
     height: 45px;
@@ -426,5 +426,5 @@ footer {
     transform: translateY(20px);
     border-radius: 50%;
     transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
-    border: 2px solid var(--primary-blue);
+    border: 2px solid var(--primary-hover);
 }
