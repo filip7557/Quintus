@@ -80,12 +80,119 @@
           </div>
         </div>
       </section>
-      <section id="about" class="about">O nama</section>
-      <section id="contact" class="contact">Kontakt</section>
+      <section id="about" class="about">
+        <div class="about-container">
+          <h2>Tko stoji iza Quintus-a?</h2>
+          <p class="about-text">
+            Naša tvrtka je nova na tržištu, ali iza nje stoji jedan iskusni
+            majstor s gotovo 10 godina rada u klimatizaciji, grijanju i
+            vodoinstalacijama. Iako je tim malen, posvećenost svakom projektu i
+            osobni pristup svakom klijentu jamče visoku kvalitetu i brzu izvedbu
+            svih usluga.
+          </p>
+          <p class="about-text">
+            Majstor ulaže dodatni trud i pažnju u svaki detalj, koristi
+            provjerene materijale te prati najnovije trendove i tehnologije u
+            struci. Tako garantiramo profesionalno rješenje svih vaših
+            instalacijskih potreba, uz poštene cijene i točan dogovor bez
+            skrivenih troškova.
+          </p>
+          <p class="about-text">
+            Vaše povjerenje nam je važno - zato svaki posao radimo kao da ga
+            radimo za sebe. Hvala što birate lokalnog stručnjaka!
+          </p>
+        </div>
+        <div class="about-container">
+          <img src="/static/images/about.png" alt="" />
+        </div>
+      </section>
+      <section id="contact" class="contact">
+        <div class="contact-container">
+          <h2>Kontaktirajte nas</h2>
+          <p class="contact-subtitle">
+            Imate pitanje ili želite ponudu? Javite nam se s povjerenjem. Tu smo
+            da pronađemo najbolje rješenje za vaš problem.
+          </p>
+          <div class="contact-subcontainer">
+            <div class="contact-info">
+              <div class="contact-detail">
+                <p class="contact-detail-title">Adresa</p>
+                <p class="contact-detail-text">Dudić X, 31500 Našice</p>
+              </div>
+              <div class="contact-detail">
+                <p class="contact-detail-title">Email</p>
+                <p class="contact-detail-text">info@quintus.eu</p>
+              </div>
+              <div class="contact-detail">
+                <p class="contact-detail-title">Telefon</p>
+                <p class="contact-detail-text">+385 92 XXX XXXX</p>
+              </div>
+            </div>
+            <div class="contact-form">
+              <form class="contact-form-form" id="contact-form">
+                <input
+                  type="hidden"
+                  name="language"
+                  id="form-language-input"
+                  value="hr"
+                />
+                <input
+                  type="text"
+                  name="website"
+                  style="display: none"
+                  aria-hidden="true"
+                  tabindex="-1"
+                />
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Ime i prezime"
+                  required=""
+                />
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email adresa"
+                  required=""
+                />
+                <textarea
+                  name="message"
+                  rows="5"
+                  placeholder="Vaša poruka"
+                  required=""
+                ></textarea>
+                <button
+                  type="submit"
+                  class="hero-button"
+                  data-translate="form_button"
+                >
+                  Pošalji poruku
+                </button>
+                <div class="form-status"></div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
-    <footer></footer>
+    <footer>
+      <div class="footer-container">
+        <p>
+          © <span id="current-year">2025</span> FCode | Sva prava pridržana.
+        </p>
+        <div class="footer-details" data-translate="footer_details">
+          Quintus vl. Matej Peti | OIB: XXXXXXXXXXXX | Matični broj: XXXXXXX<br />Obrt
+          je upisan u sudski registar Trgovačkog suda u Osijeku pod brojem
+          Xx-XX/XXXX-X MBS: XXXXXXXXX.<br />Bankovni račun – <strong>IBAN: HRXXXXXXXXXXXXXXXXXXX</strong>
+        </div>
+      </div>
+    </footer>
+    <a href="#home" id="scroll-to-top" class="scroll-to-top" aria-label="Povratak na vrh">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    </a>
 
     <script src="/static/scripts/nav.js" defer></script>
     <script src="/static/scripts/anims.js" defer></script>
+    <script src="/static/scripts/scroll-to-top.js" defer></script>
   </body>
 </html>
