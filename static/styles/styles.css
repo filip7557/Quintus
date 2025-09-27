@@ -110,13 +110,27 @@ header {
   background-color: #ffffff;
 }
 
-.nav-main {
+.navbar {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  width: 25%;
+  align-items: center;
+  padding: 1rem 2rem;
 }
 
+.nav-main {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+}
+
+.hamburger {
+  display: none; /* hidden by default */
+  font-size: 1.8rem;
+  background: none;
+  border: none;
+  color: var(--text-light);
+  cursor: pointer;
+}
 .nav-main .nav-link {
   text-decoration: none;
   font-size: large;

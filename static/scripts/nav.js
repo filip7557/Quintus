@@ -22,3 +22,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   sections.forEach(section => observer.observe(section));
 });
+
+const hamburger = document.getElementById("hamburger");
+  const navMain = document.getElementById("nav-main");
+
+  hamburger.addEventListener("click", () => {
+    navMain.classList.toggle("show");
+  });

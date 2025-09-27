@@ -6,6 +6,7 @@
     <title>Quintus</title>
 
     <link rel="stylesheet" href="/static/styles/styles.css" />
+    <link rel="stylesheet" href="static/styles/mediaqueries.css" />
 
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;900&amp;family=Open+Sans:wght@400;600&amp;display=swap"
@@ -14,18 +15,21 @@
   </head>
   <body id="home">
     <header>
-      <div class="header-container">
-        <a href="#home" class="logo">
-          <img src="/static/images/logo.png" alt="" />
-        </a>
-        <nav class="nav-main">
-          <a href="#home" class="nav-link">Početna</a>
-          <a href="#services" class="nav-link">Usluge</a>
-          <a href="#about" class="nav-link">O nama</a>
-          <a href="#contact" class="nav-link">Kontakt</a>
-        </nav>
-      </div>
-    </header>
+  <nav class="navbar">
+    <div class="logo"><img src="/static/images/logo.png" alt=""></div>
+
+    <button class="hamburger" id="hamburger">
+      ☰
+    </button>
+
+    <ul class="nav-main" id="nav-main">
+      <li><a href="#home" class="nav-link">Početna</a></li>
+      <li><a href="#services" class="nav-link">Usluge</a></li>
+      <li><a href="#about" class="nav-link">O nama</a></li>
+      <li><a href="#contact" class="nav-link">Kontakt</a></li>
+    </ul>
+  </nav>
+</header>
     <main>
       <section id="home" class="hero">
         <div class="hero-container">
