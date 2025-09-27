@@ -233,6 +233,12 @@ h3 {
   text-align: justify;
   align-items: center;
   transition: ease-in-out 0.3s;
+  opacity: 0;
+  transform: translateY(40px);
+}
+
+.services-container .service.animate-in {
+  animation: popUp 0.6s ease-out forwards;
 }
 
 .services-container .service:hover {
@@ -280,12 +286,27 @@ h3 {
   width: 450px;
   height: 450px;
   margin-bottom: 5rem;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.about-container.animate-in {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .about-container img {
   width: 450px;
   height: 450px;
   border-radius: var(--border-radius);
+}
+
+.about-container.image {
+  transform: translateX(40px);
+}
+.about-container.image.animate-in {
+  transform: translateX(0);
 }
 
 .about-text {
@@ -427,4 +448,11 @@ footer {
     border-radius: 50%;
     transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
     border: 2px solid var(--primary-hover);
+}
+
+@keyframes popUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
