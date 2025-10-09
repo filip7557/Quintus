@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.17" />
+    <PackageReference Include="System.IO.Abstractions" Version="22.0.16" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Quintus.Common\Quintus.Common.csproj" />
     <ProjectReference Include="..\Quintus.Model\Quintus.Model.csproj" />
     <ProjectReference Include="..\Quintus.Repository.Common\Quintus.Repository.Common.csproj" />

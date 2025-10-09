@@ -74,3 +74,5 @@ global.json
 *.user
 *.userosscache
 *.sln.docstates
+
+.env

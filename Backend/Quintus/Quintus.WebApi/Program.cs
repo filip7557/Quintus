@@ -1,5 +1,7 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using CloudinaryDotNet;
+using dotenv.net;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -28,6 +30,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(Environment.GetEnvironmentVariable("ConnectionStrings_QuintusDb")
         ?? throw new InvalidOperationException("Database connection string is not set.")));
 
+DotEnv.Load(options: new DotEnvOptions(probeForEnv: true));
+
 // Add services to the container.
 builder.Host
     .UseServiceProviderFactory(new AutofacServiceProviderFactory())
@@ -39,6 +43,12 @@ builder.Host
         containerBuilder.RegisterType<TokenService>().As<ITokenService>();
         containerBuilder.RegisterType<RoleRepository>().As<IRoleRepository>();
         containerBuilder.RegisterType<RoleService>().As<IRoleService>();
+        containerBuilder.RegisterType<ImageRepository>().As<IImageRepository>();
+        containerBuilder.RegisterType<ImageService>().As<IImageService>();
+        containerBuilder.RegisterType<Cloudinary>()
+            .As<ICloudinary>()
+            .WithParameter("cloudinaryUrl", Environment.GetEnvironmentVariable("CLOUDINARY_URL")
+            ?? throw new InvalidOperationException("Cloudinary url string is not set."));
     });
 
 var jwtKey = builder.Configuration["Jwt:Key"];

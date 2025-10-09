@@ -11,6 +11,8 @@ namespace Quintus.Repository.Context
 
         public DbSet<User> Users => Set<User>();
         public DbSet<Role> Roles => Set<Role>();
+        public DbSet<Image> Images => Set<Image>();
+        public DbSet<Request> Requests => Set<Request>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

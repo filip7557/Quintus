@@ -22,6 +22,65 @@ namespace Quintus.Repository.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Quintus.Model.Entities.Image", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("RequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RequestId");
+
+                    b.ToTable("Images");
+                });
+
+            modelBuilder.Entity("Quintus.Model.Entities.Request", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("RequestedById")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RequestedById");
+
+                    b.ToTable("Requests");
+                });
+
             modelBuilder.Entity("Quintus.Model.Entities.Role", b =>
                 {
                     b.Property<Guid>("Id")
@@ -39,12 +98,12 @@ namespace Quintus.Repository.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
+                            Id = new Guid("5beca67e-cf87-4ccc-b041-32a4fa4e921f"),
                             Name = "Admin"
                         },
                         new
                         {
-                            Id = new Guid("22222222-2222-2222-2222-222222222222"),
+                            Id = new Guid("ff3b9357-15f5-4d67-a173-eb3402b6dfda"),
                             Name = "User"
                         });
                 });
@@ -90,6 +149,24 @@ namespace Quintus.Repository.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Quintus.Model.Entities.Image", b =>
+                {
+                    b.HasOne("Quintus.Model.Entities.Request", null)
+                        .WithMany("Images")
+                        .HasForeignKey("RequestId");
+                });
+
+            modelBuilder.Entity("Quintus.Model.Entities.Request", b =>
+                {
+                    b.HasOne("Quintus.Model.Entities.User", "RequestedBy")
+                        .WithMany()
+                        .HasForeignKey("RequestedById")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("RequestedBy");
+                });
+
             modelBuilder.Entity("Quintus.Model.Entities.User", b =>
                 {
                     b.HasOne("Quintus.Model.Entities.Role", "Role")
@@ -97,6 +174,11 @@ namespace Quintus.Repository.Migrations
                         .HasForeignKey("RoleId");
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("Quintus.Model.Entities.Request", b =>
+                {
+                    b.Navigation("Images");
                 });
 #pragma warning restore 612, 618
         }

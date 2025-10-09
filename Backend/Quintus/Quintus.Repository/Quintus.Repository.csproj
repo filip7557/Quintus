@@ -19,4 +19,8 @@
     <ProjectReference Include="..\Quintus.Repository.Common\Quintus.Repository.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Migrations\" />
+  </ItemGroup>
+
 </Project>
