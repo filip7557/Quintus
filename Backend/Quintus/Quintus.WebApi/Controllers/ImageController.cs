@@ -24,7 +24,7 @@ namespace Quintus.WebAPI.Controllers
                 return BadRequest("No image file provided.");
             }
             var result = await _imageService.AddImageAsync(image);
-            if (result)
+            if (result != null)
             {
                 return Ok("Image uploaded successfully.");
             }

@@ -40,16 +40,26 @@ builder.Host
         // Register your own things directly with Autofac here.
         containerBuilder.RegisterType<UserRepository>().As<IUserRepository>();
         containerBuilder.RegisterType<UserService>().As<IUserService>();
+
         containerBuilder.RegisterType<TokenService>().As<ITokenService>();
+        containerBuilder.RegisterType<AuthService>().As<IAuthService>();
+
         containerBuilder.RegisterType<RoleRepository>().As<IRoleRepository>();
         containerBuilder.RegisterType<RoleService>().As<IRoleService>();
+
         containerBuilder.RegisterType<ImageRepository>().As<IImageRepository>();
         containerBuilder.RegisterType<ImageService>().As<IImageService>();
+
         containerBuilder.RegisterType<Cloudinary>()
             .As<ICloudinary>()
             .WithParameter("cloudinaryUrl", Environment.GetEnvironmentVariable("CLOUDINARY_URL")
             ?? throw new InvalidOperationException("Cloudinary url string is not set."));
+
+        containerBuilder.RegisterType<RequestRepository>().As<IRequestRepository>();
+        containerBuilder.RegisterType<RequestService>().As<IRequestService>();
     });
+
+builder.Services.AddHttpContextAccessor();
 
 var jwtKey = builder.Configuration["Jwt:Key"];
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
