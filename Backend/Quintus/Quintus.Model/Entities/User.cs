@@ -11,5 +11,17 @@
         public Role? Role { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+        public UserDTO ToDataTransferObject()
+        {
+            return new UserDTO
+            {
+                FirstName = FirstName,
+                LastName = LastName,
+                Email = Email,
+                PhoneNumber = PhoneNumber,
+                Role = Role
+            };
+        }
     }
 }

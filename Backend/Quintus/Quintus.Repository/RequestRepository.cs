@@ -33,7 +33,7 @@ namespace Quintus.Repository
             try
             {
                 // TODO: Add filtering and sorting capabilities.
-                return await _context.Requests.ToListAsync();
+                return await _context.Requests.Include(r => r.Images).Include(r => r.RequestedBy).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -46,7 +46,7 @@ namespace Quintus.Repository
         {
             try
             {
-                return await _context.Requests.FirstOrDefaultAsync(r => r.Id == id);
+                return await _context.Requests.Include(r => r.Images).Include(r => r.RequestedBy).FirstOrDefaultAsync(r => r.Id == id);
             }
             catch (Exception ex)
             {

@@ -5,7 +5,7 @@ namespace Quintus.Service.Common
 {
     public interface IImageService
     {
-        Task<bool> AddImageAsync(IFormFile image);
+        Task<Image?> AddImageAsync(IFormFile image);
 
         Task<Image?> GetImageByIdAsync(Guid id);
 

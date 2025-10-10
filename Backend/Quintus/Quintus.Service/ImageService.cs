@@ -20,7 +20,7 @@ namespace Quintus.Service
             _cloudinary = cloudinary;
         }
 
-        public async Task<bool> AddImageAsync(IFormFile image)
+        public async Task<Image?> AddImageAsync(IFormFile image)
         {
             var url = await UploadImage(image);
             var img = new Image
@@ -28,7 +28,7 @@ namespace Quintus.Service
                 Id = Guid.NewGuid(),
                 Url = url,
             };
-            return await _imageRepository.AddImageAsync(img);
+            return await _imageRepository.AddImageAsync(img) ? img : null;
         }
 
         public async Task<bool> DeleteImageAsync(Guid id)
