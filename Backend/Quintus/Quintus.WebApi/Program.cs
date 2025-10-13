@@ -42,6 +42,7 @@ builder.Host
         containerBuilder.RegisterType<UserService>().As<IUserService>();
 
         containerBuilder.RegisterType<TokenService>().As<ITokenService>();
+        containerBuilder.RegisterType<RefreshTokenRepository>().As<IRefreshTokenRepository>();
         containerBuilder.RegisterType<AuthService>().As<IAuthService>();
 
         containerBuilder.RegisterType<RoleRepository>().As<IRoleRepository>();

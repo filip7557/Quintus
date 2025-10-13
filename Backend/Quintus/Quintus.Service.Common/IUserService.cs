@@ -13,6 +13,8 @@ namespace Quintus.Service.Common
 
         Task<User?> GetUserByEmailAndPasswordAsync(string email, string password);
 
+        Task<User?> GetUserByRefreshTokenAsync(string refreshToken);
+
         Task<bool> UpdateUserAsync(Guid userId, UserDTO updatedUser);
 
         Task<bool> DeleteUserAsync(Guid userId);

@@ -1,4 +1,5 @@
-﻿using Quintus.Model;
+﻿using Quintus.Common;
+using Quintus.Model;
 
 namespace Quintus.Service.Common
 {
@@ -6,6 +7,10 @@ namespace Quintus.Service.Common
     {
         Task<bool> RegisterUserAsync(UserDTO user);
 
-        Task<string?> LoginUserAsync(string email, string password);
+        Task<LoginResponse> LoginUserAsync(string email, string password);
+
+        Task LogoutUserAsync();
+
+        Task<LoginResponse> RefreshTokenAsync(string token);
     }
 }
