@@ -41,6 +41,11 @@ namespace Quintus.Service
             };
         }
 
+        public async Task<User?> GetUserByRefreshTokenAsync(string refreshToken)
+        {
+            return await _userRepository.GetUserByRefreshTokenAsync(refreshToken);
+        }
+
         public async Task<bool> RegisterUserAsync(User user)
         {
             return await _userRepository.RegisterUserAsync(user);

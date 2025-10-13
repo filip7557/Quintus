@@ -11,6 +11,8 @@ namespace Quintus.Repository.Common
 
         Task<User?> GetUserByIdAsync(Guid userId);
 
+        Task<User?> GetUserByRefreshTokenAsync(string refreshToken);
+
         Task<User?> GetUserByEmailAndPasswordAsync(string email, string password);
 
         Task<bool> UpdateUserAsync(Guid userId, UserDTO updatedUser);

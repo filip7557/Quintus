@@ -76,6 +76,14 @@ namespace Quintus.Repository
             }
         }
 
+        public async Task<User?> GetUserByRefreshTokenAsync(string refreshToken)
+        {
+            return await _context.Users
+                .Include(u => u.RefreshTokens)
+                .Include(u => u.Role)
+                .SingleOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == refreshToken));
+        }
+
         public async Task<bool> RegisterUserAsync(User user)
         {
             try

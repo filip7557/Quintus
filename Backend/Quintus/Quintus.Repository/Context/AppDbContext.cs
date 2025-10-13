@@ -13,6 +13,7 @@ namespace Quintus.Repository.Context
         public DbSet<Role> Roles => Set<Role>();
         public DbSet<Image> Images => Set<Image>();
         public DbSet<Request> Requests => Set<Request>();
+        public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
