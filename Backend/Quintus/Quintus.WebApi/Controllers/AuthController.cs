@@ -24,9 +24,24 @@ namespace Quintus.WebAPI.Controllers
             if (user == null)
                 return BadRequest();
 
-            var success = await _tokenService.RegisterUserAsync(user);
-            if (!success)
-                return BadRequest("Registration failed. User may already exist or invalid data.");
+            try
+            {
+                var success = await _tokenService.RegisterUserAsync(user);
+                if (!success)
+                    return StatusCode(500, "An error occurred during registration.");
+            }
+            catch (InvalidPasswordException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DuplicateUserException ex)
+            {
+                return Conflict(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred during registration.");
+            }
 
             return Ok("User registered successfully.");
         }
