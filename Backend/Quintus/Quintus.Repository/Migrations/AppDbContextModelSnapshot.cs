@@ -51,6 +51,35 @@ namespace Quintus.Repository.Migrations
                     b.ToTable("Images");
                 });
 
+            modelBuilder.Entity("Quintus.Model.Entities.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("Expires")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("Revoked")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens");
+                });
+
             modelBuilder.Entity("Quintus.Model.Entities.Request", b =>
                 {
                     b.Property<Guid>("Id")
@@ -156,6 +185,17 @@ namespace Quintus.Repository.Migrations
                         .HasForeignKey("RequestId");
                 });
 
+            modelBuilder.Entity("Quintus.Model.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("Quintus.Model.Entities.User", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Quintus.Model.Entities.Request", b =>
                 {
                     b.HasOne("Quintus.Model.Entities.User", "RequestedBy")
@@ -179,6 +219,11 @@ namespace Quintus.Repository.Migrations
             modelBuilder.Entity("Quintus.Model.Entities.Request", b =>
                 {
                     b.Navigation("Images");
+                });
+
+            modelBuilder.Entity("Quintus.Model.Entities.User", b =>
+                {
+                    b.Navigation("RefreshTokens");
                 });
 #pragma warning restore 612, 618
         }

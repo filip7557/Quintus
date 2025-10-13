@@ -9,6 +9,7 @@
         public required string PasswordHash { get; set; }
         public string? PhoneNumber { get; set; }
         public Role? Role { get; set; }
+        public List<RefreshToken> RefreshTokens { get; set; } = new();
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
