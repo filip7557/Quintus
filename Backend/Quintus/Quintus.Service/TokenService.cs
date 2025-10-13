@@ -30,6 +30,49 @@ namespace Quintus.Service
             _authService = authService;
         }
 
+        private static bool IsPasswordValid(string? password, out string errorMessage)
+        {
+            errorMessage = string.Empty;
+
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                errorMessage = "Password is required.";
+                return false;
+            }
+
+            if (password.Length < 6)
+            {
+                errorMessage = "Password must be at least 6 characters long.";
+                return false;
+            }
+
+            if (!password.Any(char.IsUpper))
+            {
+                errorMessage = "Password must contain at least one uppercase letter.";
+                return false;
+            }
+
+            if (!password.Any(char.IsLower))
+            {
+                errorMessage = "Password must contain at least one lowercase letter.";
+                return false;
+            }
+
+            if (!password.Any(char.IsDigit))
+            {
+                errorMessage = "Password must contain at least one digit.";
+                return false;
+            }
+
+            if (!password.Any(ch => "!@#$%^&*()-_=+[]{}|;:'\",.<>?/`~".Contains(ch)))
+            {
+                errorMessage = "Password must contain at least one special character.";
+                return false;
+            }
+
+            return true;
+        }
+
         public async Task<LoginResponse> LoginUserAsync(string email, string password)
         {
             var user = await _userService.GetUserByEmailAndPasswordAsync(email, HashPassword(password));
@@ -85,15 +128,15 @@ namespace Quintus.Service
         {
             if (await _userService.GetUserByEmailAsync(user.Email) != null)
             {
-                return false;
+                throw new DuplicateUserException();
             }
 
-            if (string.IsNullOrWhiteSpace(user.Password) || user.Password.Length < 4)
+            if (!IsPasswordValid(user.Password, out string errorMessage))
             {
-                return false;
+                throw new InvalidPasswordException(errorMessage);
             }
 
-            string hashedPassword = HashPassword(user.Password);
+            string hashedPassword = HashPassword(user.Password!); // Password is guaranteed to be non-null here
             var newUser = new User
             {
                 Id = Guid.NewGuid(),
