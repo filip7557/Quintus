@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Quintus.Common;
 using Quintus.Common.Exceptions;
@@ -20,14 +21,16 @@ namespace Quintus.Service
         private readonly IRoleService _roleService;
         private readonly IAuthService _authService;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
+        private readonly IHttpContextAccessor _context;
 
-        public TokenService(IConfiguration config, IUserService userService, IRoleService roleService, IRefreshTokenRepository refreshTokenRepository, IAuthService authService)
+        public TokenService(IConfiguration config, IUserService userService, IRoleService roleService, IRefreshTokenRepository refreshTokenRepository, IAuthService authService, IHttpContextAccessor context)
         {
             _config = config;
             _userService = userService;
             _roleService = roleService;
             _refreshTokenRepository = refreshTokenRepository;
             _authService = authService;
+            _context = context;
         }
 
         private static bool IsPasswordValid(string? password, out string errorMessage)
@@ -110,6 +113,12 @@ namespace Quintus.Service
                 throw new InactiveRefreshTokenException();
             }
 
+            var currentIpAddress = _context.HttpContext?.Connection.RemoteIpAddress;
+            if (refreshToken.IPAddress == null || !refreshToken.IPAddress.Equals(currentIpAddress))
+            {
+                throw new InvalidRefreshTokenException();
+            }
+
             await _refreshTokenRepository.RevokeRefreshTokenAsync(refreshToken);
 
             var newAccessToken = GenerateToken(user);
@@ -179,11 +188,13 @@ namespace Quintus.Service
             var randomNumber = new byte[64];
             using var rng = RandomNumberGenerator.Create();
             rng.GetBytes(randomNumber);
+            var ipAddress = _context.HttpContext?.Connection.RemoteIpAddress; // Might need to adjust based on deployment scenario (e.g., behind a proxy)
             return new RefreshToken
             {
                 Token = Convert.ToBase64String(randomNumber),
                 Expires = DateTime.UtcNow.AddDays(7),
                 Created = DateTime.UtcNow,
+                IPAddress = ipAddress,
                 User = user
             };
         }

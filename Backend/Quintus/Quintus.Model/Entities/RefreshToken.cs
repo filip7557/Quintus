@@ -1,4 +1,6 @@
-﻿namespace Quintus.Model.Entities
+﻿using System.Net;
+
+namespace Quintus.Model.Entities
 {
     public class RefreshToken
     {
@@ -8,6 +10,7 @@
         public DateTime Created { get; set; }
         public DateTime? Revoked { get; set; }
         public required User User { get; set; }
+        public IPAddress? IPAddress { get; set; }
 
         public bool IsExpired => DateTime.UtcNow >= Expires;
         public bool IsActive => Revoked == null && !IsExpired;
