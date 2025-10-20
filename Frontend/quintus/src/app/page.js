@@ -1,9 +1,9 @@
-// app/page.tsx
 import Image from "next/image";
 import Script from "next/script";
+import { redirect } from "next/navigation";
 
-import Animations from "./components/Animations";
-import NavBehavior from "./components/NavBehavior";
+import Animations from "../components/Animations";
+import NavBehavior from "../components/NavBehavior";
 
 export default function HomePage() {
   const currentYear = new Date().getFullYear();
@@ -48,6 +48,11 @@ export default function HomePage() {
             <li>
               <a href="#contact" className="nav-link">
                 Kontakt
+              </a>
+            </li>
+            <li>
+              <a href={() => redirect("/login")} className="nav-link">
+                Prijava
               </a>
             </li>
           </ul>
