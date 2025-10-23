@@ -3,6 +3,7 @@ import Script from "next/script";
 
 import Animations from "../components/Animations";
 import NavBehavior from "../components/NavBehavior";
+import AccountNav from "@/components/AccountNav/AccountNav";
 
 export default function HomePage() {
   const currentYear = new Date().getFullYear();
@@ -49,11 +50,7 @@ export default function HomePage() {
                 Kontakt
               </a>
             </li>
-            <li>
-              <a href="/login" className="nav-link">
-                Prijava
-              </a>
-            </li>
+            <AccountNav />
           </ul>
         </nav>
       </header>
@@ -195,12 +192,14 @@ export default function HomePage() {
                     name="name"
                     placeholder="Ime i prezime"
                     required
+                    autoComplete="name"
                   />
                   <input
                     type="email"
                     name="email"
                     placeholder="Email adresa"
                     required
+                    autoComplete="email"
                   />
                   <textarea
                     name="message"

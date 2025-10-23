@@ -15,20 +15,20 @@ export default function LoginForm({ setIsRegister, router }) {
     try {
       login(email, password)
         .then((res) => {
-          console.log(res);
+          console.log(res.data);
           if (res?.status === 200) {
             router.push("/");
           } else {
-            setError(res?.data?.message || "Nešto je pošlo po zlu. Pokušajte ponovno.");
+            setError(res?.data || "Nešto je pošlo po zlu. Pokušajte ponovno.");
           }
         })
-        .catch(() => {
-          setError("Nešto je pošlo po zlu. Pokušajte ponovno.");
+        .catch((res) => {
+          setError(res?.data || "Nešto je pošlo po zlu. Pokušajte ponovno.");
         });
     } catch (e) {
       setError("Nešto je pošlo po zlu. Pokušajte ponovno.");
     }
-  }
+  };
 
   return (
     <div className={styles.login_form}>
@@ -40,33 +40,41 @@ export default function LoginForm({ setIsRegister, router }) {
           </p>
         </div>
 
-        {error && <p className={styles.error_message}>{error}</p>} 
+        {error && <p className={styles.error_message}>{error}</p>}
 
         <form onSubmit={handleSubmit}>
           <div className={styles.form_group}>
-            <label>Email</label>
+            <label htmlFor="email">Email</label>
             <input
+              id="email"
+              name="email"
               type="email"
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
             />
           </div>
 
           <div className={styles.form_group}>
-            <label>Lozinka</label>
+            <label htmlFor="password">Lozinka</label>
             <input
+              id="password"
+              name="password"
               type="password"
               placeholder="Lozinka"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
             />
           </div>
 
           <button
             type="submit"
             className={styles.submit_btn}
-            disabled={email.length < 10 || !email.includes("@") || password.length < 4}
+            disabled={
+              email.length < 10 || !email.includes("@") || password.length < 4
+            }
           >
             Prijava
           </button>

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getCurrentUser } from "@/services/authService";
 
-import RegisterForm from "@/components/RegisterForm";
+import RegisterForm from "@/components/RegisterForm/RegisterForm";
 import LoginForm from "@/components/LoginForm/LoginForm";
 
 export default function LoginPage() {
@@ -15,7 +15,7 @@ export default function LoginPage() {
     const currentUser = async () => {
       try {
         const result = await getCurrentUser();
-        if (result) router.back();
+        if (result?.data) router.back();
       } catch (e) {}
     };
 

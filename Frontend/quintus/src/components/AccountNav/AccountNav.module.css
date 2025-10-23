@@ -1,0 +1,88 @@
+.navAccount {
+  position: relative;
+}
+
+.accountTrigger {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  color: black;
+  font-size: inherit;
+  transition: color 0.2s ease;
+}
+
+.accountTrigger:hover {
+  color: white;
+}
+
+.dropdownArrow {
+  transition: transform 0.2s ease;
+}
+
+.navAccount:hover .dropdownArrow {
+  transform: rotate(180deg);
+  color: white;
+}
+
+.accountDropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  min-width: 160px;
+
+  /* ADDED */
+  padding: 6px;            /* give container inner spacing */
+  box-sizing: border-box;
+  overflow: hidden;        /* prevents hover backgrounds from overflowing */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.navAccount:hover .accountDropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdownItem {
+  display: block;
+  padding: 8px 12px;
+  color: var(--text);
+  text-decoration: none;
+  transition: background-color 0.12s ease;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  font-size: inherit;
+  cursor: pointer;
+
+  /* ADDED: make hover background match item bounds */
+  margin: 4px 0;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.dropdownItem:hover {
+  /* slightly smaller alpha so it doesn't visually overflow */
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.dropdownItem:first-child {
+  border-radius: 8px 8px 0 0;
+}
+
+.dropdownItem:last-child {
+  border-radius: 0 0 8px 8px;
+}

@@ -83,7 +83,7 @@ api.interceptors.response.use(
       console.error("Refresh token failed:", refreshError);
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
-      window.location.href = "/login";
+      window.location.href = "/auth";
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;

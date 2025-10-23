@@ -2,7 +2,7 @@
 {
     public class DuplicateUserException : Exception
     {
-        public DuplicateUserException() : base("A user with the provided email already exists.")
+        public DuplicateUserException() : base("Račun s ovom email adresom već postoji.")
         {
         }
     }

@@ -52,7 +52,7 @@ namespace Quintus.WebAPI.Controllers
         public async Task<IActionResult> LoginAsync([FromBody] LoginInfo loginInfo)
         {
             if (string.IsNullOrWhiteSpace(loginInfo.email) || string.IsNullOrWhiteSpace(loginInfo.password))
-                return BadRequest("Email and password are required.");
+                return BadRequest("Email i lozinka su potrebni.");
             try
             {
                 var loginResponse = await _tokenService.LoginUserAsync(loginInfo.email, loginInfo.password);
@@ -61,7 +61,7 @@ namespace Quintus.WebAPI.Controllers
             catch (Exception ex)
             {
                 if (ex is InvalidLoginInfoException)
-                    return Unauthorized("Invalid email or password.");
+                    return Unauthorized(ex.Message);
                 else
                     return StatusCode(500, "An error occurred during login.");
             }
