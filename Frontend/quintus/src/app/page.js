@@ -1,9 +1,9 @@
-// app/page.tsx
 import Image from "next/image";
 import Script from "next/script";
 
-import Animations from "./components/Animations";
-import NavBehavior from "./components/NavBehavior";
+import Animations from "../components/Animations";
+import NavBehavior from "../components/NavBehavior";
+import AccountNav from "@/components/AccountNav/AccountNav";
 
 export default function HomePage() {
   const currentYear = new Date().getFullYear();
@@ -17,7 +17,7 @@ export default function HomePage() {
         <nav className="navbar">
           <div className="logo">
             <Image
-              src="/static/images/logo.png"
+              src="/images/logo.png"
               alt="Quintus logo"
               width={120}
               height={60}
@@ -50,6 +50,7 @@ export default function HomePage() {
                 Kontakt
               </a>
             </li>
+            <AccountNav />
           </ul>
         </nav>
       </header>
@@ -80,7 +81,7 @@ export default function HomePage() {
             <div className="service">
               <h3>Klimatizacija</h3>
               <Image
-                src="/static/images/klima.png"
+                src="/images/klima.png"
                 alt="Klimatizacija"
                 width={200}
                 height={200}
@@ -98,7 +99,7 @@ export default function HomePage() {
             <div className="service">
               <h3>Grijanje</h3>
               <Image
-                src="/static/images/grijanje.png"
+                src="/images/grijanje.png"
                 alt="Grijanje"
                 width={200}
                 height={200}
@@ -114,7 +115,7 @@ export default function HomePage() {
             <div className="service">
               <h3>Vodoinstalaterski radovi</h3>
               <Image
-                src="/static/images/instalater.png"
+                src="/images/instalater.png"
                 alt="Vodoinstalaterski radovi"
                 width={200}
                 height={200}
@@ -152,7 +153,7 @@ export default function HomePage() {
           </div>
           <div className="about-container image">
             <Image
-              src="/static/images/about.png"
+              src="/images/about.png"
               alt="O nama"
               width={400}
               height={400}
@@ -191,12 +192,14 @@ export default function HomePage() {
                     name="name"
                     placeholder="Ime i prezime"
                     required
+                    autoComplete="name"
                   />
                   <input
                     type="email"
                     name="email"
                     placeholder="Email adresa"
                     required
+                    autoComplete="email"
                   />
                   <textarea
                     name="message"

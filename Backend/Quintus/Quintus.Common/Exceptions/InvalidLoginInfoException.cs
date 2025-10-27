@@ -2,7 +2,7 @@
 {
     public class InvalidLoginInfoException : Exception
     {
-        public InvalidLoginInfoException() : base("Invalid login information provided.")
+        public InvalidLoginInfoException() : base("Pogrešan email ili lozinka.")
         {
         }
     }

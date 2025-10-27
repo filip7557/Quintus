@@ -1,0 +1,42 @@
+/* /d:/Programiranje/Obrt/Quintus/Frontend/quintus/src/app/login/page.module.css */
+
+.login {
+    /* cover entire viewport */
+    position: fixed;
+    inset: 0; /* top:0; right:0; bottom:0; left:0; */
+    width: 100%;
+    height: 100vh;
+
+    /* background image - replace the path with your image */
+    background-image: linear-gradient(
+      rgba(18, 24, 27, 0.8),
+      rgba(18, 24, 27, 0.85)
+    ),
+    url(/images/login-background.png);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+
+    /* center children */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    /* create stacking context for overlay and content */
+    z-index: 0;
+}
+
+/* optional dark overlay to improve contrast */
+.login::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35); /* adjust opacity as needed */
+    z-index: 0;
+}
+
+/* make sure content sits above the overlay */
+.login > * {
+    z-index: 1;
+}

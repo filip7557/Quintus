@@ -39,37 +39,37 @@ namespace Quintus.Service
 
             if (string.IsNullOrWhiteSpace(password))
             {
-                errorMessage = "Password is required.";
+                errorMessage = "Potrebno je unijeti lozinku.";
                 return false;
             }
 
             if (password.Length < 6)
             {
-                errorMessage = "Password must be at least 6 characters long.";
+                errorMessage = "Lozinka mora imati barem 6 znakova.";
                 return false;
             }
 
             if (!password.Any(char.IsUpper))
             {
-                errorMessage = "Password must contain at least one uppercase letter.";
+                errorMessage = "Lozinka mora sadržavati barem jedno veliko slovo.";
                 return false;
             }
 
             if (!password.Any(char.IsLower))
             {
-                errorMessage = "Password must contain at least one lowercase letter.";
+                errorMessage = "Lozinka mora sadržavati barem jedno malo slovo.";
                 return false;
             }
 
             if (!password.Any(char.IsDigit))
             {
-                errorMessage = "Password must contain at least one digit.";
+                errorMessage = "Lozinka mora sadržavati barem jedan broj.";
                 return false;
             }
 
             if (!password.Any(ch => "!@#$%^&*()-_=+[]{}|;:'\",.<>?/`~".Contains(ch)))
             {
-                errorMessage = "Password must contain at least one special character.";
+                errorMessage = "Lozinka mora sadršavati barem jedan poseban znak.";
                 return false;
             }
 

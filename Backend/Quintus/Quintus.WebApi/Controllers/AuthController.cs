@@ -12,10 +12,12 @@ namespace Quintus.WebAPI.Controllers
     public class AuthController : ControllerBase
     {
         private readonly ITokenService _tokenService;
+        private readonly IAuthService _authService;
 
-        public AuthController(ITokenService tokenService)
+        public AuthController(ITokenService tokenService, IAuthService authService)
         {
             _tokenService = tokenService;
+            _authService = authService;
         }
 
         [HttpPost("register")]
@@ -50,7 +52,7 @@ namespace Quintus.WebAPI.Controllers
         public async Task<IActionResult> LoginAsync([FromBody] LoginInfo loginInfo)
         {
             if (string.IsNullOrWhiteSpace(loginInfo.email) || string.IsNullOrWhiteSpace(loginInfo.password))
-                return BadRequest("Email and password are required.");
+                return BadRequest("Email i lozinka su potrebni.");
             try
             {
                 var loginResponse = await _tokenService.LoginUserAsync(loginInfo.email, loginInfo.password);
@@ -59,7 +61,7 @@ namespace Quintus.WebAPI.Controllers
             catch (Exception ex)
             {
                 if (ex is InvalidLoginInfoException)
-                    return Unauthorized("Invalid email or password.");
+                    return Unauthorized(ex.Message);
                 else
                     return StatusCode(500, "An error occurred during login.");
             }
@@ -91,6 +93,25 @@ namespace Quintus.WebAPI.Controllers
                     return Unauthorized("Refresh token is inactive or revoked.");
                 else
                     return StatusCode(500, "An error occurred while refreshing the token.");
+            }
+        }
+
+        [Authorize]
+        [HttpGet("getCurrentUser")]
+        public async Task<IActionResult> GetCurrentUserAsync()
+        {
+            try
+            {
+                var user = await _authService.GetCurrentUserAsync();
+
+                if (user == null)
+                    return NotFound("Current user not found.");
+
+                return Ok(user);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while retrieving the current user.");
             }
         }
     }
