@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styles from "./LoginForm.module.css";
 
 import { login } from "@/services/authService";
@@ -26,7 +26,7 @@ export default function LoginForm({ setIsRegister, router }) {
           setError(res?.data || "Nešto je pošlo po zlu. Pokušajte ponovno.");
         });
     } catch (e) {
-      setError("Nešto je pošlo po zlu. Pokušajte ponovno.");
+      setError(e?.data || "Nešto je pošlo po zlu. Pokušajte ponovno.");
     }
   };
 
@@ -72,9 +72,6 @@ export default function LoginForm({ setIsRegister, router }) {
           <button
             type="submit"
             className={styles.submit_btn}
-            disabled={
-              email.length < 10 || !email.includes("@") || password.length < 4
-            }
           >
             Prijava
           </button>

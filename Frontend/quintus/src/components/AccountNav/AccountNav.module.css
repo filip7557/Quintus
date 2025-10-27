@@ -28,6 +28,10 @@
   color: white;
 }
 
+.navAccount:hover .accountTrigger {
+  color: white;
+}
+
 .accountDropdown {
   position: absolute;
   top: 100%;
