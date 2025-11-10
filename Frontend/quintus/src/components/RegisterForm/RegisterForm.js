@@ -13,6 +13,7 @@ export default function RegisterForm({ setIsRegister, router }) {
   const [lastName, setLastName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const [passwordChecks, setPasswordChecks] = useState({
     length: false,
@@ -46,23 +47,36 @@ export default function RegisterForm({ setIsRegister, router }) {
       setError("Lozinke se ne podudaraju.");
       return;
     }
+    setError(null);
+    setLoading(true);
     try {
       register({ email, firstName, lastName, password, phoneNumber })
         .then((res) => {
           if (res?.status === 200) {
             setIsRegister(false);
-            router.push("/login");
+            router.push("/auth");
           } else {
             setError(res?.data || "Nešto je pošlo po zlu. Pokušajte ponovno.");
           }
         })
         .catch((res) => {
           setError(res?.data || "Nešto je pošlo po zlu. Pokušajte ponovno.");
+        })
+        .finally(() => {
+          setLoading(false);
         });
     } catch (e) {
       setError("Nešto je pošlo po zlu. Pokušajte ponovno.");
+      setLoading(false);
     }
   };
+
+  function handleBackClick() {
+    router.back();
+    setTimeout(() => {
+      window.location.reload(); // force reload after navigation
+    }, 100);
+  }
 
   return (
     <div className={styles.register_form}>
@@ -87,6 +101,7 @@ export default function RegisterForm({ setIsRegister, router }) {
                 placeholder="Ime"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
+                disabled={loading}
                 autoComplete="given-name"
               />
             </div>
@@ -100,6 +115,7 @@ export default function RegisterForm({ setIsRegister, router }) {
                 placeholder="Prezime"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
+                disabled={loading}
                 autoComplete="family-name"
               />
             </div>
@@ -115,6 +131,7 @@ export default function RegisterForm({ setIsRegister, router }) {
                 placeholder="Broj telefona"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
+                disabled={loading}
                 autoComplete="tel"
               />
             </div>
@@ -128,6 +145,7 @@ export default function RegisterForm({ setIsRegister, router }) {
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
                 autoComplete="email"
               />
             </div>
@@ -143,6 +161,7 @@ export default function RegisterForm({ setIsRegister, router }) {
                 placeholder="Lozinka"
                 value={password}
                 onChange={handlePasswordChange}
+                disabled={loading}
               />
               <div className={styles.password_checks}>
                 <div className={styles.password_checks}>
@@ -194,6 +213,7 @@ export default function RegisterForm({ setIsRegister, router }) {
                 placeholder="Potvrdite lozinku"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={loading}
               />
             </div>
           </div>
@@ -202,6 +222,7 @@ export default function RegisterForm({ setIsRegister, router }) {
             type="submit"
             className={styles.submit_btn}
             disabled={
+              loading ||
               email.length < 10 ||
               !email.includes("@") ||
               !passwordChecks.length ||
@@ -214,13 +235,41 @@ export default function RegisterForm({ setIsRegister, router }) {
               lastName.length < 3
             }
           >
-            Registracija
+            {loading ? (
+              <>
+                <svg
+                  className={styles.spinner}
+                  width="16"
+                  height="16"
+                  viewBox="0 0 50 50"
+                  xmlns="http://www.w3.org/2000/svg"
+                  role="img"
+                  aria-hidden="true"
+                >
+                  <circle
+                    cx="25"
+                    cy="25"
+                    r="20"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="5"
+                    strokeLinecap="round"
+                    strokeDasharray="31.4 31.4"
+                    strokeDashoffset="0"
+                  />
+                </svg>
+                Učitavanje...
+              </>
+            ) : (
+              "Registracija"
+            )}
           </button>
 
           <button
             type="button"
             className={styles.secondary_btn}
-            onClick={() => router.back()}
+            onClick={handleBackClick}
+            disabled={loading}
           >
             Natrag
           </button>

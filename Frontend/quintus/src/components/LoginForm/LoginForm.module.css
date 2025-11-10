@@ -207,3 +207,20 @@ input::placeholder {
   font-size: 0.875rem;
   margin-bottom: 16px;
 }
+
+/* Spinner used inside the submit button while loading */
+.spinner {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  vertical-align: middle;
+  display: inline-block;
+  transform-origin: center;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

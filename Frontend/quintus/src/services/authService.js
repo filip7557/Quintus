@@ -30,8 +30,6 @@ export async function login(email, password) {
 export async function register(data) {
   try {
   const response = await api.post("/Auth/register", data);
-  console.log(data);
-  console.log(response);
   return response;
   } catch (error) {
     return error.response;
