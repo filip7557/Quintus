@@ -254,6 +254,14 @@ input::placeholder {
   color: var(--muted);
 }
 
+.password_match_error {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  font-size: 0.75rem;
+}
+
 .form_row {
   display: grid;
   grid-template-columns: 1fr 1fr;

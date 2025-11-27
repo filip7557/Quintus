@@ -215,6 +215,15 @@ export default function RegisterForm({ setIsRegister, router }) {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 disabled={loading}
               />
+              {confirmPassword && password !== confirmPassword && (
+                <div className={styles.password_match_error}>
+                  <div
+                    className={`${styles.check_item} ${styles.invalid}`}
+                  >
+                    Lozinke se ne podudaraju
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
