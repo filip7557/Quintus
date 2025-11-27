@@ -32,11 +32,17 @@ export default function AccountNav() {
   }, []);
 
   const handleLogout = () => {
-    router.push("/");
     logout().then(() => {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
       setIsLoggedIn(false);
+      router.push("/");
+    }).catch(() => {
+      // Even if logout fails, clear the state
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      setIsLoggedIn(false);
+      router.push("/");
     });
   };
 

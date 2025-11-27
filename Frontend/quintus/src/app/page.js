@@ -32,7 +32,7 @@ export default function HomePage() {
               <a href="#services" className="hero-button">
                 Naše usluge
               </a>
-              <a href="/createRequest" className="hero-button">
+              <a href="/create-request" className="hero-button">
                 Zatraži uslugu
               </a>
             </div>

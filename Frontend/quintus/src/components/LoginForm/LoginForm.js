@@ -5,7 +5,7 @@ import styles from "./LoginForm.module.css";
 
 import { login } from "@/services/authService";
 
-export default function LoginForm({ setIsRegister, router }) {
+export default function LoginForm({ setIsRegister, router, redirectTo = "/" }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
@@ -19,8 +19,8 @@ export default function LoginForm({ setIsRegister, router }) {
       login(email, password)
         .then((res) => {
           if (res?.status === 200) {
-            // successful login - navigate away
-            router.push("/");
+            // successful login - navigate to redirectTo or home
+            router.push(redirectTo);
           } else {
             setError(res?.data || "Nešto je pošlo po zlu. Pokušajte ponovno.");
           }

@@ -1,6 +1,6 @@
 "use client";
 import styles from "./page.module.css"
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getCurrentUser } from "@/services/authService";
 
@@ -9,7 +9,9 @@ import LoginForm from "@/components/LoginForm/LoginForm";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isRegister, setIsRegister] = useState(false);
+  const redirectTo = searchParams.get("from") || "/";
 
   useEffect(() => {
     const currentUser = async () => {
@@ -26,9 +28,9 @@ export default function LoginPage() {
     <>
       <div className={styles.login}>
         {isRegister ? (
-          <RegisterForm router={router} setIsRegister={setIsRegister} />
+          <RegisterForm router={router} setIsRegister={setIsRegister} redirectTo={redirectTo} />
         ) : (
-          <LoginForm router={router} setIsRegister={setIsRegister} />
+          <LoginForm router={router} setIsRegister={setIsRegister} redirectTo={redirectTo} />
         )}
       </div>
     </>

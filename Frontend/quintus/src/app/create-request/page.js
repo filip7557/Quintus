@@ -25,10 +25,10 @@ export default function CreateRequestPage() {
         if (result?.data) {
           setIsAuthenticated(true);
         } else {
-          router.push("/auth");
+          router.push("/auth?from=/create-request");
         }
       } catch (e) {
-        router.push("/auth");
+        router.push("/auth?from=/create-request");
       } finally {
         setIsCheckingAuth(false);
       }
@@ -151,6 +151,14 @@ export default function CreateRequestPage() {
               disabled={!isFormValid || loading}
             >
               {loading ? "Slanje..." : "Pošalji zahtjev"}
+            </button>
+
+            <button
+              type="button"
+              className={styles.backBtn}
+              onClick={() => router.push("/")}
+            >
+              Natrag na početnu
             </button>
           </form>
         </div>
