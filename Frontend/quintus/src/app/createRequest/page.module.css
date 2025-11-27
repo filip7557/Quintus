@@ -1,0 +1,270 @@
+/* Container and layout */
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 20px 40px;
+  box-sizing: border-box;
+  background-color: #2e3336;
+}
+
+.requestCard {
+  width: 100%;
+  max-width: 600px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 14px;
+  padding: 32px;
+  box-sizing: border-box;
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  box-shadow: 0 10px 30px rgba(6, 10, 22, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* Header */
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #eaf2ff;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: rgba(234, 242, 255, 0.7);
+  margin: 0;
+}
+
+.loadingMessage {
+  text-align: center;
+  color: rgba(234, 242, 255, 0.7);
+  font-size: 1rem;
+  padding: 40px 20px;
+}
+
+/* Form */
+.form {
+  display: grid;
+  gap: 18px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+
+.formGroup label {
+  font-size: 0.8rem;
+  color: rgba(234, 242, 255, 0.7);
+  font-weight: 500;
+}
+
+/* Inputs and textarea */
+.formGroup input[type="text"],
+.formGroup textarea {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0.01)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  color: #eaf2ff;
+  padding: 12px;
+  border-radius: 10px;
+  outline: none;
+  font-size: 0.95rem;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: box-shadow 0.18s ease, border-color 0.12s ease,
+    transform 0.05s ease;
+  resize: vertical;
+}
+
+.formGroup input[type="text"]:focus,
+.formGroup textarea:focus {
+  border-color: rgba(138, 180, 255, 0.8);
+  box-shadow: 0 6px 20px rgba(110, 168, 254, 0.12),
+    0 0 0 4px rgba(110, 168, 254, 0.06);
+  transform: translateY(-1px);
+}
+
+.formGroup input::placeholder,
+.formGroup textarea::placeholder {
+  color: rgba(234, 242, 255, 0.45);
+}
+
+.charCount {
+  font-size: 0.75rem;
+  color: rgba(234, 242, 255, 0.5);
+  text-align: right;
+  margin-top: 4px;
+}
+
+/* File input */
+.fileInput {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed rgba(138, 180, 255, 0.3);
+  border-radius: 10px;
+  padding: 24px;
+  background: rgba(110, 168, 254, 0.05);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.fileInput:hover {
+  border-color: rgba(138, 180, 255, 0.6);
+  background: rgba(110, 168, 254, 0.1);
+}
+
+.fileInput input[type="file"] {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.fileLabel {
+  pointer-events: none;
+  font-size: 0.95rem;
+  color: #eaf2ff;
+  font-weight: 500;
+}
+
+.fileInfo {
+  font-size: 0.75rem;
+  color: rgba(234, 242, 255, 0.5);
+  margin: 8px 0 0 0;
+}
+
+/* Messages */
+.errorMessage {
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+}
+
+.successMessage {
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  margin-bottom: 16px;
+}
+
+/* Submit button */
+.submitBtn {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  border: none;
+  color: white;
+  background: linear-gradient(90deg, #6ea8fe, #8fc6ff);
+  box-shadow: 0 8px 20px rgba(110, 168, 254, 0.18),
+    0 2px 6px rgba(0, 0, 0, 0.18);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+}
+
+.submitBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(110, 168, 254, 0.25),
+    0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.submitBtn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 6px 20px rgba(110, 168, 254, 0.18),
+    0 2px 6px rgba(0, 0, 0, 0.18);
+  opacity: 0.9;
+}
+
+.submitBtn:disabled {
+  background: linear-gradient(90deg, #4a4a4a, #5a5a5a);
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 100px 16px 24px;
+  }
+
+  .requestCard {
+    padding: 24px;
+  }
+
+  .title {
+    font-size: 1.25rem;
+  }
+
+  .formGroup input[type="text"],
+  .formGroup textarea {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+
+  .fileInput {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .requestCard {
+    padding: 16px;
+  }
+
+  .title {
+    font-size: 1.1rem;
+  }
+
+  .subtitle {
+    font-size: 0.8rem;
+  }
+
+  .formGroup {
+    gap: 6px;
+  }
+
+  .fileInput {
+    padding: 12px;
+  }
+
+  .fileLabel {
+    font-size: 0.85rem;
+  }
+
+  .submitBtn {
+    padding: 10px 12px;
+    font-size: 0.95rem;
+  }
+}
