@@ -14,6 +14,10 @@ COPY Quintus/Quintus.Model/Quintus.Model.csproj Quintus/Quintus.Model/
 COPY Quintus/Quintus.Repository.Common/Quintus.Repository.Common.csproj Quintus/Quintus.Repository.Common/
 COPY Quintus/Quintus.Service.Common/Quintus.Service.Common.csproj Quintus/Quintus.Service.Common/
 
+# Copy entrypoint script
+COPY Quintus/Quintus.WebAPI/entrypoint.sh ./entrypoint.sh
+RUN sed -i 's/\r$//' ./entrypoint.sh && chmod +x ./entrypoint.sh
+
 # Restore dependencies
 RUN dotnet restore Quintus/Quintus.WebAPI/Quintus.WebAPI.csproj
 RUN dotnet restore Quintus/Quintus.Service/Quintus.Service.csproj
@@ -29,15 +33,14 @@ RUN dotnet publish -c Release -o /app/out
 # ============================
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS runtime
 WORKDIR /app
+
 COPY --from=build /app/out .
-# Copy source code, not just publish output
-COPY ../Quintus/ ./Quintus/
-# Install EF Core CLI tool globally
-RUN dotnet tool install --global dotnet-ef --version 8.* && \
-    export PATH="$PATH:/root/.dotnet/tools"
-# Copy entrypoint script
-COPY ./Quintus/Quintus.WebAPI/entrypoint.sh .
-RUN chmod +x entrypoint.sh
+COPY --from=build /src/Quintus ./Quintus
+COPY --from=build /src/entrypoint.sh /app/entrypoint.sh
+
+RUN chmod +x /app/entrypoint.sh
+RUN dotnet tool install --global dotnet-ef --version 8.*
+
 ENV ASPNETCORE_URLS="http://+:8080"
 EXPOSE 8080
 ENTRYPOINT ["./entrypoint.sh"]
