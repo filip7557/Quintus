@@ -38,6 +38,6 @@ RUN dotnet tool install --global dotnet-ef --version 8.* && \
 # Copy entrypoint script
 COPY ./Quintus/Quintus.WebAPI/entrypoint.sh .
 RUN chmod +x entrypoint.sh
-ENV ASPNETCORE_URLS="http://+:8080;https://+:8443"
-EXPOSE 8080 8443
+ENV ASPNETCORE_URLS="http://+:8080"
+EXPOSE 8080
 ENTRYPOINT ["./entrypoint.sh"]

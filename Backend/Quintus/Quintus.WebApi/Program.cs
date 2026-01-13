@@ -3,6 +3,7 @@ using Autofac.Extensions.DependencyInjection;
 using CloudinaryDotNet;
 using dotenv.net;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Quintus.Repository;
@@ -12,8 +13,16 @@ using Quintus.Service;
 using Quintus.Service.Common;
 using Scalar.AspNetCore;
 using System.Text;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Force HTTP-only by default (recommended when running behind nginx/ingress and terminating TLS there).
+// If you want HTTPS in-container, set ASPNETCORE_URLS yourself (and provide a cert).
+if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ASPNETCORE_URLS")))
+{
+    builder.WebHost.UseUrls("http://+:8080");
+}
 
 builder.Services.AddCors(options =>
 {
@@ -31,6 +40,26 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         ?? throw new InvalidOperationException("Database connection string is not set.")));
 
 DotEnv.Load(options: new DotEnvOptions(probeForEnv: true));
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddPolicy("LoginRegisterPolicy", context =>
+    {
+        var ip = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+        return RateLimitPartition.GetTokenBucketLimiter(ip, _ => new TokenBucketRateLimiterOptions
+        {
+            TokenLimit = 5,
+            TokensPerPeriod = 5,
+            ReplenishmentPeriod = TimeSpan.FromMinutes(1),
+            AutoReplenishment = true,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            QueueLimit = 2
+        });
+    });
+});
 
 // Add services to the container.
 builder.Host
@@ -116,6 +145,8 @@ if (app.Environment.IsDevelopment())
 //app.UseHttpsRedirection();
 
 app.UseCors("AllowAllOrigins");
+
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();

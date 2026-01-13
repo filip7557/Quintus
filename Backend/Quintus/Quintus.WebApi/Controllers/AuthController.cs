@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Quintus.Common;
 using Quintus.Common.Exceptions;
 using Quintus.Model;
@@ -22,6 +23,7 @@ namespace Quintus.WebAPI.Controllers
             _authService = authService;
         }
 
+        [EnableRateLimiting("LoginRegisterPolicy")]
         [HttpPost("register")]
         public async Task<IActionResult> RegisterAsync([FromBody] UserDTO user)
         {
@@ -53,6 +55,7 @@ namespace Quintus.WebAPI.Controllers
             return Ok("User registered successfully.");
         }
 
+        [EnableRateLimiting("LoginRegisterPolicy")]
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync([FromBody] LoginInfo loginInfo)
         {
