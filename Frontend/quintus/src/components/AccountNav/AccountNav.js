@@ -1,13 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { getCurrentUser, logout } from "@/services/authService";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import styles from "./AccountNav.module.css";
 
 export default function AccountNav() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
+  const rootRef = useRef(null);
 
   useEffect(() => {
     // Check if user is logged in on component mount
@@ -31,24 +34,63 @@ export default function AccountNav() {
     checkAuth();
   }, []);
 
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleDocumentClick = (e) => {
+      if (!rootRef.current) return;
+      if (!rootRef.current.contains(e.target)) setIsOpen(false);
+    };
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setIsOpen(false);
+    };
+
+    document.addEventListener("click", handleDocumentClick);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("click", handleDocumentClick);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen]);
+
   const handleLogout = () => {
     logout().then(() => {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
       setIsLoggedIn(false);
+      setIsOpen(false);
       router.push("/");
     }).catch(() => {
       // Even if logout fails, clear the state
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
       setIsLoggedIn(false);
+      setIsOpen(false);
       router.push("/");
     });
   };
 
+  const handleToggle = () => {
+    setIsOpen((v) => !v);
+  };
+
+  const handleItemClick = () => {
+    setIsOpen(false);
+  };
+
   return (
-    <li className={styles.navAccount}>
-      <button className={styles.accountTrigger}>
+    <li
+      ref={rootRef}
+      className={`${styles.navAccount} ${isOpen ? styles.open : ""}`}
+    >
+      <button
+        type="button"
+        className={`${styles.accountTrigger} nav-link`}
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
+        onClick={handleToggle}
+      >
         Račun
         <svg
           width="16"
@@ -69,20 +111,32 @@ export default function AccountNav() {
       <div className={styles.accountDropdown}>
         {isLoggedIn ? (
           <>
-            <a href="/profile" className={styles.dropdownItem}>
+            <Link
+              href="/profile"
+              className={styles.dropdownItem}
+              onClick={handleItemClick}
+            >
               Profil
-            </a>
-            <a href="/requests" className={styles.dropdownItem}>
+            </Link>
+            <Link
+              href="/requests"
+              className={styles.dropdownItem}
+              onClick={handleItemClick}
+            >
               Zahtjevi
-            </a>
+            </Link>
             <button onClick={handleLogout} className={styles.dropdownItem}>
               Odjava
             </button>
           </>
         ) : (
-          <a href="/auth" className={styles.dropdownItem}>
+          <Link
+            href="/auth"
+            className={styles.dropdownItem}
+            onClick={handleItemClick}
+          >
             Prijava
-          </a>
+          </Link>
         )}
       </div>
     </li>

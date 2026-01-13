@@ -40,3 +40,9 @@
 .login > * {
     z-index: 1;
 }
+
+@media (max-width: 768px) {
+    .login {
+        background-attachment: scroll;
+    }
+}

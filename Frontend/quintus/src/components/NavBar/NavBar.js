@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import AccountNav from "@/components/AccountNav/AccountNav";
 
 export default function NavBar() {
@@ -9,8 +10,8 @@ export default function NavBar() {
           <Image
             src="/images/logo.png"
             alt="Quintus logo"
-            width={120}
-            height={60}
+            width={170}
+            height={85}
             priority={1}
           />
         </div>
@@ -21,24 +22,24 @@ export default function NavBar() {
 
         <ul className="nav-main" id="nav-main">
           <li>
-            <a href="/#home" className="nav-link">
+            <Link href="/#home" className="nav-link">
               Početna
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/#services" className="nav-link">
+            <Link href="/#services" className="nav-link">
               Usluge
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/#about" className="nav-link">
+            <Link href="/#about" className="nav-link">
               O nama
-            </a>
+            </Link>
           </li>
           <li>
-            <a href="/#contact" className="nav-link">
+            <Link href="/#contact" className="nav-link">
               Kontakt
-            </a>
+            </Link>
           </li>
           <AccountNav />
         </ul>
