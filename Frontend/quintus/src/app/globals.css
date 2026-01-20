@@ -179,7 +179,7 @@ header {
   font-size: 1.8rem;
   background: none;
   border: none;
-  color: #000;
+  color: rgba(234, 242, 255, 0.9);
   cursor: pointer;
   padding: 0.4rem 0.6rem;
   border-radius: 10px;
@@ -194,7 +194,7 @@ header {
   font-size: large;
   font-weight: 200;
   font-family: var(--font-body);
-  color: #000;
+  color: rgba(234, 242, 255, 0.85);
   transition: color 0.3s;
   padding: 0.35rem 0.2rem;
 }

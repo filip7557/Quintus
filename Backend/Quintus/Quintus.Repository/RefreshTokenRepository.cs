@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Quintus.Model;
 using Quintus.Model.Entities;
 using Quintus.Repository.Common;
 using Quintus.Repository.Context;
@@ -14,8 +15,9 @@ namespace Quintus.Repository
             _context = context;
         }
 
-        public async Task<List<RefreshToken>> GetActiveRefreshTokensByUser(User user)
+        public async Task<List<RefreshToken>> GetActiveRefreshTokensByUser(UserDTO userDTO)
         {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userDTO.Id);
             return await _context.RefreshTokens
                 .Where(rt => rt.User == user && rt.Revoked == null && rt.Expires > DateTime.UtcNow)
                 .ToListAsync();

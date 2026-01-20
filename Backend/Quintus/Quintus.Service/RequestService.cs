@@ -10,12 +10,14 @@ namespace Quintus.Service
         private readonly IRequestRepository _requestRepository;
         private readonly IImageService _imageService;
         private readonly IAuthService _authService;
+        private readonly IUserRepository _userRepository;
 
-        public RequestService(IRequestRepository requestRepository, IImageService imageService, IAuthService authService)
+        public RequestService(IRequestRepository requestRepository, IImageService imageService, IAuthService authService, IUserRepository userRepository)
         {
             _requestRepository = requestRepository;
             _imageService = imageService;
             _authService = authService;
+            _userRepository = userRepository;
         }
 
         public async Task<bool> CreateRequestAsync(RequestDTO request)
@@ -32,13 +34,23 @@ namespace Quintus.Service
             }
 
             var currentUser = await _authService.GetCurrentUserAsync();
+            if (currentUser == null || currentUser.Id == null)
+            {
+                throw new InvalidOperationException("Current user or user ID is null.");
+            }
+
+            var user = await _userRepository.GetUserByIdAsync(currentUser.Id.Value);
+            if (user == null)
+            {
+                throw new InvalidOperationException("User not found.");
+            }
 
             var newRequest = new Request
             {
                 Id = Guid.NewGuid(),
                 Title = request.Title,
                 Description = request.Description,
-                RequestedBy = currentUser!,
+                RequestedBy = user,
                 Images = images,
             };
 

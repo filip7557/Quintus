@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Quintus.Model.Entities;
+using Quintus.Model;
 using Quintus.Repository.Common;
 using Quintus.Service.Common;
 using System.Security.Claims;
@@ -17,10 +17,19 @@ namespace Quintus.Service
             _userRepository = userRepository;
         }
 
-        public async Task<User?> GetCurrentUserAsync()
+        public async Task<UserDTO?> GetCurrentUserAsync()
         {
             var userId = Guid.Parse(_httpContextAccessor.HttpContext!.User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-            return await _userRepository.GetUserByIdAsync(userId);
+            var user =  await _userRepository.GetUserByIdAsync(userId);
+            return new UserDTO
+            {
+                Id = user!.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                Role = user.Role
+            };
         }
     }
 }

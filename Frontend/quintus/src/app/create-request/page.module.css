@@ -7,11 +7,46 @@
   padding: 80px 20px 20px;
   box-sizing: border-box;
   background-color: #2e3336;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Modern “blob” backdrop (matches /profile) */
+.container::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(
+      650px circle at 18% 22%,
+      rgba(110, 168, 254, 0.26),
+      transparent 60%
+    ),
+    radial-gradient(
+      520px circle at 82% 28%,
+      rgba(143, 198, 255, 0.18),
+      transparent 58%
+    ),
+    radial-gradient(
+      720px circle at 50% 84%,
+      rgba(110, 168, 254, 0.12),
+      transparent 64%
+    ),
+    linear-gradient(180deg, #2e3336 0%, #23272a 100%);
+  filter: blur(42px) saturate(125%);
+  transform: scale(1.08);
+  opacity: 0.95;
+  pointer-events: none;
+}
+
+.container > * {
+  position: relative;
+  z-index: 1;
 }
 
 .requestCard {
   width: 100%;
-  max-width: 600px;
+  max-width: 720px;
   background: linear-gradient(
     180deg,
     rgba(255, 255, 255, 0.08) 0%,
@@ -25,6 +60,14 @@
   -webkit-backdrop-filter: blur(10px) saturate(120%);
   box-shadow: 0 10px 30px rgba(6, 10, 22, 0.45),
     inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* Wider layout on large screens */
+@media (min-width: 1024px) {
+  .requestCard {
+    max-width: 820px;
+    padding: 28px;
+  }
 }
 
 /* Header */

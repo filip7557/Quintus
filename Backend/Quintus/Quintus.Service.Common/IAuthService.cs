@@ -1,9 +1,9 @@
-﻿using Quintus.Model.Entities;
+﻿using Quintus.Model;
 
 namespace Quintus.Service.Common
 {
     public interface IAuthService
     {
-        Task<User?> GetCurrentUserAsync();
+        Task<UserDTO?> GetCurrentUserAsync();
     }
 }

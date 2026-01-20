@@ -27,9 +27,6 @@ namespace Quintus.WebAPI.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> RegisterAsync([FromBody] UserDTO user)
         {
-            // small delay to mitigate automated/bulk requests
-            await Task.Delay(TimeSpan.FromSeconds(3), HttpContext.RequestAborted);
-
             if (user == null)
                 return BadRequest();
 
@@ -59,9 +56,6 @@ namespace Quintus.WebAPI.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync([FromBody] LoginInfo loginInfo)
         {
-            // small delay to mitigate automated/bulk requests
-            await Task.Delay(TimeSpan.FromSeconds(3), HttpContext.RequestAborted);
-
             if (string.IsNullOrWhiteSpace(loginInfo.email) || string.IsNullOrWhiteSpace(loginInfo.password))
                 return BadRequest("Email i lozinka su potrebni.");
             try

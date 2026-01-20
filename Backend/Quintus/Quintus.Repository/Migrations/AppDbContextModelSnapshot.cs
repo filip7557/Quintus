@@ -139,6 +139,11 @@ namespace Quintus.Repository.Migrations
                         },
                         new
                         {
+                            Id = new Guid("a1d5f3e2-3c4b-4f6a-9f2e-8b7c6d5e4f3a"),
+                            Name = "Owner"
+                        },
+                        new
+                        {
                             Id = new Guid("ff3b9357-15f5-4d67-a173-eb3402b6dfda"),
                             Name = "User"
                         });

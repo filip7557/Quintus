@@ -21,6 +21,7 @@ namespace Quintus.Repository.Context
 
             modelBuilder.Entity<Role>().HasData(
                 new Role { Id = Guid.Parse("5beca67e-cf87-4ccc-b041-32a4fa4e921f"), Name = "Admin" },
+                new Role { Id = Guid.Parse("a1d5f3e2-3c4b-4f6a-9f2e-8b7c6d5e4f3a"), Name = "Owner" },
                 new Role { Id = Guid.Parse("ff3b9357-15f5-4d67-a173-eb3402b6dfda"), Name = "User" }
             );
         }

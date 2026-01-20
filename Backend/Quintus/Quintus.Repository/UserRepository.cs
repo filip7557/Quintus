@@ -67,7 +67,7 @@ namespace Quintus.Repository
         {
             try
             {
-                return await _context.Users.FindAsync(userId);
+                return await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(r => r.Id == userId);
             }
             catch (Exception e)
             {
