@@ -21,6 +21,7 @@ const SKIP_REFRESH_ENDPOINTS = [
   "/Auth/getCurrentUser",
   "/Auth/login",
   "/Auth/register",
+  "/Auth/logout",
 ];
 
 // Attach token to headers
@@ -42,11 +43,11 @@ api.interceptors.response.use(
     // Normalize URL to pathname
     const requestPath = new URL(requestUrl, api.defaults.baseURL).pathname;
 
-    // Skip refresh for endpoints in skip list
+    // Skip refresh for endpoints in skip list or if not a 401 error
     if (
+      SKIP_REFRESH_ENDPOINTS.includes(requestPath) ||
       error.response?.status !== 401 ||
-      originalRequest._retry ||
-      SKIP_REFRESH_ENDPOINTS.includes(requestPath)
+      originalRequest._retry
     ) {
       return Promise.reject(error);
     }

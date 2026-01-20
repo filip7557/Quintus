@@ -3,7 +3,7 @@ import Script from "next/script";
 
 import Animations from "../components/Animations";
 import NavBehavior from "../components/NavBehavior";
-import AccountNav from "@/components/AccountNav/AccountNav";
+import NavBar from "@/components/NavBar/NavBar";
 
 export default function HomePage() {
   const currentYear = new Date().getFullYear();
@@ -13,47 +13,7 @@ export default function HomePage() {
       <Animations />
       <NavBehavior />
 
-      <header>
-        <nav className="navbar">
-          <div className="logo">
-            <Image
-              src="/images/logo.png"
-              alt="Quintus logo"
-              width={120}
-              height={60}
-              priority={1}
-            />
-          </div>
-
-          <button className="hamburger" id="hamburger">
-            ☰
-          </button>
-
-          <ul className="nav-main" id="nav-main">
-            <li>
-              <a href="#home" className="nav-link">
-                Početna
-              </a>
-            </li>
-            <li>
-              <a href="#services" className="nav-link">
-                Usluge
-              </a>
-            </li>
-            <li>
-              <a href="#about" className="nav-link">
-                O nama
-              </a>
-            </li>
-            <li>
-              <a href="#contact" className="nav-link">
-                Kontakt
-              </a>
-            </li>
-            <AccountNav />
-          </ul>
-        </nav>
-      </header>
+      <NavBar />
 
       <main>
         {/* HERO */}
@@ -68,9 +28,14 @@ export default function HomePage() {
               vodoinstalacijama za maksimalnu učinkovitost i sigurnost vašeg
               doma ili poslovnog prostora po pristupačnim cijenama.
             </p>
-            <a href="#services" className="hero-button">
-              Naše usluge
-            </a>
+            <div className="hero-buttons">
+              <a href="#services" className="hero-button">
+                Naše usluge
+              </a>
+              <a href="/create-request" className="hero-button">
+                Zatraži uslugu
+              </a>
+            </div>
           </div>
         </section>
 
@@ -81,7 +46,7 @@ export default function HomePage() {
             <div className="service">
               <h3>Klimatizacija</h3>
               <Image
-                src="/images/klima.png"
+                src="/images/klima.webp"
                 alt="Klimatizacija"
                 width={200}
                 height={200}
@@ -99,7 +64,7 @@ export default function HomePage() {
             <div className="service">
               <h3>Grijanje</h3>
               <Image
-                src="/images/grijanje.png"
+                src="/images/grijanje.webp"
                 alt="Grijanje"
                 width={200}
                 height={200}
@@ -115,7 +80,7 @@ export default function HomePage() {
             <div className="service">
               <h3>Vodoinstalaterski radovi</h3>
               <Image
-                src="/images/instalater.png"
+                src="/images/instalater.webp"
                 alt="Vodoinstalaterski radovi"
                 width={200}
                 height={200}
@@ -153,7 +118,7 @@ export default function HomePage() {
           </div>
           <div className="about-container image">
             <Image
-              src="/images/about.png"
+              src="/images/about.webp"
               alt="O nama"
               width={400}
               height={400}
@@ -221,7 +186,7 @@ export default function HomePage() {
         <div className="footer-container">
           <p>© {currentYear} Filip Ćurić | Sva prava pridržana.</p>
           <div className="footer-details">
-            Quintus vl. Matej Peti | OIB: XXXXXXXXXXXX | Matični broj: XXXXXXX
+            Quintus vl. Matej Peti | OIB: XXXXXXXXXXXX
             <br />
             Obrt je upisan u Obrtni registar Republike Hrvatske koji vodi
             Upravni odjel za gospodarstvo i fondove Europske unije

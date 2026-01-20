@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Quintus.Common;
 using Quintus.Common.Exceptions;
 using Quintus.Model;
 using Quintus.Service.Common;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Quintus.WebAPI.Controllers
 {
@@ -20,9 +23,13 @@ namespace Quintus.WebAPI.Controllers
             _authService = authService;
         }
 
+        [EnableRateLimiting("LoginRegisterPolicy")]
         [HttpPost("register")]
         public async Task<IActionResult> RegisterAsync([FromBody] UserDTO user)
         {
+            // small delay to mitigate automated/bulk requests
+            await Task.Delay(TimeSpan.FromSeconds(3), HttpContext.RequestAborted);
+
             if (user == null)
                 return BadRequest();
 
@@ -48,9 +55,13 @@ namespace Quintus.WebAPI.Controllers
             return Ok("User registered successfully.");
         }
 
+        [EnableRateLimiting("LoginRegisterPolicy")]
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync([FromBody] LoginInfo loginInfo)
         {
+            // small delay to mitigate automated/bulk requests
+            await Task.Delay(TimeSpan.FromSeconds(3), HttpContext.RequestAborted);
+
             if (string.IsNullOrWhiteSpace(loginInfo.email) || string.IsNullOrWhiteSpace(loginInfo.password))
                 return BadRequest("Email i lozinka su potrebni.");
             try
