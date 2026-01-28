@@ -1,6 +1,6 @@
 namespace Quintus.Common
 {
-    public class ResendVerificationRequest
+    public class ForgotPasswordRequest
     {
         public string Email { get; set; }
     }

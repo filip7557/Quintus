@@ -5,20 +5,13 @@
 namespace Quintus.Repository.Migrations
 {
     /// <inheritdoc />
-    public partial class AddEmailVerification : Migration
+    public partial class AddPasswordReset : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<bool>(
-                name: "EmailVerified",
-                table: "Users",
-                type: "boolean",
-                nullable: false,
-                defaultValue: false);
-
             migrationBuilder.CreateTable(
-                name: "EmailVerificationTokens",
+                name: "PasswordResetTokens",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -29,9 +22,9 @@ namespace Quintus.Repository.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_EmailVerificationTokens", x => x.Id);
+                    table.PrimaryKey("PK_PasswordResetTokens", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_EmailVerificationTokens_Users_UserId",
+                        name: "FK_PasswordResetTokens_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -39,8 +32,8 @@ namespace Quintus.Repository.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_EmailVerificationTokens_UserId",
-                table: "EmailVerificationTokens",
+                name: "IX_PasswordResetTokens_UserId",
+                table: "PasswordResetTokens",
                 column: "UserId");
         }
 
@@ -48,11 +41,7 @@ namespace Quintus.Repository.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "EmailVerificationTokens");
-
-            migrationBuilder.DropColumn(
-                name: "EmailVerified",
-                table: "Users");
+                name: "PasswordResetTokens");
         }
     }
 }

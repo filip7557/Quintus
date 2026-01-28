@@ -5,8 +5,6 @@ using Quintus.Common;
 using Quintus.Common.Exceptions;
 using Quintus.Model;
 using Quintus.Service.Common;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Quintus.WebAPI.Controllers
 {
@@ -18,22 +16,21 @@ namespace Quintus.WebAPI.Controllers
         private readonly IAuthService _authService;
         private readonly IEmailVerificationService _emailVerificationService;
         private readonly IUserService _userService;
+        private readonly IPasswordResetService _passwordResetService;
 
-        public AuthController(ITokenService tokenService, IAuthService authService, IEmailVerificationService emailVerificationService, IUserService userService)
+        public AuthController(ITokenService tokenService, IAuthService authService, IEmailVerificationService emailVerificationService, IUserService userService, IPasswordResetService passwordResetService)
         {
             _tokenService = tokenService;
             _authService = authService;
             _emailVerificationService = emailVerificationService;
             _userService = userService;
+            _passwordResetService = passwordResetService;
         }
 
         [EnableRateLimiting("LoginRegisterPolicy")]
         [HttpPost("register")]
         public async Task<IActionResult> RegisterAsync([FromBody] UserDTO user)
         {
-            // small delay to mitigate automated/bulk requests
-            await Task.Delay(TimeSpan.FromSeconds(3), HttpContext.RequestAborted);
-
             if (user == null)
                 return BadRequest();
 
@@ -51,12 +48,12 @@ namespace Quintus.WebAPI.Controllers
             {
                 return Conflict(ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred during registration.");
+                return StatusCode(500, ex.Message);
             }
 
-            return Ok("User registered successfully. Please verify your email.");
+            return Ok("Korisnik je uspješno registriran. Molimo potvrdite e-mail adresu.");
         }
 
         [HttpGet("verify-email")]
@@ -66,13 +63,13 @@ namespace Quintus.WebAPI.Controllers
             {
                 var verified = await _emailVerificationService.VerifyAsync(token);
                 if (!verified)
-                    return BadRequest(new VerifyEmailResponse { Verified = false, Message = "Invalid or expired verification token." });
+                    return BadRequest(new VerifyEmailResponse { Verified = false, Message = "Nevažeći ili istekao token za potvrdu e-maila." });
 
-                return Ok(new VerifyEmailResponse { Verified = true, Message = "Email verified." });
+                return Ok(new VerifyEmailResponse { Verified = true, Message = "E-mail adresa je uspješno potvrđena." });
             }
             catch (Exception)
             {
-                return StatusCode(500, new VerifyEmailResponse { Verified = false, Message = "An error occurred while verifying email." });
+                return StatusCode(500, new VerifyEmailResponse { Verified = false, Message = "Došlo je do pogreške prilikom potvrde e-mail adrese." });
             }
         }
 
@@ -81,7 +78,7 @@ namespace Quintus.WebAPI.Controllers
         public async Task<IActionResult> ResendVerificationAsync([FromBody] ResendVerificationRequest request)
         {
             if (request == null || string.IsNullOrWhiteSpace(request.Email))
-                return BadRequest("Email is required.");
+                return BadRequest("E-mail adresa je obavezna.");
 
             // Always return OK to avoid user enumeration.
             try
@@ -97,16 +94,13 @@ namespace Quintus.WebAPI.Controllers
                 // swallow to keep response consistent
             }
 
-            return Ok("If the account exists, a verification email has been sent.");
+            return Ok("Ako račun postoji, poslana je poruka za potvrdu e-mail adrese.");
         }
 
         [EnableRateLimiting("LoginRegisterPolicy")]
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync([FromBody] LoginInfo loginInfo)
         {
-            // small delay to mitigate automated/bulk requests
-            await Task.Delay(TimeSpan.FromSeconds(3), HttpContext.RequestAborted);
-
             if (string.IsNullOrWhiteSpace(loginInfo.email) || string.IsNullOrWhiteSpace(loginInfo.password))
                 return BadRequest("Email i lozinka su potrebni.");
             try
@@ -168,6 +162,50 @@ namespace Quintus.WebAPI.Controllers
             catch (Exception)
             {
                 return StatusCode(500, "An error occurred while retrieving the current user.");
+            }
+        }
+
+        [EnableRateLimiting("LoginRegisterPolicy")]
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPasswordAsync([FromBody] ForgotPasswordRequest request)
+        {
+            if (request == null || string.IsNullOrWhiteSpace(request.Email))
+                return BadRequest("E-mail adresa je obavezna.");
+
+            try
+            {
+                await _passwordResetService.SendResetAsync(request.Email);
+            }
+            catch
+            {
+                // swallow to avoid leaking details
+            }
+
+            return Ok("Ako račun postoji, poslana je poruka za reset lozinke.");
+        }
+
+        [EnableRateLimiting("LoginRegisterPolicy")]
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPasswordAsync([FromBody] ResetPasswordRequest request)
+        {
+            if (request == null || string.IsNullOrWhiteSpace(request.Token) || string.IsNullOrWhiteSpace(request.NewPassword))
+                return BadRequest("Token i nova lozinka su obavezni.");
+
+            try
+            {
+                var ok = await _passwordResetService.ResetAsync(request.Token, request.NewPassword);
+                if (!ok)
+                    return BadRequest("Nevažeći ili istekao token za reset lozinke.");
+
+                return Ok("Lozinka je uspješno promijenjena.");
+            }
+            catch (InvalidPasswordException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch
+            {
+                return StatusCode(500, "Došlo je do pogreške prilikom resetiranja lozinke.");
             }
         }
     }

@@ -3,7 +3,6 @@ using Autofac.Extensions.DependencyInjection;
 using CloudinaryDotNet;
 using dotenv.net;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Quintus.Repository;
@@ -14,6 +13,8 @@ using Quintus.Service.Common;
 using Scalar.AspNetCore;
 using System.Text;
 using System.Threading.RateLimiting;
+
+DotEnv.Load(options: new DotEnvOptions(probeForEnv: true));
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,8 +39,6 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(Environment.GetEnvironmentVariable("ConnectionStrings_QuintusDb")
         ?? throw new InvalidOperationException("Database connection string is not set.")));
-
-DotEnv.Load(options: new DotEnvOptions(probeForEnv: true));
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -75,6 +74,9 @@ builder.Host
         containerBuilder.RegisterType<EmailVerificationTokenRepository>().As<IEmailVerificationTokenRepository>();
         containerBuilder.RegisterType<EmailService>().As<IEmailService>();
         containerBuilder.RegisterType<EmailVerificationService>().As<IEmailVerificationService>();
+
+        containerBuilder.RegisterType<PasswordResetTokenRepository>().As<IPasswordResetTokenRepository>();
+        containerBuilder.RegisterType<PasswordResetService>().As<IPasswordResetService>();
 
         containerBuilder.RegisterType<TokenService>().As<ITokenService>();
         containerBuilder.RegisterType<RefreshTokenRepository>().As<IRefreshTokenRepository>();
@@ -139,12 +141,15 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseSwagger();
+    app.UseSwaggerUI();
     app.MapScalarApiReference();
 }
 

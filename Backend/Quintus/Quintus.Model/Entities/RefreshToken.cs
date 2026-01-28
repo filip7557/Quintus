@@ -9,7 +9,7 @@ namespace Quintus.Model.Entities
         public DateTime Expires { get; set; }
         public DateTime Created { get; set; }
         public DateTime? Revoked { get; set; }
-        public required User User { get; set; }
+        public User User { get; set; }
         public IPAddress? IPAddress { get; set; }
 
         public bool IsExpired => DateTime.UtcNow >= Expires;

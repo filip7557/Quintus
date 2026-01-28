@@ -1,4 +1,3 @@
-/* Match app styling (see create-request) */
 .container {
   min-height: 100vh;
   display: flex;
@@ -11,7 +10,7 @@
   overflow: hidden;
 }
 
-/* Modern “blob” backdrop (no image assets) */
+/* Match /create-request “blob” backdrop */
 .container::before {
   content: "";
   position: absolute;
@@ -62,193 +61,99 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
-/* Header */
-.header {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 16px;
-}
-
 .title {
+  margin: 0 0 10px;
   font-size: 1.3rem;
   font-weight: 600;
   color: #eaf2ff;
-  margin: 0;
 }
 
-.subtitle {
-  font-size: 0.8rem;
+.helpText {
+  margin: 0 0 16px;
   color: rgba(234, 242, 255, 0.7);
-  margin: 0;
+  font-size: 0.9rem;
 }
 
-.infoGrid {
+.form {
   display: grid;
   gap: 12px;
-  margin-top: 16px;
 }
 
-@media (min-width: 720px) {
-  .infoGrid {
-    grid-template-columns: 1fr 1fr;
-  }
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: rgba(234, 242, 255, 0.7);
+  font-weight: 500;
 }
 
-.field {
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
-  padding: 12px;
+.input {
   background: linear-gradient(
     180deg,
     rgba(255, 255, 255, 0.02),
     rgba(255, 255, 255, 0.01)
   );
-}
-
-.label {
-  display: block;
-  font-size: 0.75rem;
-  color: rgba(234, 242, 255, 0.7);
-  font-weight: 500;
-  margin-bottom: 4px;
-}
-
-.value {
-  font-size: 0.95rem;
+  border: 1px solid rgba(255, 255, 255, 0.07);
   color: #eaf2ff;
-  word-break: break-word;
-}
-
-.actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 18px;
-  flex-wrap: wrap;
-}
-
-.requestsBlock {
-  margin-top: 16px;
-  padding: 14px;
+  padding: 12px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.04);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.requestsText {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.requestsTitle {
-  margin: 0;
+  outline: none;
   font-size: 0.95rem;
-  font-weight: 700;
-  color: #eaf2ff;
-}
-
-.requestsSubtitle {
-  margin: 0;
-  font-size: 0.78rem;
-  color: rgba(234, 242, 255, 0.7);
-}
-
-.requestsMeta {
-  display: flex;
-  align-items: stretch;
-  gap: 10px;
-  flex-shrink: 0;
-}
-
-.requestsCount {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 56px;
-  height: 44px;
-  padding: 0 16px;
-  border-radius: 10px;
   box-sizing: border-box;
-  border: 1px solid rgba(110, 168, 254, 0.3);
-  background: rgba(110, 168, 254, 0.1);
-  color: #eaf2ff;
-  font-weight: 700;
-  font-size: 0.95rem;
+  transition: box-shadow 0.18s ease, border-color 0.12s ease, transform 0.05s ease;
+}
+
+.input:focus {
+  border-color: rgba(138, 180, 255, 0.8);
+  box-shadow: 0 6px 20px rgba(110, 168, 254, 0.12),
+    0 0 0 4px rgba(110, 168, 254, 0.06);
+  transform: translateY(-1px);
 }
 
 .button {
-  flex: 1 1 160px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 44px;
-  line-height: 1;
+  width: 100%;
   padding: 10px 16px;
   border-radius: 10px;
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
   border: none;
-  color: #ffffff;
+  color: white;
   background: linear-gradient(90deg, #6ea8fe, #8fc6ff);
   box-shadow: 0 8px 20px rgba(110, 168, 254, 0.18),
     0 2px 6px rgba(0, 0, 0, 0.18);
   transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
 }
 
-.button:hover {
+.button:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 12px 30px rgba(110, 168, 254, 0.25),
     0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.button:active {
-  transform: translateY(0);
-  box-shadow: 0 6px 20px rgba(110, 168, 254, 0.18),
-    0 2px 6px rgba(0, 0, 0, 0.18);
-  opacity: 0.9;
-}
-
-.buttonSecondary {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: rgba(234, 242, 255, 0.8);
-  box-shadow: none;
-}
-
-.buttonSecondary:hover {
+.button:disabled {
+  background: linear-gradient(90deg, #4a4a4a, #5a5a5a);
+  cursor: not-allowed;
+  opacity: 0.6;
   transform: none;
   box-shadow: none;
-  color: #eaf2ff;
-  border-color: rgba(255, 255, 255, 0.14);
-}
-
-.buttonSecondary:active {
-  opacity: 0.9;
-}
-
-.buttonDisabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-  pointer-events: none;
 }
 
 .notice {
-  text-align: center;
-  color: rgba(234, 242, 255, 0.7);
-  font-size: 1rem;
+  margin: 12px 0 0;
   padding: 12px;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.04);
+  color: rgba(234, 242, 255, 0.85);
+  font-size: 0.9rem;
+}
+
+.success {
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.2);
+  color: #4ade80;
 }
 
 .error {
@@ -257,7 +162,18 @@
   color: #ff6b6b;
 }
 
-/* Responsive */
+.actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.link {
+  color: rgba(234, 242, 255, 0.85);
+  text-decoration: underline;
+}
+
+/* Responsive (match /create-request mobile ergonomics) */
 @media (max-width: 768px) {
   .container {
     padding: 100px 16px 24px;
@@ -271,21 +187,23 @@
     font-size: 1.25rem;
   }
 
-  .actions {
-    gap: 10px;
+  .helpText {
+    font-size: 0.85rem;
+  }
+
+  .input {
+    padding: 10px;
+    font-size: 0.9rem;
   }
 
   .button {
-    flex: 1 1 100%;
+    padding: 10px 12px;
+    font-size: 0.95rem;
   }
 
-  .requestsBlock {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .requestsMeta {
-    justify-content: space-between;
+  .notice {
+    padding: 10px;
+    font-size: 0.85rem;
   }
 }
 
@@ -299,11 +217,44 @@
     border-radius: 12px;
   }
 
-  .subtitle {
-    font-size: 0.85rem;
+  .title {
+    font-size: 1.1rem;
   }
 
-  .field {
-    padding: 10px;
+  .helpText {
+    font-size: 0.8rem;
+  }
+}
+
+/* Mobile app-like layout: remove the card look ONLY on mobile screens */
+@media (max-width: 600px) {
+  .container {
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  .card {
+    max-width: 100%;
+    width: 100%;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    padding: 0;
+  }
+
+  .actions {
+    justify-content: stretch;
+  }
+
+  .link {
+    width: 100%;
+    text-align: center;
+    padding: 10px 12px;
+    border-radius: 12px;
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
   }
 }

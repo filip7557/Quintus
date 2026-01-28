@@ -20,5 +20,7 @@ namespace Quintus.Repository.Common
         Task<bool> DeleteUserAsync(Guid userId);
 
         Task<bool> SetEmailVerifiedAsync(Guid userId);
+
+        Task<bool> SetPasswordHashAsync(Guid userId, string passwordHash);
     }
 }

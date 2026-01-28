@@ -2,17 +2,18 @@
 {
     public class User
     {
-        public required Guid Id { get; set; }
-        public required string FirstName { get; set; }
-        public required string LastName { get; set; }
-        public required string Email { get; set; }
-        public required string PasswordHash { get; set; }
+        public Guid Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public string PasswordHash { get; set; }
         public string? PhoneNumber { get; set; }
         public Role? Role { get; set; }
         public List<RefreshToken> RefreshTokens { get; set; } = new();
 
         public bool EmailVerified { get; set; }
         public List<EmailVerificationToken> EmailVerificationTokens { get; set; } = new();
+        public List<PasswordResetToken> PasswordResetTokens { get; set; } = new();
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

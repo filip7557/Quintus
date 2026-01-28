@@ -170,7 +170,7 @@ export default function ProfilePage() {
                   </p>
                 </div>
                 <div className={styles.requestsMeta}>
-                  <span className={styles.requestsCount} title="Placeholder">
+                  <span className={styles.requestsCount} title="U izradi">
                     {requestsCount}
                   </span>
                   {requestsCount === 0 ? (

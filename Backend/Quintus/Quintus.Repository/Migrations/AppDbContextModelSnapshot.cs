@@ -78,6 +78,32 @@ namespace Quintus.Repository.Migrations
                     b.ToTable("Images");
                 });
 
+            modelBuilder.Entity("Quintus.Model.Entities.PasswordResetToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UsedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PasswordResetTokens");
+                });
+
             modelBuilder.Entity("Quintus.Model.Entities.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -237,6 +263,17 @@ namespace Quintus.Repository.Migrations
                         .HasForeignKey("RequestId");
                 });
 
+            modelBuilder.Entity("Quintus.Model.Entities.PasswordResetToken", b =>
+                {
+                    b.HasOne("Quintus.Model.Entities.User", "User")
+                        .WithMany("PasswordResetTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Quintus.Model.Entities.RefreshToken", b =>
                 {
                     b.HasOne("Quintus.Model.Entities.User", "User")
@@ -276,6 +313,8 @@ namespace Quintus.Repository.Migrations
             modelBuilder.Entity("Quintus.Model.Entities.User", b =>
                 {
                     b.Navigation("EmailVerificationTokens");
+
+                    b.Navigation("PasswordResetTokens");
 
                     b.Navigation("RefreshTokens");
                 });

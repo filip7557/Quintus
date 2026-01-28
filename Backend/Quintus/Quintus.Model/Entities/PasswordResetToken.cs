@@ -1,6 +1,6 @@
 namespace Quintus.Model.Entities
 {
-    public class EmailVerificationToken
+    public class PasswordResetToken
     {
         public Guid Id { get; set; }
 

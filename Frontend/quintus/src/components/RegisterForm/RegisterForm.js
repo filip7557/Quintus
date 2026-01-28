@@ -5,15 +5,83 @@ import styles from "./RegisterForm.module.css";
 
 import { register } from "@/services/authService";
 
-export default function RegisterForm({ setIsRegister, router }) {
+function getApiMessage(payload) {
+  if (!payload) return "";
+  if (typeof payload === "string") return payload;
+  if (typeof payload === "object") {
+    return payload.message || payload.title || payload.error || "";
+  }
+  return "";
+}
+
+export default function RegisterForm({ setIsRegister, router, onRegistered }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const EyeIcon = ({ open }) => (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      focusable="false"
+    >
+      {open ? (
+        <>
+          <path
+            d="M12 5c7 0 10 7 10 7s-3 7-10 7S2 12 2 12s3-7 10-7Z"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+            stroke="currentColor"
+            strokeWidth="2"
+          />
+        </>
+      ) : (
+        <>
+          <path
+            d="M3 3l18 18"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          <path
+            d="M10.58 10.58A3 3 0 0 0 12 15a3 3 0 0 0 2.42-4.42"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          <path
+            d="M6.22 6.22C3.61 8.08 2 12 2 12s3 7 10 7c2.03 0 3.74-.47 5.14-1.2"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M9.88 5.08C10.55 4.9 11.26 4.8 12 4.8c7 0 10 7.2 10 7.2s-1.05 2.52-3.22 4.58"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </>
+      )}
+    </svg>
+  );
 
   const [passwordChecks, setPasswordChecks] = useState({
     length: false,
@@ -53,8 +121,15 @@ export default function RegisterForm({ setIsRegister, router }) {
       register({ email, firstName, lastName, password, phoneNumber })
         .then((res) => {
           if (res?.status === 200) {
-            setIsRegister(false);
-            router.push("/auth");
+            const message =
+              getApiMessage(res?.data) ||
+              "Verifikacijski email je poslan. Potvrdite email adresu prije prijave.";
+
+            if (typeof onRegistered === "function") {
+              onRegistered({ email, message });
+            } else {
+              setIsRegister(false);
+            }
           } else {
             setError(res?.data || "Nešto je pošlo po zlu. Pokušajte ponovno.");
           }
@@ -154,15 +229,26 @@ export default function RegisterForm({ setIsRegister, router }) {
           <div className={styles.form_row}>
             <div className={styles.form_group}>
               <label htmlFor="password">Lozinka</label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="Lozinka"
-                value={password}
-                onChange={handlePasswordChange}
-                disabled={loading}
-              />
+              <div className={styles.password_field}>
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Lozinka"
+                  value={password}
+                  onChange={handlePasswordChange}
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  className={styles.password_toggle}
+                  onClick={() => setShowPassword((v) => !v)}
+                  disabled={loading}
+                  aria-label={showPassword ? "Sakrij lozinku" : "Prikaži lozinku"}
+                >
+                  <EyeIcon open={showPassword} />
+                </button>
+              </div>
               <div className={styles.password_checks}>
                 <div className={styles.password_checks}>
                   <div
@@ -206,15 +292,26 @@ export default function RegisterForm({ setIsRegister, router }) {
 
             <div className={styles.form_group}>
               <label htmlFor="confirm-password">Potvrdite lozinku</label>
-              <input
-                id="confirm-password"
-                name="confirm-password"
-                type="password"
-                placeholder="Potvrdite lozinku"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                disabled={loading}
-              />
+              <div className={styles.password_field}>
+                <input
+                  id="confirm-password"
+                  name="confirm-password"
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Potvrdite lozinku"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  className={styles.password_toggle}
+                  onClick={() => setShowConfirmPassword((v) => !v)}
+                  disabled={loading}
+                  aria-label={showConfirmPassword ? "Sakrij lozinku" : "Prikaži lozinku"}
+                >
+                  <EyeIcon open={showConfirmPassword} />
+                </button>
+              </div>
               {confirmPassword && password !== confirmPassword && (
                 <div className={styles.password_match_error}>
                   <div

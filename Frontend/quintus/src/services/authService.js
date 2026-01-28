@@ -35,8 +35,48 @@ export async function register(data) {
     return error.response;
   }
 }
+
+export async function verifyEmail(params) {
+  try {
+    const response = await api.get("/Auth/verify-email", { params });
+    return response;
+  } catch (error) {
+    return error.response;
+  }
+}
+
+export async function resendVerification(email) {
+  try {
+    const response = await api.post("/Auth/resend-verification", { email });
+    return response;
+  } catch (error) {
+    return error.response;
+  }
+}
+
+export async function forgotPassword(email) {
+  try {
+    const response = await api.post("/Auth/forgot-password", { email });
+    return response;
+  } catch (error) {
+    return error.response;
+  }
+}
+
+export async function resetPassword(token, newPassword) {
+  try {
+    const response = await api.post("/Auth/reset-password", {
+      token,
+      newPassword,
+    });
+    return response;
+  } catch (error) {
+    return error.response;
+  }
+}
+
 export async function logout() {
+  await api.post("/Auth/logout");
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
-  await api.post("/Auth/logout");
 }

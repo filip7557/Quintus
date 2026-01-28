@@ -20,7 +20,7 @@ namespace Quintus.Service
         public async Task<UserDTO?> GetCurrentUserAsync()
         {
             var userId = Guid.Parse(_httpContextAccessor.HttpContext!.User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-            var user =  await _userRepository.GetUserByIdAsync(userId);
+            var user = await _userRepository.GetUserByIdAsync(userId);
             return new UserDTO
             {
                 Id = user!.Id,

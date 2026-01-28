@@ -1,9 +1,9 @@
-using System.Security.Cryptography;
-using System.Text;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Quintus.Model.Entities;
 using Quintus.Repository.Common;
 using Quintus.Service.Common;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Quintus.Service
 {
@@ -24,7 +24,7 @@ namespace Quintus.Service
 
         public async Task SendVerificationAsync(Guid userId, string toEmail)
         {
-            var baseUrl = _config["App:PublicBaseUrl"]?.TrimEnd('/');
+            var baseUrl = _config["App:FrontendBaseUrl"]?.TrimEnd('/');
             if (string.IsNullOrWhiteSpace(baseUrl))
                 throw new InvalidOperationException("Missing config App:PublicBaseUrl (e.g. https://quintus.eu)");
 
@@ -45,10 +45,14 @@ namespace Quintus.Service
             var verifyUrl = $"{baseUrl}/api/auth/verify-email?token={Uri.EscapeDataString(rawToken)}";
 
             var subject = "Potvrdite svoj email";
-            var html = $@"<p>Hvala na registraciji.</p>
-<p>Kliknite na link za potvrdu emaila:</p>
-<p><a href=""{verifyUrl}"">Potvrdi email</a></p>
-<p>Ako niste vi napravili ovaj ra?un, ignorirajte ovu poruku.</p>";
+            var html = EmailTemplates.Build(
+                title: "Potvrdite svoj email",
+                intro: "Hvala na registraciji.\nKliknite na gumb ispod kako biste potvrdili email adresu.",
+                ctaText: "Potvrdi email",
+                ctaUrl: verifyUrl,
+                outro: "Ako niste vi napravili ovaj račun, ignorirajte ovu poruku.",
+                logoUrl: "https://quintus.fcuric.eu/_next/image?url=%2Fimages%2Flogo.png&w=256&q=75"
+            );
 
             await _emailService.SendEmailAsync(toEmail, subject, html);
         }
