@@ -76,3 +76,8 @@ global.json
 *.sln.docstates
 
 .env
+
+# App config/secrets
+Quintus.WebApi/appsettings.json
+Quintus.WebApi/appsettings.*.json
+Quintus.WebApi/.env
