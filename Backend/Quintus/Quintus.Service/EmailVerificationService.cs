@@ -42,7 +42,7 @@ namespace Quintus.Service
 
             await _tokenRepo.SaveAsync(token);
 
-            var verifyUrl = $"{baseUrl}/api/auth/verify-email?token={Uri.EscapeDataString(rawToken)}";
+            var verifyUrl = $"{baseUrl}/verify-email?token={Uri.EscapeDataString(rawToken)}";
 
             var subject = "Potvrdite svoj email";
             var html = EmailTemplates.Build(
