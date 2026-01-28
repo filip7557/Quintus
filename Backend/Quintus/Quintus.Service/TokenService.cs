@@ -22,8 +22,9 @@ namespace Quintus.Service
         private readonly IAuthService _authService;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IHttpContextAccessor _context;
+        private readonly IEmailVerificationService _emailVerificationService;
 
-        public TokenService(IConfiguration config, IUserService userService, IRoleService roleService, IRefreshTokenRepository refreshTokenRepository, IAuthService authService, IHttpContextAccessor context)
+        public TokenService(IConfiguration config, IUserService userService, IRoleService roleService, IRefreshTokenRepository refreshTokenRepository, IAuthService authService, IHttpContextAccessor context, IEmailVerificationService emailVerificationService)
         {
             _config = config;
             _userService = userService;
@@ -31,6 +32,7 @@ namespace Quintus.Service
             _refreshTokenRepository = refreshTokenRepository;
             _authService = authService;
             _context = context;
+            _emailVerificationService = emailVerificationService;
         }
 
         private static bool IsPasswordValid(string? password, out string errorMessage)
@@ -83,6 +85,11 @@ namespace Quintus.Service
             if (user == null)
             {
                 throw new InvalidLoginInfoException();
+            }
+
+            if (!user.EmailVerified)
+            {
+                throw new InvalidLoginInfoException("Email nije potvrđen.");
             }
 
             var accessToken = GenerateToken(user);
@@ -155,9 +162,16 @@ namespace Quintus.Service
                 PasswordHash = hashedPassword,
                 PhoneNumber = user.PhoneNumber,
                 Role = await _roleService.GetDefaultRoleAsync(),
+                EmailVerified = false
             };
 
-            return await _userService.RegisterUserAsync(newUser);
+            var saved = await _userService.RegisterUserAsync(newUser);
+            if (saved)
+            {
+                await _emailVerificationService.SendVerificationAsync(newUser.Id, newUser.Email);
+            }
+
+            return saved;
         }
 
         private string GenerateToken(User user)
@@ -169,7 +183,7 @@ namespace Quintus.Service
             {
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Role, user.Role!.Name) // Role is guaranteed to be non-null here
+                new Claim(ClaimTypes.Role, user.Role!.Name)
             };
 
             var token = new JwtSecurityToken(

@@ -14,6 +14,7 @@ namespace Quintus.Repository.Context
         public DbSet<Image> Images => Set<Image>();
         public DbSet<Request> Requests => Set<Request>();
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+        public DbSet<EmailVerificationToken> EmailVerificationTokens => Set<EmailVerificationToken>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

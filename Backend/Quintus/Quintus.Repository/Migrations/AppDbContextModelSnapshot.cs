@@ -23,6 +23,32 @@ namespace Quintus.Repository.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Quintus.Model.Entities.EmailVerificationToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UsedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("EmailVerificationTokens");
+                });
+
             modelBuilder.Entity("Quintus.Model.Entities.Image", b =>
                 {
                     b.Property<Guid>("Id")
@@ -162,6 +188,9 @@ namespace Quintus.Repository.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("EmailVerified")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -188,6 +217,17 @@ namespace Quintus.Repository.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Quintus.Model.Entities.EmailVerificationToken", b =>
+                {
+                    b.HasOne("Quintus.Model.Entities.User", "User")
+                        .WithMany("EmailVerificationTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Quintus.Model.Entities.Image", b =>
@@ -235,6 +275,8 @@ namespace Quintus.Repository.Migrations
 
             modelBuilder.Entity("Quintus.Model.Entities.User", b =>
                 {
+                    b.Navigation("EmailVerificationTokens");
+
                     b.Navigation("RefreshTokens");
                 });
 #pragma warning restore 612, 618

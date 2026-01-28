@@ -16,17 +16,24 @@ namespace Quintus.WebAPI.Controllers
     {
         private readonly ITokenService _tokenService;
         private readonly IAuthService _authService;
+        private readonly IEmailVerificationService _emailVerificationService;
+        private readonly IUserService _userService;
 
-        public AuthController(ITokenService tokenService, IAuthService authService)
+        public AuthController(ITokenService tokenService, IAuthService authService, IEmailVerificationService emailVerificationService, IUserService userService)
         {
             _tokenService = tokenService;
             _authService = authService;
+            _emailVerificationService = emailVerificationService;
+            _userService = userService;
         }
 
         [EnableRateLimiting("LoginRegisterPolicy")]
         [HttpPost("register")]
         public async Task<IActionResult> RegisterAsync([FromBody] UserDTO user)
         {
+            // small delay to mitigate automated/bulk requests
+            await Task.Delay(TimeSpan.FromSeconds(3), HttpContext.RequestAborted);
+
             if (user == null)
                 return BadRequest();
 
@@ -49,13 +56,57 @@ namespace Quintus.WebAPI.Controllers
                 return StatusCode(500, "An error occurred during registration.");
             }
 
-            return Ok("User registered successfully.");
+            return Ok("User registered successfully. Please verify your email.");
+        }
+
+        [HttpGet("verify-email")]
+        public async Task<IActionResult> VerifyEmailAsync([FromQuery] string token)
+        {
+            try
+            {
+                var verified = await _emailVerificationService.VerifyAsync(token);
+                if (!verified)
+                    return BadRequest(new VerifyEmailResponse { Verified = false, Message = "Invalid or expired verification token." });
+
+                return Ok(new VerifyEmailResponse { Verified = true, Message = "Email verified." });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new VerifyEmailResponse { Verified = false, Message = "An error occurred while verifying email." });
+            }
+        }
+
+        [EnableRateLimiting("LoginRegisterPolicy")]
+        [HttpPost("resend-verification")]
+        public async Task<IActionResult> ResendVerificationAsync([FromBody] ResendVerificationRequest request)
+        {
+            if (request == null || string.IsNullOrWhiteSpace(request.Email))
+                return BadRequest("Email is required.");
+
+            // Always return OK to avoid user enumeration.
+            try
+            {
+                var user = await _userService.GetUserByEmailAsync(request.Email);
+                if (user != null && !user.EmailVerified)
+                {
+                    await _emailVerificationService.SendVerificationAsync(user.Id, user.Email);
+                }
+            }
+            catch
+            {
+                // swallow to keep response consistent
+            }
+
+            return Ok("If the account exists, a verification email has been sent.");
         }
 
         [EnableRateLimiting("LoginRegisterPolicy")]
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync([FromBody] LoginInfo loginInfo)
         {
+            // small delay to mitigate automated/bulk requests
+            await Task.Delay(TimeSpan.FromSeconds(3), HttpContext.RequestAborted);
+
             if (string.IsNullOrWhiteSpace(loginInfo.email) || string.IsNullOrWhiteSpace(loginInfo.password))
                 return BadRequest("Email i lozinka su potrebni.");
             try

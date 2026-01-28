@@ -61,6 +61,8 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
+builder.Services.AddHttpClient();
+
 // Add services to the container.
 builder.Host
     .UseServiceProviderFactory(new AutofacServiceProviderFactory())
@@ -69,6 +71,10 @@ builder.Host
         // Register your own things directly with Autofac here.
         containerBuilder.RegisterType<UserRepository>().As<IUserRepository>();
         containerBuilder.RegisterType<UserService>().As<IUserService>();
+
+        containerBuilder.RegisterType<EmailVerificationTokenRepository>().As<IEmailVerificationTokenRepository>();
+        containerBuilder.RegisterType<EmailService>().As<IEmailService>();
+        containerBuilder.RegisterType<EmailVerificationService>().As<IEmailVerificationService>();
 
         containerBuilder.RegisterType<TokenService>().As<ITokenService>();
         containerBuilder.RegisterType<RefreshTokenRepository>().As<IRefreshTokenRepository>();

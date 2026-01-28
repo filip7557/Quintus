@@ -124,5 +124,25 @@ namespace Quintus.Repository
                 return false;
             }
         }
+
+        public async Task<bool> SetEmailVerifiedAsync(Guid userId)
+        {
+            try
+            {
+                var existingUser = await _context.Users.FindAsync(userId);
+                if (existingUser == null)
+                    return false;
+
+                existingUser.EmailVerified = true;
+                existingUser.UpdatedAt = DateTime.UtcNow;
+                _context.Users.Update(existingUser);
+                return await _context.SaveChangesAsync() > 0;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception occurred while setting email verified: " + e.Message);
+                return false;
+            }
+        }
     }
 }

@@ -10,6 +10,10 @@
         public string? PhoneNumber { get; set; }
         public Role? Role { get; set; }
         public List<RefreshToken> RefreshTokens { get; set; } = new();
+
+        public bool EmailVerified { get; set; }
+        public List<EmailVerificationToken> EmailVerificationTokens { get; set; } = new();
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

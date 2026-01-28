@@ -18,5 +18,7 @@ namespace Quintus.Repository.Common
         Task<bool> UpdateUserAsync(Guid userId, UserDTO updatedUser);
 
         Task<bool> DeleteUserAsync(Guid userId);
+
+        Task<bool> SetEmailVerifiedAsync(Guid userId);
     }
 }
