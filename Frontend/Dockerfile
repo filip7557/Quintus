@@ -1,33 +1,35 @@
 # ============================
-# Build stage
+# Dependencies
+# ============================
+FROM node:20-alpine AS deps
+WORKDIR /app
+
+COPY quintus/package*.json ./
+RUN npm ci
+
+# ============================
+# Build
 # ============================
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Copy package files first
-COPY quintus/package*.json ./
-RUN npm ci --omit=dev
-
-# Copy rest of the app
+COPY --from=deps /app/node_modules ./node_modules
 COPY quintus/ ./
-
-# Build the Next.js app
 RUN npm run build
 
 # ============================
-# Runtime stage
+# Runtime
 # ============================
 FROM node:20-alpine AS runner
 WORKDIR /app
+ENV NODE_ENV=production
 
-# Copy built files
-COPY --from=builder /app ./
+# Only copy what is required to run
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/next.config.* ./
 
-# Remove dev dependencies to reduce image size
-RUN npm prune --production
-
-# Expose Next.js default port
 EXPOSE 3000
-
-# Start Next.js server
-CMD ["npm", "run", "start"]
+CMD ["npm", "start"]
