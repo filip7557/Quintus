@@ -16,6 +16,8 @@ namespace Quintus.Repository.Context
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
         public DbSet<EmailVerificationToken> EmailVerificationTokens => Set<EmailVerificationToken>();
         public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+        public DbSet<Service> Services => Set<Service>();
+        public DbSet<SiteSettings> SiteSettings => Set<SiteSettings>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
