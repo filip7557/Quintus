@@ -36,6 +36,11 @@ namespace Quintus.Repository
             return await _context.Services.ToListAsync();
         }
 
+        public Task<Service?> GetServiceByIdAsync(Guid id)
+        {
+            return _context.Services.FirstOrDefaultAsync(s => s.Id == id);
+        }
+
         public async Task UpdateServiceAsync(Service service)
         {
             await _context.Services.Where(s => s.Id == service.Id)
