@@ -120,12 +120,6 @@ namespace Quintus.Service
                 throw new InactiveRefreshTokenException();
             }
 
-            var currentIpAddress = _context.HttpContext?.Connection.RemoteIpAddress;
-            if (refreshToken.IPAddress == null || !refreshToken.IPAddress.Equals(currentIpAddress))
-            {
-                throw new InvalidRefreshTokenException();
-            }
-
             await _refreshTokenRepository.RevokeRefreshTokenAsync(refreshToken);
 
             var newAccessToken = GenerateToken(user);

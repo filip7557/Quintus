@@ -164,5 +164,37 @@ namespace Quintus.Repository
                 return false;
             }
         }
+
+        public async Task<bool> SetRoleAsync(Guid userId, Guid roleId)
+        {
+            try
+            {
+                var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == userId);
+                if (user == null)
+                    return false;
+
+                var role = await _context.Roles.FirstOrDefaultAsync(r => r.Id == roleId);
+                if (role == null)
+                    return false;
+
+                user.Role = role;
+                user.UpdatedAt = DateTime.UtcNow;
+                _context.Users.Update(user);
+                return await _context.SaveChangesAsync() > 0;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception occurred while setting user role: " + e.Message);
+                return false;
+            }
+        }
+
+        public Task<List<User>> GetUsersByRoleNameAsync(string roleName)
+        {
+            return _context.Users
+                .Include(u => u.Role)
+                .Where(u => u.Role != null && u.Role.Name == roleName)
+                .ToListAsync();
+        }
     }
 }

@@ -11,11 +11,47 @@ export default function NavBehavior() {
       const navLinks = Array.from(
         document.querySelectorAll(".nav-link")
       );
+      const navMain = document.querySelector(".nav-main");
+
+      const hoverState = {
+        isHovering: false,
+        el: null,
+      };
 
       const linkFor = (id) =>
         document.querySelector(
           `.nav-link[href="#${id}"], .nav-link[href="/#${id}"]`
         );
+
+      const setIndicatorHidden = () => {
+        if (!navMain) return;
+        navMain.style.setProperty("--nav-indicator-opacity", "0");
+        navMain.style.setProperty("--nav-indicator-width", "0px");
+      };
+
+      const setIndicatorToEl = (el) => {
+        if (!navMain || !el) return;
+        const activeRect = el.getBoundingClientRect();
+        const navRect = navMain.getBoundingClientRect();
+
+        const left = Math.max(0, activeRect.left - navRect.left);
+        const width = Math.max(0, activeRect.width);
+
+        navMain.style.setProperty("--nav-indicator-left", `${left}px`);
+        navMain.style.setProperty("--nav-indicator-width", `${width}px`);
+        navMain.style.setProperty("--nav-indicator-opacity", "1");
+      };
+
+      const updateIndicator = () => {
+        if (!navMain) return;
+        const active = navMain.querySelector(".nav-link.active");
+        if (!active) {
+          setIndicatorHidden();
+          return;
+        }
+
+        setIndicatorToEl(active);
+      };
 
       const observer = new IntersectionObserver(
         (entries) => {
@@ -24,6 +60,7 @@ export default function NavBehavior() {
               navLinks.forEach((l) => l.classList.remove("active"));
               const link = linkFor(entry.target.id);
               if (link) link.classList.add("active");
+              if (!hoverState.isHovering) updateIndicator();
             }
           });
         },
@@ -36,8 +73,68 @@ export default function NavBehavior() {
 
       sections.forEach((section) => observer.observe(section));
 
+      // Keep indicator aligned on resize / font load / layout changes.
+      const onResize = () => {
+        if (hoverState.isHovering && hoverState.el) {
+          setIndicatorToEl(hoverState.el);
+        } else {
+          updateIndicator();
+        }
+      };
+      window.addEventListener("resize", onResize);
+
+      const ro = navMain && "ResizeObserver" in window
+        ? new ResizeObserver(() => updateIndicator())
+        : null;
+      if (ro && navMain) ro.observe(navMain);
+
+      if (document.fonts?.ready) {
+        document.fonts.ready.then(() => updateIndicator()).catch(() => {});
+      }
+
+      // Best-effort initial position.
+      updateIndicator();
+
+      // Hover animation: temporarily move indicator under hovered link.
+      const canHover =
+        window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+      const hoverListeners = [];
+
+      if (canHover && navMain) {
+        const desktopLinks = navLinks.filter((l) => navMain.contains(l));
+        desktopLinks.forEach((linkEl) => {
+          const isMenuTrigger =
+            String(linkEl.getAttribute("aria-haspopup") || "").toLowerCase() === "menu";
+          const hoverTarget = isMenuTrigger ? linkEl.closest("li") || linkEl : linkEl;
+
+          const onEnter = () => {
+            hoverState.isHovering = true;
+            hoverState.el = linkEl;
+            setIndicatorToEl(linkEl);
+          };
+
+          const onLeave = () => {
+            hoverState.isHovering = false;
+            hoverState.el = null;
+            updateIndicator();
+          };
+
+          hoverTarget.addEventListener("mouseenter", onEnter);
+          hoverTarget.addEventListener("mouseleave", onLeave);
+          hoverListeners.push([hoverTarget, onEnter, onLeave]);
+        });
+      }
+
       return () => {
         observer.disconnect();
+        window.removeEventListener("resize", onResize);
+        if (ro) ro.disconnect();
+
+        hoverListeners.forEach(([el, onEnter, onLeave]) => {
+          el.removeEventListener("mouseenter", onEnter);
+          el.removeEventListener("mouseleave", onLeave);
+        });
       };
     }, 300); // slight delay so sections exist
 

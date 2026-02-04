@@ -16,3 +16,8 @@ export function isAdminOrOwner(user) {
   const role = getRoleName(user).toLowerCase();
   return role === "admin" || role === "owner";
 }
+
+export function isAdmin(user) {
+  const role = getRoleName(user).toLowerCase();
+  return role === "admin";
+}

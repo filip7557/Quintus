@@ -386,9 +386,11 @@ namespace Quintus.Repository.Migrations
 
             modelBuilder.Entity("Quintus.Model.Entities.Service", b =>
                 {
-                    b.HasOne("Quintus.Model.Entities.SiteSettings", null)
+                    b.HasOne("Quintus.Model.Entities.SiteSettings", "SiteSettings")
                         .WithMany("Services")
                         .HasForeignKey("SiteSettingsId");
+
+                    b.Navigation("SiteSettings");
                 });
 
             modelBuilder.Entity("Quintus.Model.Entities.User", b =>
