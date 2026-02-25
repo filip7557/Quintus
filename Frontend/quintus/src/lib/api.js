@@ -1,7 +1,8 @@
 import axios from "axios";
+import { API_BASE_URL } from "@/lib/apiBaseUrl";
 
 const api = axios.create({
-  baseURL: "https://quintus.fcuric.eu/api",
+  baseURL: API_BASE_URL,
 });
 
 let isRefreshing = false;

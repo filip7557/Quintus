@@ -5,10 +5,12 @@ import { getCurrentUser, logout } from "@/services/authService";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "./AccountNav.module.css";
+import { isAdmin } from "@/lib/authz";
 
 export default function AccountNav() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [admin, setAdmin] = useState(false);
   const router = useRouter();
   const rootRef = useRef(null);
 
@@ -21,13 +23,19 @@ export default function AccountNav() {
           .then((response) => {
             if (response?.data) {
               setIsLoggedIn(true);
+              setAdmin(isAdmin(response.data));
             } else {
               setIsLoggedIn(false);
+              setAdmin(false);
             }
           })
-          .catch(() => setIsLoggedIn(false));
+          .catch(() => {
+            setIsLoggedIn(false);
+            setAdmin(false);
+          });
       } else {
         setIsLoggedIn(false);
+        setAdmin(false);
       }
     };
 
@@ -59,6 +67,7 @@ export default function AccountNav() {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
       setIsLoggedIn(false);
+      setAdmin(false);
       setIsOpen(false);
       router.push("/");
     }).catch(() => {
@@ -66,6 +75,7 @@ export default function AccountNav() {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
       setIsLoggedIn(false);
+      setAdmin(false);
       setIsOpen(false);
       router.push("/");
     });
@@ -125,6 +135,15 @@ export default function AccountNav() {
             >
               Zahtjevi
             </Link>
+            {admin ? (
+              <Link
+                href="/admin/owners"
+                className={styles.dropdownItem}
+                onClick={handleItemClick}
+              >
+                Vlasnici (Admin)
+              </Link>
+            ) : null}
             <button onClick={handleLogout} className={styles.dropdownItem}>
               Odjava
             </button>

@@ -95,6 +95,11 @@ builder.Host
 
         containerBuilder.RegisterType<RequestRepository>().As<IRequestRepository>();
         containerBuilder.RegisterType<RequestService>().As<IRequestService>();
+
+        containerBuilder.RegisterType<SiteSettingsRepository>().As<ISiteSettingsRepository>();
+        containerBuilder.RegisterType<SiteSettingsService>().As<ISiteSettingsService>();
+
+        containerBuilder.RegisterType<ContactService>().As<IContactService>();
     });
 
 builder.Services.AddHttpContextAccessor();

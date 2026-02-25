@@ -26,5 +26,17 @@ namespace Quintus.WebAPI.Controllers
             }
             return Ok(user);
         }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("email/{email}")]
+        public async Task<IActionResult> GetUserByEmail(string email)
+        {
+            var user = await _userService.GetUserByEmailAsync(email);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(user);
+        }
     }
 }

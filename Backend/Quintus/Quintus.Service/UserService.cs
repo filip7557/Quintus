@@ -8,10 +8,12 @@ namespace Quintus.Service
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IRoleRepository _roleRepository;
 
-        public UserService(IUserRepository userRepository)
+        public UserService(IUserRepository userRepository, IRoleRepository roleRepository)
         {
             _userRepository = userRepository;
+            _roleRepository = roleRepository;
         }
 
         public async Task<bool> DeleteUserAsync(Guid userId)
@@ -55,6 +57,29 @@ namespace Quintus.Service
         public async Task<bool> UpdateUserAsync(Guid userId, UserDTO updatedUser)
         {
             return await _userRepository.UpdateUserAsync(userId, updatedUser);
+        }
+
+        public async Task<bool> PromoteToOwnerAsync(Guid userId)
+        {
+            var ownerRole = await _roleRepository.GetRoleByNameAsync("Owner");
+            if (ownerRole == null)
+                return false;
+
+            return await _userRepository.SetRoleAsync(userId, ownerRole.Id);
+        }
+
+        public async Task<List<UserDTO>> GetOwnersAsync()
+        {
+            var owners = await _userRepository.GetUsersByRoleNameAsync("Owner");
+            return owners.Select(u => new UserDTO
+            {
+                Id = u.Id,
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                Email = u.Email,
+                PhoneNumber = u.PhoneNumber,
+                Role = u.Role
+            }).ToList();
         }
     }
 }

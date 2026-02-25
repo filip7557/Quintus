@@ -22,5 +22,8 @@ namespace Quintus.Repository.Common
         Task<bool> SetEmailVerifiedAsync(Guid userId);
 
         Task<bool> SetPasswordHashAsync(Guid userId, string passwordHash);
+
+        Task<bool> SetRoleAsync(Guid userId, Guid roleId);
+        Task<List<User>> GetUsersByRoleNameAsync(string roleName);
     }
 }
