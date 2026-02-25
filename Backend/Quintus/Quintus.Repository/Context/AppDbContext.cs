@@ -18,6 +18,7 @@ namespace Quintus.Repository.Context
         public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
         public DbSet<Service> Services => Set<Service>();
         public DbSet<SiteSettings> SiteSettings => Set<SiteSettings>();
+        public DbSet<Offer> Offers => Set<Offer>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

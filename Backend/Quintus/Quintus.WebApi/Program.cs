@@ -100,6 +100,14 @@ builder.Host
         containerBuilder.RegisterType<SiteSettingsService>().As<ISiteSettingsService>();
 
         containerBuilder.RegisterType<ContactService>().As<IContactService>();
+
+        containerBuilder.RegisterType<ServiceRepository>().As<IServiceRepository>();
+        containerBuilder.RegisterType<ServiceService>().As<IServiceService>();
+
+        containerBuilder.RegisterType<OfferRepository>().As<IOfferRepository>();
+        containerBuilder.RegisterType<OfferService>().As<IOfferService>();
+
+        containerBuilder.RegisterType<PdfOfferService>();
     });
 
 builder.Services.AddHttpContextAccessor();

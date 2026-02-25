@@ -5,12 +5,13 @@ import { getCurrentUser, logout } from "@/services/authService";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "./AccountNav.module.css";
-import { isAdmin } from "@/lib/authz";
+import { isAdmin, isAdminOrOwner } from "@/lib/authz";
 
 export default function AccountNav() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [admin, setAdmin] = useState(false);
+  const [isAdminOrOwnerUser, setIsAdminOrOwnerUser] = useState(false);
   const router = useRouter();
   const rootRef = useRef(null);
 
@@ -24,18 +25,22 @@ export default function AccountNav() {
             if (response?.data) {
               setIsLoggedIn(true);
               setAdmin(isAdmin(response.data));
+              setIsAdminOrOwnerUser(isAdminOrOwner(response.data));
             } else {
               setIsLoggedIn(false);
               setAdmin(false);
+              setIsAdminOrOwnerUser(false);
             }
           })
           .catch(() => {
             setIsLoggedIn(false);
             setAdmin(false);
+            setIsAdminOrOwnerUser(false);
           });
       } else {
         setIsLoggedIn(false);
         setAdmin(false);
+        setIsAdminOrOwnerUser(false);
       }
     };
 
@@ -68,6 +73,7 @@ export default function AccountNav() {
       localStorage.removeItem("refreshToken");
       setIsLoggedIn(false);
       setAdmin(false);
+      setIsAdminOrOwnerUser(false);
       setIsOpen(false);
       router.push("/");
     }).catch(() => {
@@ -76,6 +82,7 @@ export default function AccountNav() {
       localStorage.removeItem("refreshToken");
       setIsLoggedIn(false);
       setAdmin(false);
+      setIsAdminOrOwnerUser(false);
       setIsOpen(false);
       router.push("/");
     });
@@ -135,6 +142,15 @@ export default function AccountNav() {
             >
               Zahtjevi
             </Link>
+            {isAdminOrOwnerUser ? (
+              <Link
+                href="/offers"
+                className={styles.dropdownItem}
+                onClick={handleItemClick}
+              >
+                Ponude
+              </Link>
+            ) : null}
             {admin ? (
               <Link
                 href="/admin/owners"
