@@ -36,7 +36,7 @@ namespace Quintus.Service
             if (string.IsNullOrWhiteSpace(to))
                 throw new InvalidOperationException("Nedostaje konfiguracija App:ContactEmail.");
 
-            var mailto = $"mailto:{to}";
+            var mailto = $"mailto:{email}";
 
             var subject = $"Kontakt (web): {fullName}";
 

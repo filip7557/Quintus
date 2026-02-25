@@ -120,6 +120,7 @@ namespace Quintus.WebAPI.Controllers
             }
             catch (ArgumentException ex)
             {
+                Console.WriteLine(ex.Message);
                 return BadRequest(ex.Message);
             }
             catch (Exception ex)

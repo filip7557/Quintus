@@ -11,7 +11,13 @@ export default function NavBehavior() {
       const navLinks = Array.from(
         document.querySelectorAll(".nav-link")
       );
+      const navWrappers = Array.from(
+        document.querySelectorAll(".nav-link-wrapper")
+      );
       const navMain = document.querySelector(".nav-main");
+      if (navMain) {
+        navMain.classList.add("initializing");
+      }
 
       const hoverState = {
         isHovering: false,
@@ -40,6 +46,15 @@ export default function NavBehavior() {
         navMain.style.setProperty("--nav-indicator-left", `${left}px`);
         navMain.style.setProperty("--nav-indicator-width", `${width}px`);
         navMain.style.setProperty("--nav-indicator-opacity", "1");
+
+        // remove initializing state on first actual movement
+        if (navMain.classList.contains("initializing")) {
+          navMain.classList.remove("initializing");
+        }
+
+        // we will animate in CSS via a temporary class
+        navMain.classList.add("indicator-rotate");
+        setTimeout(() => navMain.classList.remove("indicator-rotate"), 400);
       };
 
       const updateIndicator = () => {
@@ -104,17 +119,25 @@ export default function NavBehavior() {
       if (canHover && navMain) {
         const desktopLinks = navLinks.filter((l) => navMain.contains(l));
         desktopLinks.forEach((linkEl) => {
+          const wrapper = linkEl.closest(".nav-link-wrapper");
+          const baseTarget = wrapper || linkEl;
           const isMenuTrigger =
             String(linkEl.getAttribute("aria-haspopup") || "").toLowerCase() === "menu";
-          const hoverTarget = isMenuTrigger ? linkEl.closest("li") || linkEl : linkEl;
+          const hoverTarget = isMenuTrigger ? linkEl.closest("li") || baseTarget : baseTarget;
 
-          const onEnter = () => {
+          const onEnter = (e) => {
             hoverState.isHovering = true;
             hoverState.el = linkEl;
             setIndicatorToEl(linkEl);
           };
 
-          const onLeave = () => {
+          const onLeave = (e) => {
+            // if we are moving directly into another nav link/wrapper, keep hover state
+            const to = e.relatedTarget;
+            if (to && navMain.contains(to) &&
+                (to.classList.contains("nav-link") || to.classList.contains("nav-link-wrapper"))) {
+              return; // let the other listener handle the change
+            }
             hoverState.isHovering = false;
             hoverState.el = null;
             updateIndicator();
@@ -123,6 +146,29 @@ export default function NavBehavior() {
           hoverTarget.addEventListener("mouseenter", onEnter);
           hoverTarget.addEventListener("mouseleave", onLeave);
           hoverListeners.push([hoverTarget, onEnter, onLeave]);
+        });
+
+        // also attach to any wrappers that don't already map to a link
+        const desktopWrappers = navWrappers.filter((w) => navMain.contains(w));
+        desktopWrappers.forEach((wr) => {
+          const innerLink = wr.querySelector(".nav-link");
+          if (innerLink) return; // already handled above
+          const onEnter = (e) => {
+            hoverState.isHovering = true;
+            updateIndicator();
+          };
+          const onLeave = (e) => {
+            const to = e.relatedTarget;
+            if (to && navMain.contains(to) &&
+                (to.classList.contains("nav-link") || to.classList.contains("nav-link-wrapper"))) {
+              return;
+            }
+            hoverState.isHovering = false;
+            updateIndicator();
+          };
+          wr.addEventListener("mouseenter", onEnter);
+          wr.addEventListener("mouseleave", onLeave);
+          hoverListeners.push([wr, onEnter, onLeave]);
         });
       }
 

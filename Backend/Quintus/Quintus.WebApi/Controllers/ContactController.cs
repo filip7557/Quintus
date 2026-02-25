@@ -29,8 +29,9 @@ namespace Quintus.WebAPI.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine(ex);
                 return StatusCode(500, "Došlo je do pogreške prilikom slanja poruke.");
             }
         }

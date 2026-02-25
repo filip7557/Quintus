@@ -79,24 +79,32 @@ export default function NavBar() {
           ref={navMainRef}
         >
           <li>
-            <Link href="/#home" className="nav-link" onClick={closeMenu}>
-              Početna
-            </Link>
+            <div className="nav-link-wrapper">
+              <Link href="/#home" className="nav-link" onClick={closeMenu}>
+                Početna
+              </Link>
+            </div>
           </li>
           <li>
-            <Link href="/#services" className="nav-link" onClick={closeMenu}>
-              Usluge
-            </Link>
+            <div className="nav-link-wrapper">
+              <Link href="/#services" className="nav-link" onClick={closeMenu}>
+                Usluge
+              </Link>
+            </div>
           </li>
           <li>
-            <Link href="/#about" className="nav-link" onClick={closeMenu}>
-              O nama
-            </Link>
+            <div className="nav-link-wrapper">
+              <Link href="/#about" className="nav-link" onClick={closeMenu}>
+                O nama
+              </Link>
+            </div>
           </li>
           <li>
-            <Link href="/#contact" className="nav-link" onClick={closeMenu}>
-              Kontakt
-            </Link>
+            <div className="nav-link-wrapper">
+              <Link href="/#contact" className="nav-link" onClick={closeMenu}>
+                Kontakt
+              </Link>
+            </div>
           </li>
           <AccountNav />
         </ul>

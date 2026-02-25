@@ -170,42 +170,72 @@ header {
 
 .nav-main {
   display: flex;
-  gap: 2rem;
+  gap: 0; /* spacing handled by individual wrappers to avoid gaps between hit areas */
   list-style: none;
   padding: 0;
   margin: 0;
   align-items: center;
   position: relative;
+  /* indicator properties */
   --nav-indicator-left: 0px;
   --nav-indicator-width: 0px;
   --nav-indicator-opacity: 0;
+  /* subtle horizontal offset applied in CSS transforms */
+  --nav-indicator-offset: -2px;
+  /* current rotation for the wrench animation */
+  --nav-indicator-rotation: 0deg;
 }
 
 /* Animated active-section indicator */
-.nav-main::after {
-  content: "";
-  position: absolute;
-  left: var(--nav-indicator-left);
-  width: var(--nav-indicator-width);
-  opacity: var(--nav-indicator-opacity);
-  bottom: -6px;
-  height: 2px;
-  border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    rgba(220, 184, 134, 0) 0%,
-    rgba(220, 184, 134, 0.9) 20%,
-    rgba(220, 184, 134, 0.9) 80%,
-    rgba(220, 184, 134, 0) 100%
-  );
-  box-shadow: 0 6px 16px rgba(220, 184, 134, 0.22);
-  transform: translateZ(0);
-  transition:
-    left 420ms cubic-bezier(0.2, 0.9, 0.2, 1),
-    width 420ms cubic-bezier(0.2, 0.9, 0.2, 1),
-    opacity 180ms ease;
-  pointer-events: none;
+@keyframes indicator-rotate {
+  /* just tweak the rotation variable; translation is handled by transitions */
+  0%, 100% { --nav-indicator-rotation: 0deg; }
+  25% { --nav-indicator-rotation: 5deg; }
+  75% { --nav-indicator-rotation: -5deg; }
 }
+
+.nav-main.indicator-rotate::after {
+  animation: indicator-rotate 400ms ease-in-out 1;
+}
+
+.nav-main::after,
+.nav-main::before {
+  will-change: left, width, transform, opacity;
+  position: absolute;
+  opacity: var(--nav-indicator-opacity);
+  bottom: -8px;
+  pointer-events: none;
+  transition:
+    transform 600ms cubic-bezier(0.4,0,0.2,1),
+    width 600ms cubic-bezier(0.4,0,0.2,1),
+    opacity 250ms ease-in-out;
+  will-change: left, width, transform, opacity;
+  bottom: -20px;
+}
+
+/* wrench graphic stretched under link */
+.nav-main::after {
+  content: '';
+  left: 0;
+  width: calc(var(--nav-indicator-width) + 4px);
+  transform: translateX(calc(var(--nav-indicator-left) + var(--nav-indicator-offset))) rotate(var(--nav-indicator-rotation));
+  height: 18px;
+  /* use mask to color the wrench since SVG has stroke fill */
+  background-color: rgba(220, 184, 134, 0.8);
+  -webkit-mask-image: url('/images/svg.svg');
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: 100% 100%;
+  mask-image: url('/images/svg.svg');
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: 100% 100%;
+  /* remove any explicit background-image */
+  background-image: none;
+}
+
+/* remove previous before element */
+.nav-main::before { content: none; }
 
 .hamburger {
   display: none; /* hidden by default */
@@ -229,7 +259,19 @@ header {
   font-family: var(--font-body);
   color: rgba(234, 242, 255, 0.85);
   transition: color 0.3s;
+  /* link itself no longer needs horizontal padding; wrapper will provide spacing */
   padding: 0.35rem 0.2rem;
+}
+
+.nav-main .nav-link {
+  display: inline-block;
+}
+
+/* invisible container around each link that covers the inter‑link gap */
+.nav-link-wrapper {
+  display: inline-block;
+  padding: 0 1rem; /* replicate previous 2rem gap as half on each side */
+  background: transparent;
 }
 
 .nav-main .nav-link:hover {
@@ -420,12 +462,13 @@ header {
 
 .services-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 340px));
   gap: 16px;
   width: 100%;
   max-width: var(--container-width);
   margin: 0 auto;
   padding: 0 var(--container-padding);
+  justify-content: center;
 }
 
 .services-container .service {
@@ -438,6 +481,8 @@ header {
   background:
     linear-gradient(180deg, rgba(46, 51, 54, 0.92) 0%, rgba(46, 51, 54, 0.78) 100%);
   padding: 14px;
+  width: 100%;
+  min-height: 520px;
   height: auto;
   text-align: left;
   align-items: center;
@@ -464,6 +509,13 @@ header {
   font-size: 1.05rem;
   letter-spacing: 0.2px;
   text-align: center;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  max-height: calc(1.25em * 2);
+  overflow: hidden;
 }
 
 .service-description {
@@ -475,6 +527,12 @@ header {
   color: rgba(234, 242, 255, 0.78);
   text-align: left;
   flex: 1 1 auto;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  line-clamp: 5;
+  max-height: calc(1.55em * 5);
+  overflow: hidden;
 }
 
 .service-keywords {
@@ -484,6 +542,13 @@ header {
   font-family: var(--font-body);
   font-size: 0.85rem;
   color: rgba(0, 123, 255, 0.9);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  max-height: calc(1.3em * 2);
+  overflow: hidden;
 }
 
 .services-admin-bar {
@@ -764,8 +829,10 @@ header {
   width: 100%;
   max-width: 720px;
   max-height: calc(100svh - (40px + var(--modal-top-offset)));
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
+  max-height: calc(100dvh - (40px + var(--modal-top-offset)));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   overscroll-behavior: contain;
   background: #2e3336;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -807,6 +874,11 @@ header {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .modal-label {
@@ -850,6 +922,7 @@ header {
   justify-content: flex-end;
   gap: 10px;
   margin-top: 14px;
+  flex: 0 0 auto;
 }
 
 /* Toasts */
@@ -1028,18 +1101,22 @@ header {
 
   .modal-overlay {
     padding: calc(10px + var(--modal-top-offset)) 10px 10px;
+    place-items: start center;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
   }
 
   .modal {
     max-height: calc(100svh - (20px + var(--modal-top-offset)));
+    max-height: calc(100dvh - (20px + var(--modal-top-offset)));
     border-radius: 12px;
   }
 
   .modal.service-modal {
-    position: relative;
-    top: 10px;
     padding: 12px;
-    max-height: calc(100svh - (80px + var(--modal-top-offset)));
+    max-height: calc(100svh - (20px + var(--modal-top-offset)));
+    max-height: calc(100dvh - (20px + var(--modal-top-offset)));
   }
 
   .modal.service-modal .modal-header {
@@ -1087,7 +1164,7 @@ header {
 
   .modal.service-modal .image-remove {
     width: 24px;
-    height: 24px;
+    height: 3px;
     top: 5px;
     right: 5px;
   }
