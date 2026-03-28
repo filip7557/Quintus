@@ -1,14 +1,17 @@
 /* Container and layout */
 .container {
-  min-height: 100vh;
+  --offers-header-offset: 108px;
+  --offers-page-gap: 20px;
+  min-height: 100svh;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 80px 20px 20px;
+  padding: calc(var(--offers-header-offset) + var(--offers-page-gap)) 20px
+    var(--offers-page-gap);
   box-sizing: border-box;
   background-color: #2e3336;
   position: relative;
-  overflow: hidden;
+  overflow: auto;
 }
 
 /* Modern "blob" backdrop */
@@ -47,12 +50,19 @@
 /* Responsive */
 @media (max-width: 768px) {
   .container {
-    padding: 100px 16px 24px;
+    --offers-header-offset: 92px;
+    --offers-page-gap: 16px;
+    padding: calc(var(--offers-header-offset) + var(--offers-page-gap)) 16px
+      var(--offers-page-gap);
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .container {
-    padding: 100px 16px 24px;
+    --offers-header-offset: 88px;
+    --offers-page-gap: 14px;
+    padding: calc(var(--offers-header-offset) + var(--offers-page-gap)) 14px
+      var(--offers-page-gap);
+    overflow: visible;
   }
 }

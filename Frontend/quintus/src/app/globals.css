@@ -213,25 +213,17 @@ header {
   bottom: -20px;
 }
 
-/* wrench graphic stretched under link */
+/* active link indicator line */
 .nav-main::after {
   content: '';
   left: 0;
   width: calc(var(--nav-indicator-width) + 4px);
-  transform: translateX(calc(var(--nav-indicator-left) + var(--nav-indicator-offset))) rotate(var(--nav-indicator-rotation));
-  height: 18px;
-  /* use mask to color the wrench since SVG has stroke fill */
+  bottom: -10px;
+  transform: translateX(calc(var(--nav-indicator-left) + var(--nav-indicator-offset)));
+  height: 2px;
   background-color: rgba(220, 184, 134, 0.8);
-  -webkit-mask-image: url('/images/svg.svg');
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  -webkit-mask-size: 100% 100%;
-  mask-image: url('/images/svg.svg');
-  mask-repeat: no-repeat;
-  mask-position: center;
-  mask-size: 100% 100%;
-  /* remove any explicit background-image */
-  background-image: none;
+  border-radius: 999px;
+  box-shadow: 0 0 12px rgba(220, 184, 134, 0.18);
 }
 
 /* remove previous before element */

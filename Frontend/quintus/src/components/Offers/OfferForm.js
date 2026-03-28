@@ -10,7 +10,7 @@ export default function OfferForm() {
   const [buyerPhone, setBuyerPhone] = useState("");
   const [items, setItems] = useState([]);
   const [itemName, setItemName] = useState("");
-  const [itemQuantity, setItemQuantity] = useState("");
+  const [itemQuantity, setItemQuantity] = useState("1");
   const [itemPrice, setItemPrice] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -38,7 +38,7 @@ export default function OfferForm() {
 
     setItems([...items, newItem]);
     setItemName("");
-    setItemQuantity("");
+    setItemQuantity("1");
     setItemPrice("");
   };
 
@@ -105,7 +105,7 @@ export default function OfferForm() {
         setBuyerPhone("");
         setItems([]);
         setItemName("");
-        setItemQuantity("");
+        setItemQuantity("1");
         setItemPrice("");
         setTimeout(() => setSuccess(false), 3000);
       } else {
@@ -237,27 +237,42 @@ export default function OfferForm() {
             {items.length > 0 && (
               <div className={styles.tableWrapper}>
                 <table className={styles.itemsTable}>
+                  <colgroup>
+                    <col className={styles.nameColumn} />
+                    <col className={styles.quantityColumn} />
+                    <col className={styles.priceColumn} />
+                    <col className={styles.totalColumn} />
+                    <col className={styles.actionColumn} />
+                  </colgroup>
                   <thead>
                     <tr>
-                      <th>Naziv</th>
-                      <th>Količina</th>
-                      <th>Cijena (€)</th>
-                      <th>Ukupno (€)</th>
-                      <th>Akcija</th>
+                      <th className={styles.nameHeader}>Naziv</th>
+                      <th className={styles.numberHeader}>Količina</th>
+                      <th className={styles.numberHeader}>Cijena (€)</th>
+                      <th className={styles.numberHeader}>Ukupno (€)</th>
+                      <th className={styles.actionHeader}>Radnja</th>
                     </tr>
                   </thead>
                   <tbody>
                     {items.map((item) => (
                       <tr key={item.id}>
-                        <td>{item.name}</td>
-                        <td className={styles.numberCell}>{item.quantity}</td>
-                        <td className={styles.numberCell}>
-                          {item.price.toFixed(2)}
+                        <td className={styles.nameCell} data-label="Naziv">
+                          <span className={styles.cellValue}>{item.name}</span>
                         </td>
-                        <td className={styles.numberCell}>
-                          {calculateItemTotal(item.quantity, item.price)}
+                        <td className={styles.numberCell} data-label="Količina">
+                          <span className={styles.cellValue}>{item.quantity}</span>
                         </td>
-                        <td>
+                        <td className={styles.numberCell} data-label="Cijena (€)">
+                          <span className={styles.cellValue}>
+                            {item.price.toFixed(2)}
+                          </span>
+                        </td>
+                        <td className={styles.numberCell} data-label="Ukupno (€)">
+                          <span className={styles.cellValue}>
+                            {calculateItemTotal(item.quantity, item.price)}
+                          </span>
+                        </td>
+                        <td className={styles.actionCell} data-label="Radnja">
                           <button
                             type="button"
                             className={styles.deleteBtn}
@@ -271,13 +286,6 @@ export default function OfferForm() {
                   </tbody>
                 </table>
 
-                {/* Grand Total */}
-                <div className={styles.grandTotalRow}>
-                  <span className={styles.grandTotalLabel}>Ukupno:</span>
-                  <span className={styles.grandTotalValue}>
-                    €{calculateGrandTotal()}
-                  </span>
-                </div>
               </div>
             )}
 
@@ -289,14 +297,23 @@ export default function OfferForm() {
           </div>
         </div>
 
-        {/* Submit Buttons */}
-        <button
-          type="submit"
-          className={styles.submitBtn}
-          disabled={!isFormValid || loading}
-        >
-          {loading ? "Slanje..." : "Spremi i pošalji"}
-        </button>
+        <div className={styles.submitBar}>
+          {items.length > 0 && (
+            <div className={styles.submitSummary}>
+              <span className={styles.grandTotalLabel}>Ukupno:</span>
+              <span className={styles.grandTotalValue}>
+                €{calculateGrandTotal()}
+              </span>
+            </div>
+          )}
+          <button
+            type="submit"
+            className={styles.submitBtn}
+            disabled={!isFormValid || loading}
+          >
+            {loading ? "Slanje..." : "Spremi i pošalji"}
+          </button>
+        </div>
       </form>
     </div>
   );
