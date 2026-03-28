@@ -3,6 +3,24 @@ function normalizeBaseUrl(url) {
   return u.endsWith("/") ? u.slice(0, -1) : u;
 }
 
+function isLoopbackHost(hostname) {
+  const h = String(hostname || "").trim().toLowerCase();
+  return h === "localhost" || h === "127.0.0.1" || h === "[::1]";
+}
+
+function getDevBrowserBaseUrl() {
+  if (typeof window === "undefined") {
+    return "http://localhost:5113/api";
+  }
+
+  const { hostname } = window.location || {};
+  if (!hostname || isLoopbackHost(hostname)) {
+    return "http://localhost:5113/api";
+  }
+
+  return `http://${hostname}:5113/api`;
+}
+
 // Prefer explicit configuration.
 const fromEnv =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -15,6 +33,6 @@ const fromEnv =
 const defaultBaseUrl =
   process.env.NODE_ENV === "production"
     ? "https://quintus.fcuric.eu/api"
-    : "http://localhost:5113/api";
+    : getDevBrowserBaseUrl();
 
 export const API_BASE_URL = normalizeBaseUrl(fromEnv || defaultBaseUrl);

@@ -79,6 +79,31 @@ namespace Quintus.Repository.Migrations
                     b.ToTable("Images");
                 });
 
+            modelBuilder.Entity("Quintus.Model.Entities.Offer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BuyerEmail")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("BuyerName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("BuyerPhone")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Offers");
+                });
+
             modelBuilder.Entity("Quintus.Model.Entities.PasswordResetToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -333,6 +358,32 @@ namespace Quintus.Repository.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Quintus.Model.Item", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("OfferId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OfferId");
+
+                    b.ToTable("Item");
+                });
+
             modelBuilder.Entity("Quintus.Model.Entities.EmailVerificationToken", b =>
                 {
                     b.HasOne("Quintus.Model.Entities.User", "User")
@@ -400,6 +451,18 @@ namespace Quintus.Repository.Migrations
                         .HasForeignKey("RoleId");
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("Quintus.Model.Item", b =>
+                {
+                    b.HasOne("Quintus.Model.Entities.Offer", null)
+                        .WithMany("Items")
+                        .HasForeignKey("OfferId");
+                });
+
+            modelBuilder.Entity("Quintus.Model.Entities.Offer", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("Quintus.Model.Entities.Request", b =>
