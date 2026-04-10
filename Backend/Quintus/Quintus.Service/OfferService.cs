@@ -31,6 +31,7 @@ namespace Quintus.Service
                         Items = offer.Items.Select(i => new Item
                         {
                             Name = i.Name,
+                            UnitOfMeasurement = i.UnitOfMeasurement,
                             Quantity = i.Quantity,
                             Price = i.Price
                         }).ToList()

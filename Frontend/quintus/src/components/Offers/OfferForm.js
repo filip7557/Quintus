@@ -1,8 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import styles from "./OfferForm.module.css";
 import { createOffer, downloadPDF } from "@/services/offerService";
+import {
+  getUnitsOfMeasurement,
+  createUnitOfMeasurement,
+  deleteUnitOfMeasurement,
+} from "@/services/unitOfMeasurementService";
 
 export default function OfferForm() {
   const [buyerName, setBuyerName] = useState("");
@@ -12,9 +17,77 @@ export default function OfferForm() {
   const [itemName, setItemName] = useState("");
   const [itemQuantity, setItemQuantity] = useState("1");
   const [itemPrice, setItemPrice] = useState("");
+  const [itemUnit, setItemUnit] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+
+  // Unit of measurement state
+  const [units, setUnits] = useState([]);
+  const [unitDropdownOpen, setUnitDropdownOpen] = useState(false);
+  const [showUnitModal, setShowUnitModal] = useState(false);
+  const [newUnitName, setNewUnitName] = useState("");
+  const [unitLoading, setUnitLoading] = useState(false);
+  const [deleteUnitId, setDeleteUnitId] = useState(null);
+  const unitDropdownRef = useRef(null);
+
+  // Fetch units on mount
+  useEffect(() => {
+    fetchUnits();
+  }, []);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (unitDropdownRef.current && !unitDropdownRef.current.contains(e.target)) {
+        setUnitDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const fetchUnits = async () => {
+    try {
+      const data = await getUnitsOfMeasurement();
+      setUnits(data);
+    } catch {
+      // silently fail
+    }
+  };
+
+  const handleCreateUnit = async () => {
+    if (!newUnitName.trim()) return;
+    setUnitLoading(true);
+    try {
+      await createUnitOfMeasurement(newUnitName.trim());
+      await fetchUnits();
+      setNewUnitName("");
+      setShowUnitModal(false);
+    } catch {
+      // silently fail
+    } finally {
+      setUnitLoading(false);
+    }
+  };
+
+  const handleDeleteUnit = (e, unitId) => {
+    e.stopPropagation();
+    setDeleteUnitId(unitId);
+  };
+
+  const confirmDeleteUnit = async () => {
+    if (!deleteUnitId) return;
+    try {
+      await deleteUnitOfMeasurement(deleteUnitId);
+      setUnits((prev) => prev.filter((u) => u.id !== deleteUnitId));
+      if (itemUnit === deleteUnitId) setItemUnit("");
+    } catch {
+      // silently fail
+    } finally {
+      setDeleteUnitId(null);
+    }
+  };
 
   // Add item to table
   const handleAddItem = () => {
@@ -29,15 +102,18 @@ export default function OfferForm() {
     }
 
     setError(null);
+    const selectedUnit = units.find((u) => u.id === itemUnit);
     const newItem = {
       id: Date.now(),
       name: itemName.trim(),
+      unitOfMeasurement: selectedUnit ? selectedUnit.name : "",
       quantity: parseInt(itemQuantity),
       price: parseFloat(itemPrice),
     };
 
     setItems([...items, newItem]);
     setItemName("");
+    setItemUnit("");
     setItemQuantity("1");
     setItemPrice("");
   };
@@ -85,6 +161,7 @@ export default function OfferForm() {
         buyerPhone: buyerPhone.trim() || null,
         items: items.map((item) => ({
           name: item.name,
+          unitOfMeasurement: item.unitOfMeasurement || null,
           quantity: item.quantity,
           price: item.price,
         })),
@@ -105,6 +182,7 @@ export default function OfferForm() {
         setBuyerPhone("");
         setItems([]);
         setItemName("");
+        setItemUnit("");
         setItemQuantity("1");
         setItemPrice("");
         setTimeout(() => setSuccess(false), 3000);
@@ -198,6 +276,61 @@ export default function OfferForm() {
                 />
               </div>
 
+              <div className={styles.formGroup} ref={unitDropdownRef}>
+                <label>Jed. mjera</label>
+                <div
+                  className={styles.unitDropdownTrigger}
+                  onClick={() => setUnitDropdownOpen((prev) => !prev)}
+                >
+                  <span className={itemUnit ? styles.unitSelected : styles.unitPlaceholder}>
+                    {itemUnit
+                      ? units.find((u) => u.id === itemUnit)?.name || "—"
+                      : "Odaberi"}
+                  </span>
+                  <svg className={styles.unitChevron} width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                {unitDropdownOpen && (
+                  <div className={styles.unitDropdownMenu}>
+                    {units.map((unit) => (
+                      <div
+                        key={unit.id}
+                        className={`${styles.unitDropdownItem} ${itemUnit === unit.id ? styles.unitDropdownItemActive : ""}`}
+                        onClick={() => {
+                          setItemUnit(unit.id);
+                          setUnitDropdownOpen(false);
+                        }}
+                      >
+                        <span>{unit.name}</span>
+                        <button
+                          type="button"
+                          className={styles.unitDeleteBtn}
+                          onClick={(e) => handleDeleteUnit(e, unit.id)}
+                          title="Izbriši"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                            <path d="M5.5 2.5h3M2 4h10m-1 0-.35 5.26c-.1 1.47-.15 2.2-.54 2.75a2 2 0 0 1-.87.7c-.6.29-1.34.29-2.81.29h-.86c-1.47 0-2.2 0-2.81-.29a2 2 0 0 1-.87-.7c-.39-.55-.44-1.28-.54-2.75L3 4m3 3v3m2-3v3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                    <div
+                      className={styles.unitDropdownAdd}
+                      onClick={() => {
+                        setUnitDropdownOpen(false);
+                        setShowUnitModal(true);
+                      }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M7 3v8M3 7h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                      </svg>
+                      <span>Dodaj novu</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className={styles.formGroup}>
                 <label htmlFor="itemQuantity">Količina</label>
                 <input
@@ -228,6 +361,7 @@ export default function OfferForm() {
                 type="button"
                 className={styles.addItemBtn}
                 onClick={handleAddItem}
+                disabled={!itemName.trim() || !itemUnit || !itemQuantity || itemQuantity <= 0 || !itemPrice || itemPrice < 0}
               >
                 Dodaj proizvod
               </button>
@@ -239,6 +373,7 @@ export default function OfferForm() {
                 <table className={styles.itemsTable}>
                   <colgroup>
                     <col className={styles.nameColumn} />
+                    <col className={styles.unitColumn} />
                     <col className={styles.quantityColumn} />
                     <col className={styles.priceColumn} />
                     <col className={styles.totalColumn} />
@@ -247,9 +382,10 @@ export default function OfferForm() {
                   <thead>
                     <tr>
                       <th className={styles.nameHeader}>Naziv</th>
-                      <th className={styles.numberHeader}>Količina</th>
-                      <th className={styles.numberHeader}>Cijena (€)</th>
-                      <th className={styles.numberHeader}>Ukupno (€)</th>
+                      <th className={styles.unitHeader}>Jed. mjera</th>
+                      <th className={styles.quantityHeader}>Količina</th>
+                      <th className={styles.priceHeader}>Cijena (€)</th>
+                      <th className={styles.totalHeader}>Ukupno (€)</th>
                       <th className={styles.actionHeader}>Radnja</th>
                     </tr>
                   </thead>
@@ -259,15 +395,18 @@ export default function OfferForm() {
                         <td className={styles.nameCell} data-label="Naziv">
                           <span className={styles.cellValue}>{item.name}</span>
                         </td>
-                        <td className={styles.numberCell} data-label="Količina">
+                        <td className={styles.unitCell} data-label="Jed. mjera">
+                          <span className={styles.cellValue}>{item.unitOfMeasurement || "—"}</span>
+                        </td>
+                        <td className={styles.quantityCell} data-label="Količina">
                           <span className={styles.cellValue}>{item.quantity}</span>
                         </td>
-                        <td className={styles.numberCell} data-label="Cijena (€)">
+                        <td className={styles.priceCell} data-label="Cijena (€)">
                           <span className={styles.cellValue}>
                             {item.price.toFixed(2)}
                           </span>
                         </td>
-                        <td className={styles.numberCell} data-label="Ukupno (€)">
+                        <td className={styles.totalCell} data-label="Ukupno (€)">
                           <span className={styles.cellValue}>
                             {calculateItemTotal(item.quantity, item.price)}
                           </span>
@@ -315,6 +454,76 @@ export default function OfferForm() {
           </button>
         </div>
       </form>
+
+      {/* Unit of Measurement Modal */}
+      {showUnitModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowUnitModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <h3 className={styles.modalTitle}>Nova jedinica mjere</h3>
+            <div className={styles.formGroup}>
+              <label htmlFor="newUnitName">Naziv</label>
+              <input
+                id="newUnitName"
+                type="text"
+                placeholder="npr. kom, kg, m²"
+                value={newUnitName}
+                onChange={(e) => setNewUnitName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleCreateUnit()}
+                autoFocus
+                maxLength={50}
+              />
+            </div>
+            <div className={styles.modalActions}>
+              <button
+                type="button"
+                className={styles.modalCancelBtn}
+                onClick={() => {
+                  setShowUnitModal(false);
+                  setNewUnitName("");
+                }}
+              >
+                Odustani
+              </button>
+              <button
+                type="button"
+                className={styles.modalSaveBtn}
+                onClick={handleCreateUnit}
+                disabled={!newUnitName.trim() || unitLoading}
+              >
+                {unitLoading ? "Spremanje..." : "Spremi"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Unit Confirmation Modal */}
+      {deleteUnitId !== null && (
+        <div className={styles.modalOverlay} onClick={() => setDeleteUnitId(null)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <h3 className={styles.modalTitle}>Brisanje jedinice mjere</h3>
+            <p className={styles.modalText}>
+              Jeste li sigurni da želite izbrisati ovu jedinicu mjere?
+            </p>
+            <div className={styles.modalActions}>
+              <button
+                type="button"
+                className={styles.modalCancelBtn}
+                onClick={() => setDeleteUnitId(null)}
+              >
+                Odustani
+              </button>
+              <button
+                type="button"
+                className={styles.modalDeleteBtn}
+                onClick={confirmDeleteUnit}
+              >
+                Izbriši
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

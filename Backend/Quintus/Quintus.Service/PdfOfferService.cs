@@ -10,6 +10,7 @@ using iText.Layout.Element;
 using iText.Layout.Properties;
 using Quintus.Model;
 using Quintus.Model.Entities;
+using Quintus.Service.Common;
 using System.Globalization;
 using static iText.Kernel.Font.PdfFontFactory;
 
@@ -18,6 +19,12 @@ namespace Quintus.Service
     public class PdfOfferService
     {
         private const string LogoUrl = "https://quintus.fcuric.eu/_next/image?url=%2Fimages%2Flogo.png&w=256&q=75";
+        private readonly ISiteSettingsService _siteSettingsService;
+
+        public PdfOfferService(ISiteSettingsService siteSettingsService)
+        {
+            _siteSettingsService = siteSettingsService;
+        }
 
         public async Task<byte[]> GenerateOfferPdfAsync(Offer offer)
         {
@@ -47,7 +54,15 @@ namespace Quintus.Service
                         throw new FileNotFoundException($"Font not found: {fontPath}");
                     document.SetFont(font);
 
-                    // Logo (best effort) - keep aspect ratio
+                    // Header: logo on the left, company info on the right
+                    var siteSettings = await _siteSettingsService.GetSiteSettingsAsync();
+
+                    var headerTable = new Table(UnitValue.CreatePercentArray(new float[] { 50, 50 }))
+                        .SetWidth(UnitValue.CreatePercentValue(100))
+                        .SetBorder(Border.NO_BORDER);
+
+                    // Logo cell
+                    var logoCell = new Cell().SetBorder(Border.NO_BORDER).SetVerticalAlignment(VerticalAlignment.MIDDLE);
                     try
                     {
                         using var client = new HttpClient();
@@ -55,15 +70,28 @@ namespace Quintus.Service
                         var imageData = ImageDataFactory.Create(imageBytes);
 
                         var logo = new iText.Layout.Element.Image(imageData)
-                            .ScaleToFit(80, 80) // preserves aspect ratio
+                            .ScaleToFit(200, 200)
                             .SetHorizontalAlignment(HorizontalAlignment.LEFT);
 
-                        document.Add(logo);
+                        logoCell.Add(logo);
                     }
                     catch
                     {
                         // ignore
                     }
+                    headerTable.AddCell(logoCell);
+
+                    // Company info cell
+                    var infoCell = new Cell().SetBorder(Border.NO_BORDER)
+                        .SetVerticalAlignment(VerticalAlignment.MIDDLE)
+                        .SetTextAlignment(TextAlignment.RIGHT);
+                    infoCell.Add(new Paragraph(siteSettings.Address).SetFontSize(9).SetMarginBottom(2));
+                    infoCell.Add(new Paragraph(siteSettings.PhoneNumber).SetFontSize(9).SetMarginBottom(2));
+                    infoCell.Add(new Paragraph(siteSettings.ContactEmail).SetFontSize(9).SetMarginBottom(2));
+                    infoCell.Add(new Paragraph($"OIB: {siteSettings.Oib}").SetFontSize(9).SetMarginBottom(0));
+                    headerTable.AddCell(infoCell);
+
+                    document.Add(headerTable);
 
                     // Title centered
                     document.Add(new Paragraph("PONUDA")
@@ -73,12 +101,6 @@ namespace Quintus.Service
                         .SetMarginTop(16)
                         .SetMarginBottom(18));
 
-                    // Company
-                    document.Add(new Paragraph("Quintus - Instalaterske usluge")
-                        .SetFontSize(12)
-                        .SimulateBold()
-                        .SetMarginBottom(10));
-
                     // Buyer info
                     document.Add(new Paragraph($"Kupac: {offer.BuyerName ?? ""}").SetMarginBottom(5).SetFontSize(10));
                     document.Add(new Paragraph($"Email: {offer.BuyerEmail ?? ""}").SetMarginBottom(5).SetFontSize(10));
@@ -87,6 +109,7 @@ namespace Quintus.Service
 
                     // Date with Croatian month
                     document.Add(new Paragraph($"Datum: {offer.CreatedAt.ToString("dd. MMMM yyyy.", hrCulture)}")
+                        .SetTextAlignment(TextAlignment.RIGHT)
                         .SetMarginBottom(16).SetFontSize(10));
 
                     // Helpers for nicer cells
@@ -102,13 +125,13 @@ namespace Quintus.Service
                             .SetTextAlignment(alignment);
 
                     // Column widths: name wider, numbers narrower
-                    var table = new Table(UnitValue.CreatePercentArray(new float[] { 52, 16, 16, 16 }))
+                    var table = new Table(UnitValue.CreatePercentArray(new float[] { 36, 16, 16, 16, 16 }))
                         .SetWidth(UnitValue.CreatePercentValue(100))
                         .SetMarginTop(10)
                         .SetFontSize(10);
 
                     // Helper styles
-                    static Cell HeaderCellModern(string text)
+                    static Cell HeaderCellModern(string text, TextAlignment align = TextAlignment.LEFT)
                     {
                         return new Cell()
                             .Add(new Paragraph(text).SimulateBold())
@@ -117,6 +140,7 @@ namespace Quintus.Service
                             .SetPaddingLeft(8)
                             .SetPaddingRight(8)
                             .SetVerticalAlignment(VerticalAlignment.MIDDLE)
+                            .SetTextAlignment(align)
                             .SetBorder(Border.NO_BORDER)
                             .SetFontColor(ColorConstants.WHITE)
                             .SetBackgroundColor(new DeviceRgb(32, 41, 57)); // dark slate-ish
@@ -143,10 +167,11 @@ namespace Quintus.Service
                     }
 
                     // Header row
-                    table.AddHeaderCell(HeaderCellModern("Naziv"));
-                    table.AddHeaderCell(HeaderCellModern("Količina"));
-                    table.AddHeaderCell(HeaderCellModern("Cijena (€)"));
-                    table.AddHeaderCell(HeaderCellModern("Ukupno (€)"));
+                    table.AddHeaderCell(HeaderCellModern("Naziv", TextAlignment.LEFT));
+                    table.AddHeaderCell(HeaderCellModern("Mj. jed.", TextAlignment.CENTER));
+                    table.AddHeaderCell(HeaderCellModern("Količina", TextAlignment.RIGHT));
+                    table.AddHeaderCell(HeaderCellModern("Cijena (€)", TextAlignment.RIGHT));
+                    table.AddHeaderCell(HeaderCellModern("Ukupno (€)", TextAlignment.RIGHT));
 
                     // Body rows (zebra striping)
                     int row = 0;
@@ -155,6 +180,7 @@ namespace Quintus.Service
                         bool shade = (row % 2 == 1);
 
                         table.AddCell(BodyCellModern(item.Name ?? "", TextAlignment.LEFT, shade));
+                        table.AddCell(BodyCellModern(item.UnitOfMeasurement ?? "", TextAlignment.CENTER, shade));
                         table.AddCell(BodyCellModern(item.Quantity.ToString("F2", hrCulture), TextAlignment.RIGHT, shade));
                         table.AddCell(BodyCellModern(item.Price.ToString("F2", hrCulture), TextAlignment.RIGHT, shade));
                         table.AddCell(BodyCellModern(item.Total.ToString("F2", hrCulture), TextAlignment.RIGHT, shade));

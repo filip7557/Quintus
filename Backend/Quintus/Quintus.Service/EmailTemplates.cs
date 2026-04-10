@@ -4,6 +4,8 @@ namespace Quintus.Service
 {
     internal static class EmailTemplates
     {
+        private const string FontStack = "font-family:'Segoe UI',Arial,Helvetica,sans-serif;";
+
         public static string Build(string title, string intro, string? ctaText = null, string? ctaUrl = null, string? outro = null, string? logoUrl = null)
         {
             var safeTitle = WebUtility.HtmlEncode(title);
@@ -13,112 +15,104 @@ namespace Quintus.Service
             var safeCtaUrl = WebUtility.HtmlEncode(ctaUrl ?? "");
             var safeCtaText = WebUtility.HtmlEncode(ctaText ?? "");
 
-            var outroBlock = safeOutro == null
-                ? string.Empty
-                : $"<tr><td style=\"padding:0 22px 22px 22px;text-align:center;\"><div style=\"font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:rgba(234,242,255,0.72);\">{safeOutro}</div></td></tr>";
+            var logoHtml = string.IsNullOrWhiteSpace(logoUrl)
+                ? $"<div style=\"{FontStack}font-size:20px;font-weight:700;color:#202939;text-align:center;\">Quintus</div>"
+                : $@"<img src=""{WebUtility.HtmlEncode(logoUrl)}"" width=""120"" alt=""Quintus"" style=""display:block;margin:0 auto;border:0;outline:none;text-decoration:none;height:auto;padding:10px 14px;background-color:#ffffff;border-radius:10px;"" />";
 
-            var logoBlock = string.IsNullOrWhiteSpace(logoUrl)
-                ? "<div style=\"font-family:Arial,Helvetica,sans-serif;font-size:18px;font-weight:700;color:#eaf2ff;text-align:center;\">Quintus</div>"
-                : $@"<table role=""presentation"" cellspacing=""0"" cellpadding=""0"" style=""margin:0 auto;border-collapse:separate;"">
-                      <tr>
-                        <td bgcolor=""#ffffff"" style=""background:#ffffff !important;border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:8px 12px;"">
-                          <img src=""{WebUtility.HtmlEncode(logoUrl)}"" width=""120"" alt=""Quintus"" style=""display:block;border:0;outline:none;text-decoration:none;height:auto;"" />
-                        </td>
-                      </tr>
-                    </table>";
-
-            // Email-safe HTML: table layout + inline styles
-            if (safeCtaUrl != "" && safeCtaText == "")
-                return $@"<!doctype html>
-<html>
-  <head>
-    <meta charset=""utf-8"" />
-    <meta name=""viewport"" content=""width=device-width, initial-scale=1"" />
-  </head>
-  <body style=""margin:0;padding:0;background-color:#2e3336;"">
-    <table role=""presentation"" width=""100%"" cellspacing=""0"" cellpadding=""0"" style=""background-color:#2e3336;padding:32px 16px;"">
-      <tr>
-        <td align=""center"" style=""text-align:center;"">
-          <table role=""presentation"" width=""100%"" cellspacing=""0"" cellpadding=""0"" style=""max-width:620px;margin:0 auto;border-collapse:separate;border-spacing:0;border:1px solid rgba(255,255,255,0.16);border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%);"">
+            var ctaBlock = string.Empty;
+            if (!string.IsNullOrEmpty(safeCtaUrl) && !string.IsNullOrEmpty(safeCtaText))
+            {
+                ctaBlock = $@"
             <tr>
-              <td style=""padding:22px 22px 12px 22px;text-align:center;"">
-                {logoBlock}
-                <div style=""margin-top:12px;font-family:Arial,Helvetica,sans-serif;font-size:22px;line-height:1.25;font-weight:700;color:#eaf2ff;text-align:center;"">{safeTitle}</div>
-              </td>
-            </tr>
-            <tr>
-              <td style=""padding:0 22px 18px 22px;text-align:center;"">
-                <div style=""font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.7;color:rgba(234,242,255,0.84);text-align:center;"">{safeIntro}</div>
-              </td>
-            </tr>
-            <tr>
-              <td style=""padding:0 22px 22px 22px;text-align:center;"">
+              <td style=""padding:4px 32px 24px 32px;text-align:center;"">
                 <table role=""presentation"" cellspacing=""0"" cellpadding=""0"" style=""border-collapse:separate;margin:0 auto;"">
                   <tr>
-                    <td bgcolor=""#6ea8fe"" style=""border-radius:10px;"">
-                      <a href=""{safeCtaUrl}"" style=""display:inline-block;padding:12px 18px;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px;background:linear-gradient(90deg,#6ea8fe,#8fc6ff);"">{safeCtaText}</a>
+                    <td bgcolor=""#202939"" style=""border-radius:8px;text-align:center;"">
+                      <a href=""{safeCtaUrl}"" style=""display:inline-block;padding:12px 28px;{FontStack}font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:8px;"">{safeCtaText}</a>
                     </td>
                   </tr>
                 </table>
-                <div style=""margin-top:14px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:rgba(234,242,255,0.68);text-align:center;word-break:break-all;"">{(safeCtaUrl == "" ? "" : "Ako se gumb ne otvara, kopirajte poveznicu u preglednik:")}<br/>
-                  <a href=""{safeCtaUrl}"" style=""color:#8fc6ff;text-decoration:none;"">{safeCtaUrl}</a>
+                <div style=""margin-top:12px;{FontStack}font-size:11px;line-height:1.5;color:#999999;text-align:center;word-break:break-all;"">
+                  Ako se gumb ne otvara, kopirajte poveznicu u preglednik:<br/>
+                  <a href=""{safeCtaUrl}"" style=""color:#3b6fb5;text-decoration:none;"">{safeCtaUrl}</a>
                 </div>
               </td>
-            </tr>
-            {outroBlock}
+            </tr>";
+            }
+
+            var outroBlock = safeOutro == null
+                ? string.Empty
+                : $@"
             <tr>
-              <td style=""padding:16px 22px 20px 22px;border-top:1px solid rgba(255,255,255,0.10);text-align:center;"">
-                <div style=""font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.6;color:rgba(234,242,255,0.55);text-align:center;"">
-                  © {DateTime.UtcNow.Year} Quintus
-                </div>
+              <td style=""padding:0 32px 24px 32px;text-align:center;"">
+                <div style=""{FontStack}font-size:13px;line-height:1.6;color:#777777;"">{safeOutro}</div>
               </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
-</html>";
-            else
-                return $@"<!doctype html>
-<html>
+            </tr>";
+
+            return $@"<!doctype html>
+<html lang=""hr"">
   <head>
     <meta charset=""utf-8"" />
     <meta name=""viewport"" content=""width=device-width, initial-scale=1"" />
+    <meta name=""color-scheme"" content=""light only"" />
+    <meta name=""supported-color-schemes"" content=""light only"" />
+    <style>
+      :root {{ color-scheme: light only; }}
+    </style>
   </head>
-  <body style=""margin:0;padding:0;background-color:#2e3336;"">
-    <table role=""presentation"" width=""100%"" cellspacing=""0"" cellpadding=""0"" style=""background-color:#2e3336;padding:32px 16px;"">
+  <body style=""margin:0;padding:0;background-color:#f0f2f5;"">
+    <table role=""presentation"" width=""100%"" cellspacing=""0"" cellpadding=""0"" style=""background-color:#f0f2f5;padding:32px 16px;"">
       <tr>
-        <td align=""center"" style=""text-align:center;"">
-          <table role=""presentation"" width=""100%"" cellspacing=""0"" cellpadding=""0"" style=""max-width:620px;margin:0 auto;border-collapse:separate;border-spacing:0;border:1px solid rgba(255,255,255,0.16);border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%);"">
+        <td align=""center"">
+
+          <!-- Card -->
+          <table role=""presentation"" width=""100%"" cellspacing=""0"" cellpadding=""0"" style=""max-width:600px;margin:0 auto;border-collapse:separate;border-spacing:0;border-radius:12px;background-color:#ffffff;"">
+
+            <!-- Logo -->
             <tr>
-              <td style=""padding:22px 22px 12px 22px;text-align:center;"">
-                {logoBlock}
-                <div style=""margin-top:12px;font-family:Arial,Helvetica,sans-serif;font-size:22px;line-height:1.25;font-weight:700;color:#eaf2ff;text-align:center;"">{safeTitle}</div>
+              <td style=""padding:28px 32px 0 32px;text-align:center;"">
+                {logoHtml}
               </td>
             </tr>
+
+            <!-- Divider -->
             <tr>
-              <td style=""padding:0 22px 18px 22px;text-align:center;"">
-                <div style=""font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.7;color:rgba(234,242,255,0.84);text-align:center;"">{safeIntro}</div>
+              <td style=""padding:16px 32px 0 32px;"">
+                <div style=""border-top:1px solid #e8eaed;""></div>
               </td>
             </tr>
+
+            <!-- Title -->
             <tr>
-              <td style=""padding:0 22px 22px 22px;text-align:center;"">
-                <table role=""presentation"" cellspacing=""0"" cellpadding=""0"" style=""border-collapse:separate;margin:0 auto;"">
-                  <tr>
-                  </tr>
-                </table>
+              <td style=""padding:20px 32px 8px 32px;text-align:center;"">
+                <div style=""{FontStack}font-size:22px;line-height:1.3;font-weight:700;color:#202939;"">{safeTitle}</div>
               </td>
             </tr>
+
+            <!-- Body -->
+            <tr>
+              <td style=""padding:4px 32px 24px 32px;"">
+                <div style=""{FontStack}font-size:14px;line-height:1.7;color:#444444;text-align:left;"">{safeIntro}</div>
+              </td>
+            </tr>
+
+            {ctaBlock}
             {outroBlock}
+
+          </table>
+          <!-- End Card -->
+
+          <!-- Footer -->
+          <table role=""presentation"" width=""100%"" cellspacing=""0"" cellpadding=""0"" style=""max-width:600px;margin:0 auto;"">
             <tr>
-              <td style=""padding:16px 22px 20px 22px;border-top:1px solid rgba(255,255,255,0.10);text-align:center;"">
-                <div style=""font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.6;color:rgba(234,242,255,0.55);text-align:center;"">
-                  © {DateTime.UtcNow.Year} Quintus
+              <td style=""padding:16px 32px 0 32px;text-align:center;"">
+                <div style=""{FontStack}font-size:11px;line-height:1.5;color:#999999;"">
+                  &#169; {DateTime.UtcNow.Year} Quintus
                 </div>
               </td>
             </tr>
           </table>
+
         </td>
       </tr>
     </table>

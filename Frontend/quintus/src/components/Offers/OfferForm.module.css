@@ -175,7 +175,7 @@
 
 .itemInputGroup {
   display: grid;
-  grid-template-columns: 1fr 120px 120px auto;
+  grid-template-columns: 1fr 130px 120px 120px auto;
   gap: 12px;
   align-items: flex-end;
 }
@@ -193,14 +193,238 @@
   box-shadow: 0 6px 16px rgba(110, 168, 254, 0.15);
 }
 
-.addItemBtn:hover {
+.addItemBtn:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(110, 168, 254, 0.2);
 }
 
-.addItemBtn:active {
+.addItemBtn:active:not(:disabled) {
   transform: translateY(0);
   box-shadow: 0 4px 12px rgba(110, 168, 254, 0.15);
+}
+
+.addItemBtn:disabled {
+  background: linear-gradient(90deg, #4a4a4a, #5a5a5a);
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Unit Dropdown */
+.unitDropdownTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0.01)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  color: #eaf2ff;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: box-shadow 0.18s ease, border-color 0.12s ease;
+  user-select: none;
+  box-sizing: border-box;
+  height: calc(1em * 1.15 + 24px + 2px);
+}
+
+.unitDropdownTrigger:hover {
+  border-color: rgba(138, 180, 255, 0.4);
+}
+
+.unitSelected {
+  color: #eaf2ff;
+}
+
+.unitPlaceholder {
+  color: rgba(234, 242, 255, 0.45);
+}
+
+.unitChevron {
+  color: rgba(234, 242, 255, 0.5);
+  flex-shrink: 0;
+}
+
+.unitDropdownMenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background: rgba(30, 34, 40, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  z-index: 50;
+  overflow: hidden;
+  max-height: 220px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(143, 198, 255, 0.45) transparent;
+}
+
+.unitDropdownItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  cursor: pointer;
+  color: rgba(234, 242, 255, 0.85);
+  font-size: 0.9rem;
+  transition: background 0.15s ease;
+}
+
+.unitDropdownItem:hover {
+  background: rgba(110, 168, 254, 0.1);
+}
+
+.unitDropdownItemActive {
+  background: rgba(110, 168, 254, 0.15);
+  color: #8fc6ff;
+}
+
+.unitDeleteBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: rgba(255, 107, 107, 0.6);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.15s ease, background 0.15s ease;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.unitDeleteBtn:hover {
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.12);
+}
+
+.unitDropdownAdd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  color: #6ea8fe;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background 0.15s ease;
+}
+
+.unitDropdownAdd:hover {
+  background: rgba(110, 168, 254, 0.08);
+}
+
+/* Modal */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modalContent {
+  background: linear-gradient(180deg, rgba(38, 42, 50, 1), rgba(30, 34, 40, 1));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 24px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modalTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #eaf2ff;
+  margin: 0;
+}
+
+.modalActions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.modalCancelBtn {
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(234, 242, 255, 0.8);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.modalCancelBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.modalSaveBtn {
+  padding: 10px 16px;
+  background: linear-gradient(90deg, #6ea8fe, #8fc6ff);
+  border: none;
+  color: white;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  box-shadow: 0 4px 12px rgba(110, 168, 254, 0.2);
+}
+
+.modalSaveBtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(110, 168, 254, 0.3);
+}
+
+.modalSaveBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.modalText {
+  color: rgba(234, 242, 255, 0.75);
+  font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.modalDeleteBtn {
+  padding: 10px 16px;
+  background: rgba(255, 107, 107, 0.15);
+  border: 1px solid rgba(255, 107, 107, 0.4);
+  color: #ff6b6b;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.modalDeleteBtn:hover {
+  background: rgba(255, 107, 107, 0.25);
+  border-color: rgba(255, 107, 107, 0.6);
 }
 
 /* Table Wrapper */
@@ -234,7 +458,7 @@
 
 .itemsTable {
   width: 100%;
-  min-width: 720px;
+  min-width: 820px;
   border-collapse: collapse;
   table-layout: fixed;
   font-size: 0.9rem;
@@ -242,6 +466,10 @@
 
 .nameColumn {
   width: auto;
+}
+
+.unitColumn {
+  width: 110px;
 }
 
 .quantityColumn,
@@ -261,7 +489,6 @@
 
 .itemsTable th {
   padding: 12px;
-  text-align: left;
   font-weight: 600;
   color: #eaf2ff;
   font-size: 0.85rem;
@@ -298,18 +525,32 @@
   min-width: 0;
 }
 
-.numberHeader {
-  text-align: left;
+.unitHeader,
+.unitCell {
+  text-align: center;
 }
 
-.numberCell {
+.quantityHeader,
+.quantityCell {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.priceHeader,
+.priceCell {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.totalHeader,
+.totalCell {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
 .actionHeader,
 .actionCell {
-  text-align: left;
+  text-align: center;
 }
 
 .deleteBtn {
@@ -469,7 +710,11 @@
 
   .itemsTable {
     font-size: 0.85rem;
-    min-width: 640px;
+    min-width: 740px;
+  }
+
+  .unitColumn {
+    width: 96px;
   }
 
   .quantityColumn,
@@ -619,7 +864,10 @@
   }
 
   .nameCell,
-  .numberCell,
+  .unitCell,
+  .quantityCell,
+  .priceCell,
+  .totalCell,
   .actionCell {
     text-align: left;
   }

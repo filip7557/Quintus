@@ -5,6 +5,7 @@ export async function createOffer({ buyerName, buyerEmail, buyerPhone, items = [
     // Ensure items are properly formatted as ItemDTO
     const formattedItems = (Array.isArray(items) ? items : []).map((item) => ({
       Name: item.name || item.Name,
+      UnitOfMeasurement: item.unitOfMeasurement || item.UnitOfMeasurement || null,
       Quantity: item.quantity || item.Quantity,
       Price: item.price || item.Price,
     }));

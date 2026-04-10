@@ -4,6 +4,7 @@
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public required string Name { get; set; }
+        public required string UnitOfMeasurement { get; set; }
         public required int Quantity { get; set; }
         public required decimal Price { get; set; }
 
@@ -13,6 +14,7 @@
     public class ItemDTO
     {
         public required string Name { get; set; }
+        public required string UnitOfMeasurement { get; set; }
         public required int Quantity { get; set; }
         public required decimal Price { get; set; }
     }

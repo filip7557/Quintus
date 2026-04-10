@@ -107,6 +107,9 @@ builder.Host
         containerBuilder.RegisterType<OfferRepository>().As<IOfferRepository>();
         containerBuilder.RegisterType<OfferService>().As<IOfferService>();
 
+        containerBuilder.RegisterType<UnitOfMeasurementRepository>().As<IUnitOfMeasurementRepository>();
+        containerBuilder.RegisterType<UnitOfMeasurementService>().As<IUnitOfMeasurementService>();
+
         containerBuilder.RegisterType<PdfOfferService>();
     });
 

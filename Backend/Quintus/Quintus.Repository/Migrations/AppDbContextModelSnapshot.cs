@@ -314,6 +314,33 @@ namespace Quintus.Repository.Migrations
                     b.ToTable("SiteSettings");
                 });
 
+            modelBuilder.Entity("Quintus.Model.Entities.UnitOfMeasurement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UnitsOfMeasurement");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("b1a3e4d7-89c2-4f6a-a5d8-3e7b9c1f2d4a"),
+                            Name = "M"
+                        },
+                        new
+                        {
+                            Id = new Guid("d4f6a8c2-1b3e-4d7f-9a5c-7e2b8d0f3a6c"),
+                            Name = "KOM"
+                        });
+                });
+
             modelBuilder.Entity("Quintus.Model.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -376,6 +403,10 @@ namespace Quintus.Repository.Migrations
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
+
+                    b.Property<string>("UnitOfMeasurement")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
