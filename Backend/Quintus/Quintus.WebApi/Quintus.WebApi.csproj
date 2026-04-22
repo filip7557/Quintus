@@ -25,6 +25,7 @@
     <ProjectReference Include="..\Quintus.Repository\Quintus.Repository.csproj" />
     <ProjectReference Include="..\Quintus.Service.Common\Quintus.Service.Common.csproj" />
     <ProjectReference Include="..\Quintus.Service\Quintus.Service.csproj" />
+    <ProjectReference Include="..\Quintus.Worker\Quintus.Worker.csproj" />
   </ItemGroup>
 
 </Project>

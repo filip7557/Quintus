@@ -103,7 +103,8 @@ namespace Quintus.Service
 
                     // Buyer info
                     document.Add(new Paragraph($"Kupac: {offer.BuyerName ?? ""}").SetMarginBottom(5).SetFontSize(10));
-                    document.Add(new Paragraph($"Email: {offer.BuyerEmail ?? ""}").SetMarginBottom(5).SetFontSize(10));
+                    if (!string.IsNullOrWhiteSpace(offer.BuyerEmail))
+                        document.Add(new Paragraph($"Email: {offer.BuyerEmail ?? ""}").SetMarginBottom(5).SetFontSize(10));
                     if (!string.IsNullOrWhiteSpace(offer.BuyerPhone))
                         document.Add(new Paragraph($"Telefon: {offer.BuyerPhone}").SetMarginBottom(15).SetFontSize(10));
 

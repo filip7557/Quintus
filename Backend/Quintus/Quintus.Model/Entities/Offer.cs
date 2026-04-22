@@ -4,7 +4,7 @@
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public required string BuyerName { get; set; }
-        public required string BuyerEmail { get; set; }
+        public string? BuyerEmail { get; set; }
         public string? BuyerPhone { get; set; }
         public required List<Item> Items { get; set; }
 
@@ -16,7 +16,7 @@
     public class OfferDTO
     {
         public required string BuyerName { get; set; }
-        public required string BuyerEmail { get; set; }
+        public string? BuyerEmail { get; set; }
         public string? BuyerPhone { get; set; }
         public required List<ItemDTO> Items { get; set; }
     }

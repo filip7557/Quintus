@@ -20,7 +20,7 @@
   cursor: pointer;
   /* Match .nav-link styling (globals.css) */
   padding: 0.35rem 0.2rem;
-  color: #000;
+  color: rgba(234, 242, 255, 0.85);
   font-size: large;
   font-weight: 200;
   font-family: var(--font-body);
@@ -50,29 +50,29 @@
   position: absolute;
   top: 100%;
   right: 0;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(40, 46, 50, 0.92);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 8px;
   min-width: 160px;
-
-  /* ADDED */
-  padding: 6px;            /* give container inner spacing */
+  padding: 6px;
   box-sizing: border-box;
-  overflow: hidden;        /* prevents hover backgrounds from overflowing */
+  overflow: hidden;
   opacity: 0;
   visibility: hidden;
   transform: translateY(10px);
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 @media (max-width: 992px) {
   .accountTrigger {
     width: 100%;
-    justify-content: space-between;
+    display: flex;
+    justify-content: flex-start;
+    text-align: left;
     color: #fff;
-    padding: 0.5rem 0;
+    padding: 0.5rem 1rem;
     font-size: 1rem;
     font-weight: 500;
     font-family: var(--font-body);
@@ -104,7 +104,7 @@
 
   .open .accountDropdown {
     margin-top: 8px;
-    max-height: 240px;
+    max-height: 340px;
     opacity: 1;
     padding: 6px;
     border-width: 1px;
@@ -136,37 +136,61 @@
 .dropdownItem {
   display: block;
   padding: 8px 12px;
-  color: var(--text);
+  color: rgba(234, 242, 255, 0.85);
   text-decoration: none;
-  transition: background-color 0.12s ease;
+  transition: background-color 0.12s ease, color 0.12s ease;
   width: 100%;
   text-align: left;
   border: none;
   background: transparent;
   font-size: inherit;
   cursor: pointer;
-
-  /* ADDED: make hover background match item bounds */
-  margin: 4px 0;
+  margin: 2px 0;
   border-radius: 6px;
   box-sizing: border-box;
 }
 
 .dropdownItem:hover {
-  /* slightly smaller alpha so it doesn't visually overflow */
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(110, 168, 254, 0.22);
+  color: #eaf2ff;
 }
 
-@media (hover: none) and (pointer: coarse) {
-  .dropdownItem:hover {
-    background: transparent;
-  }
+/* ── Ponude sub-menu ── */
+.subMenuWrapper {
+  /* contains the trigger + collapsible sub-items */
 }
 
-.dropdownItem:first-child {
-  border-radius: 8px 8px 0 0;
+.subMenuTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 }
 
-.dropdownItem:last-child {
-  border-radius: 0 0 8px 8px;
+.subMenuArrow {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.subMenuOpen .subMenuArrow {
+  transform: rotate(180deg);
+}
+
+.subMenuItems {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease, opacity 0.15s ease;
+  opacity: 0;
+}
+
+.subMenuOpen .subMenuItems {
+  max-height: 120px;
+  opacity: 1;
+}
+
+.subMenuItem {
+  padding-left: 24px;
+  font-size: 0.93em;
+  margin-top: 0;
+  margin-bottom: 0;
 }

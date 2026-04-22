@@ -5,11 +5,22 @@ const api = axios.create({
   baseURL: API_BASE_URL,
 });
 
+const isDev = process.env.NODE_ENV !== "production";
+
+function logRefreshEvent(message, meta) {
+  if (!isDev) return;
+  if (meta !== undefined) {
+    console.info("[auth-refresh]", message, meta);
+    return;
+  }
+  console.info("[auth-refresh]", message);
+}
+
 let isRefreshing = false;
 let refreshSubscribers = [];
 
-function onTokenRefreshed(newToken) {
-  refreshSubscribers.forEach((callback) => callback(newToken));
+function notifyRefreshSubscribers(newToken, refreshError = null) {
+  refreshSubscribers.forEach((callback) => callback(newToken, refreshError));
   refreshSubscribers = [];
 }
 
@@ -19,11 +30,19 @@ function addSubscriber(callback) {
 
 // Endpoints that should skip refresh
 const SKIP_REFRESH_ENDPOINTS = [
-  "/Auth/getCurrentUser",
-  "/Auth/login",
-  "/Auth/register",
-  "/Auth/logout",
+  "/auth/getcurrentuser",
+  "/auth/login",
+  "/auth/register",
+  "/auth/logout",
+  "/auth/refresh",
 ];
+
+function shouldSkipRefresh(pathname) {
+  const normalized = String(pathname || "").toLowerCase();
+  return SKIP_REFRESH_ENDPOINTS.some(
+    (endpoint) => normalized === endpoint || normalized.endsWith(endpoint)
+  );
+}
 
 // Attach token to headers
 api.interceptors.request.use((config) => {
@@ -38,24 +57,32 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
+    const originalRequest = error?.config;
+    if (!originalRequest) return Promise.reject(error);
+
     const requestUrl = originalRequest.url || "";
 
     // Normalize URL to pathname
     const requestPath = new URL(requestUrl, api.defaults.baseURL).pathname;
 
     // Skip refresh for endpoints in skip list or if not a 401 error
-    if (
-      SKIP_REFRESH_ENDPOINTS.includes(requestPath) ||
-      error.response?.status !== 401 ||
-      originalRequest._retry
-    ) {
+    if (shouldSkipRefresh(requestPath) || error.response?.status !== 401 || originalRequest._retry) {
       return Promise.reject(error);
     }
 
     if (isRefreshing) {
-      return new Promise((resolve) => {
-        addSubscriber((newToken) => {
+      logRefreshEvent("Request queued while refresh is in progress", {
+        requestPath,
+        queueSize: refreshSubscribers.length + 1,
+      });
+      return new Promise((resolve, reject) => {
+        addSubscriber((newToken, refreshError) => {
+          if (refreshError || !newToken) {
+            reject(refreshError || new Error("Token refresh failed"));
+            return;
+          }
+
+          originalRequest.headers = originalRequest.headers || {};
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
           resolve(api(originalRequest));
         });
@@ -64,6 +91,7 @@ api.interceptors.response.use(
 
     originalRequest._retry = true;
     isRefreshing = true;
+    logRefreshEvent("Attempting token refresh", { requestPath });
 
     try {
       const refreshToken = localStorage.getItem("refreshToken");
@@ -74,15 +102,32 @@ api.interceptors.response.use(
         { refreshToken }
       );
 
-      const newAccessToken = response.data.accessToken;
+      const newAccessToken = response?.data?.accessToken || response?.data?.AccessToken;
+      const newRefreshToken = response?.data?.refreshToken || response?.data?.RefreshToken;
+      if (!newAccessToken) throw new Error("Refresh response missing access token");
+
       localStorage.setItem("accessToken", newAccessToken);
+      if (newRefreshToken) {
+        localStorage.setItem("refreshToken", newRefreshToken);
+      }
       api.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
 
-      onTokenRefreshed(newAccessToken);
+      logRefreshEvent("Token refresh succeeded", {
+        requestPath,
+        rotatedRefreshToken: Boolean(newRefreshToken),
+      });
+
+      notifyRefreshSubscribers(newAccessToken, null);
 
       return api(originalRequest);
     } catch (refreshError) {
+      logRefreshEvent("Token refresh failed", {
+        requestPath,
+        status: refreshError?.response?.status,
+        message: refreshError?.message,
+      });
       console.error("Refresh token failed:", refreshError);
+      notifyRefreshSubscribers(null, refreshError);
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
       window.location.href = "/auth";

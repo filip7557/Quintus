@@ -10,6 +10,7 @@ using Quintus.Repository.Common;
 using Quintus.Repository.Context;
 using Quintus.Service;
 using Quintus.Service.Common;
+using Quintus.Worker;
 using Scalar.AspNetCore;
 using System.Text;
 using System.Threading.RateLimiting;
@@ -112,6 +113,9 @@ builder.Host
 
         containerBuilder.RegisterType<PdfOfferService>();
     });
+
+builder.Services.AddSingleton<IEmailQueue, EmailQueue>();
+builder.Services.AddHostedService<EmailWorkerService>();
 
 builder.Services.AddHttpContextAccessor();
 

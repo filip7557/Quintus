@@ -10,6 +10,7 @@ import { isAdmin, isAdminOrOwner } from "@/lib/authz";
 export default function AccountNav() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [offersOpen, setOffersOpen] = useState(false);
   const [admin, setAdmin] = useState(false);
   const [isAdminOrOwnerUser, setIsAdminOrOwnerUser] = useState(false);
   const router = useRouter();
@@ -94,6 +95,7 @@ export default function AccountNav() {
 
   const handleItemClick = () => {
     setIsOpen(false);
+    setOffersOpen(false);
   };
 
   return (
@@ -103,7 +105,7 @@ export default function AccountNav() {
     >
       <button
         type="button"
-        className={`${styles.accountTrigger} nav-link`}
+        className={styles.accountTrigger}
         aria-haspopup="menu"
         aria-expanded={isOpen}
         onClick={handleToggle}
@@ -143,13 +145,42 @@ export default function AccountNav() {
               Zahtjevi
             </Link>
             {isAdminOrOwnerUser ? (
-              <Link
-                href="/offers"
-                className={styles.dropdownItem}
-                onClick={handleItemClick}
-              >
-                Ponude
-              </Link>
+              <div className={`${styles.subMenuWrapper} ${offersOpen ? styles.subMenuOpen : ""}`}>
+                <button
+                  type="button"
+                  className={`${styles.dropdownItem} ${styles.subMenuTrigger}`}
+                  onClick={() => setOffersOpen((v) => !v)}
+                  aria-expanded={offersOpen}
+                >
+                  Ponude
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    className={styles.subMenuArrow}
+                  >
+                    <path d="M6 9l6 6 6-6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                <div className={styles.subMenuItems}>
+                  <Link
+                    href="/offers/create"
+                    className={`${styles.dropdownItem} ${styles.subMenuItem}`}
+                    onClick={handleItemClick}
+                  >
+                    Izrada ponude
+                  </Link>
+                  <Link
+                    href="/offers/list"
+                    className={`${styles.dropdownItem} ${styles.subMenuItem}`}
+                    onClick={handleItemClick}
+                  >
+                    Pretraga ponuda
+                  </Link>
+                </div>
+              </div>
             ) : null}
             {admin ? (
               <Link

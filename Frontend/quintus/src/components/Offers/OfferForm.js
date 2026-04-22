@@ -36,6 +36,24 @@ export default function OfferForm() {
     fetchUnits();
   }, []);
 
+  // Apply prefill from sessionStorage (set by offer details page)
+  useEffect(() => {
+    const raw = sessionStorage.getItem("offerPrefill");
+    if (!raw) return;
+    sessionStorage.removeItem("offerPrefill");
+    try {
+      const prefill = JSON.parse(raw);
+      if (prefill.buyerName) setBuyerName(prefill.buyerName);
+      if (prefill.buyerEmail) setBuyerEmail(prefill.buyerEmail);
+      if (prefill.buyerPhone) setBuyerPhone(prefill.buyerPhone);
+      if (Array.isArray(prefill.items) && prefill.items.length > 0) {
+        setItems(prefill.items);
+      }
+    } catch {
+      // ignore malformed data
+    }
+  }, []);
+
   // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -143,7 +161,7 @@ export default function OfferForm() {
     // Validation
     const errors = [];
     if (!buyerName.trim()) errors.push("Ime kupca je obavezno");
-    if (!buyerEmail.trim() || !buyerEmail.includes("@"))
+    if (buyerEmail.trim() && !buyerEmail.includes("@"))
       errors.push("Validan email je obavezan");
     if (items.length === 0) errors.push("Najmanje jedan proizvod je obavezan");
 
@@ -157,7 +175,7 @@ export default function OfferForm() {
     try {
       const response = await createOffer({
         buyerName: buyerName.trim(),
-        buyerEmail: buyerEmail.trim(),
+        buyerEmail: buyerEmail.trim() || null,
         buyerPhone: buyerPhone.trim() || null,
         items: items.map((item) => ({
           name: item.name,
@@ -200,7 +218,6 @@ export default function OfferForm() {
 
   const isFormValid =
     buyerName.trim().length > 0 &&
-    buyerEmail.trim().length > 0 &&
     items.length > 0;
 
   return (
@@ -236,14 +253,13 @@ export default function OfferForm() {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor="buyerEmail">Email kupca *</label>
+            <label htmlFor="buyerEmail">Email kupca (opcionalno)</label>
             <input
               id="buyerEmail"
               type="email"
               placeholder="kupac@primjer.com"
               value={buyerEmail}
               onChange={(e) => setBuyerEmail(e.target.value)}
-              required
             />
           </div>
 
