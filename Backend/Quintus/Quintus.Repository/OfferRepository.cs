@@ -34,7 +34,9 @@ namespace Quintus.Repository
         {
             try
             {
-                return await _context.Offers.FindAsync(offerId);
+                return await _context.Offers
+                    .Include(o => o.Items)
+                    .FirstOrDefaultAsync(o => o.Id == offerId);
             }
             catch (Exception ex)
             {

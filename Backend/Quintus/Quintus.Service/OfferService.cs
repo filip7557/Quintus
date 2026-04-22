@@ -2,7 +2,6 @@
 using Quintus.Model.Entities;
 using Quintus.Repository.Common;
 using Quintus.Service.Common;
-using System.Globalization;
 
 namespace Quintus.Service
 {
@@ -10,13 +9,13 @@ namespace Quintus.Service
     {
         private readonly IOfferRepository _offerRepository;
         private readonly PdfOfferService _pdfOfferService;
-        private readonly IEmailService _emailService;
+        private readonly IEmailQueue _emailQueue;
 
-        public OfferService(IOfferRepository offerRepository, PdfOfferService pdfOfferService, IEmailService emailService)
+        public OfferService(IOfferRepository offerRepository, PdfOfferService pdfOfferService, IEmailQueue emailQueue)
         {
             _offerRepository = offerRepository;
             _pdfOfferService = pdfOfferService;
-            _emailService = emailService;
+            _emailQueue = emailQueue;
         }
 
         public async Task<KeyValuePair<Guid, byte[]>> AddOfferAsync(OfferDTO offer)
@@ -38,13 +37,13 @@ namespace Quintus.Service
                     }
                 );
 
-            if (newOffer != null)
-            {
-                await SendOfferEmailAsync(newOffer.Id);
-                return new KeyValuePair<Guid, byte[]>(newOffer.Id, await GenerateOfferPdfAsync(newOffer.Id));
-            }
+            if (newOffer == null)
+                return new KeyValuePair<Guid, byte[]>(Guid.Empty, Array.Empty<byte>());
 
-            return new KeyValuePair<Guid, byte[]>(Guid.Empty, Array.Empty<byte>());
+            if (newOffer.BuyerEmail != null)
+                _emailQueue.Enqueue(new EmailJobItem(newOffer.Id));
+
+            return new KeyValuePair<Guid, byte[]>(newOffer.Id, await GenerateOfferPdfAsync(newOffer.Id));
         }
 
         public async Task<Offer?> GetOfferByIdAsync(Guid offerId)
@@ -71,31 +70,10 @@ namespace Quintus.Service
             return await _pdfOfferService.GenerateOfferPdfAsync(offer);
         }
 
-        public async Task SendOfferEmailAsync(Guid offerId)
+        public Task SendOfferEmailAsync(Guid offerId)
         {
-            var offer = await _offerRepository.GetOfferByIdAsync(offerId);
-            if (offer == null)
-                throw new KeyNotFoundException($"Ponuda s ID {offerId} nije pronađena.");
-
-            var pdfBytes = await _pdfOfferService.GenerateOfferPdfAsync(offer);
-
-            var hrCulture = new CultureInfo("hr-HR");
-
-            var subject = $"Vaša ponuda od {offer.CreatedAt.ToString("dd. MMMM yyyy.", hrCulture)}";
-            var html = EmailTemplates.Build(
-                title: "Vaša ponuda",
-                intro: $"Poštovani {offer.BuyerName},\n\nU prilogu se nalazi Vaša ponuda.",
-                outro: "Hvala što ste nas odabrali!",
-                logoUrl: "https://quintus.fcuric.eu/_next/image?url=%2Fimages%2Flogo.png&w=256&q=75"
-            );
-
-            await _emailService.SendEmailWithAttachmentAsync(
-                offer.BuyerEmail,
-                subject,
-                html,
-                pdfBytes,
-                $"Ponuda_{offer.Id:N}.pdf"
-            );
+            _emailQueue.Enqueue(new EmailJobItem(offerId));
+            return Task.CompletedTask;
         }
     }
 }

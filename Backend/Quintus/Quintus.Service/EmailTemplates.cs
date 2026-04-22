@@ -2,7 +2,7 @@ using System.Net;
 
 namespace Quintus.Service
 {
-    internal static class EmailTemplates
+    public static class EmailTemplates
     {
         private const string FontStack = "font-family:'Segoe UI',Arial,Helvetica,sans-serif;";
 

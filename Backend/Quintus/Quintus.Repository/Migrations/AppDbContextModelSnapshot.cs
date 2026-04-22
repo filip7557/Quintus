@@ -86,7 +86,6 @@ namespace Quintus.Repository.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("BuyerEmail")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("BuyerName")
