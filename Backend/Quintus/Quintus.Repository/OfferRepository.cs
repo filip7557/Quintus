@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Quintus.Common;
 using Quintus.Model.Entities;
 using Quintus.Repository.Common;
 using Quintus.Repository.Context;
@@ -21,7 +22,6 @@ namespace Quintus.Repository
                 _context.Offers.Add(offer);
                 await _context.SaveChangesAsync();
                 return offer;
-
             }
             catch (Exception ex)
             {
@@ -45,35 +45,39 @@ namespace Quintus.Repository
             }
         }
 
-        public async Task<IEnumerable<Offer>> GetOffersByBuyerEmailAsync(string buyerEmail)
+        public async Task<PagedResult<Offer>> GetOffersAsync(OfferFilter filter)
         {
-            try
-            {
-                return await _context.Offers
-                    .Where(o => o.BuyerEmail == buyerEmail)
-                    .ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error retrieving offers by buyer email: {ex.Message}");
-                return Enumerable.Empty<Offer>();
-            }
-        }
+            var query = _context.Offers.Include(o => o.Items).AsQueryable();
 
-        public async Task<IEnumerable<Offer>> GetOffersByBuyerNameAsync(string buyerName)
-        {
-            try
+            if (!string.IsNullOrWhiteSpace(filter.Search))
             {
-                return await _context.Offers
-                    .Where(o => o.BuyerName.ToLower().Contains(buyerName.ToLower()))
-                    .ToListAsync();
+                var search = filter.Search.ToLower();
+                query = query.Where(o =>
+                    o.BuyerName.ToLower().Contains(search) ||
+                    (o.BuyerEmail != null && o.BuyerEmail.ToLower().Contains(search)));
+            }
 
-            }
-            catch (Exception ex)
+            if (filter.DateFrom.HasValue)
+                query = query.Where(o => o.CreatedAt >= filter.DateFrom.Value);
+
+            if (filter.DateTo.HasValue)
+                query = query.Where(o => o.CreatedAt <= filter.DateTo.Value);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(o => o.CreatedAt)
+                .Skip((filter.Page - 1) * filter.PageSize)
+                .Take(filter.PageSize)
+                .ToListAsync();
+
+            return new PagedResult<Offer>
             {
-                Console.WriteLine($"Error retrieving offers by buyer name: {ex.Message}");
-                return Enumerable.Empty<Offer>();
-            }
+                Items = items,
+                TotalCount = totalCount,
+                Page = filter.Page,
+                PageSize = filter.PageSize
+            };
         }
     }
 }

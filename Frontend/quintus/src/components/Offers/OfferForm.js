@@ -36,6 +36,24 @@ export default function OfferForm() {
     fetchUnits();
   }, []);
 
+  // Apply prefill from sessionStorage (set by offer details page)
+  useEffect(() => {
+    const raw = sessionStorage.getItem("offerPrefill");
+    if (!raw) return;
+    sessionStorage.removeItem("offerPrefill");
+    try {
+      const prefill = JSON.parse(raw);
+      if (prefill.buyerName) setBuyerName(prefill.buyerName);
+      if (prefill.buyerEmail) setBuyerEmail(prefill.buyerEmail);
+      if (prefill.buyerPhone) setBuyerPhone(prefill.buyerPhone);
+      if (Array.isArray(prefill.items) && prefill.items.length > 0) {
+        setItems(prefill.items);
+      }
+    } catch {
+      // ignore malformed data
+    }
+  }, []);
+
   // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {

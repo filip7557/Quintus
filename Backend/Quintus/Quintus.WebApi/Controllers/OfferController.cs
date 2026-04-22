@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Quintus.Common;
 using Quintus.Model.Entities;
 using Quintus.Service.Common;
 
@@ -17,15 +18,19 @@ namespace Quintus.WebAPI.Controllers
         }
 
         [Authorize(Roles = "Admin,Owner")]
+        [HttpGet]
+        public async Task<IActionResult> GetOffersAsync([FromQuery] OfferFilter filter)
+        {
+            var result = await _offerService.GetOffersAsync(filter);
+            return Ok(result);
+        }
+
+        [Authorize(Roles = "Admin,Owner")]
         [HttpGet("{offerId}")]
         public async Task<IActionResult> GetOfferByIdAsync(Guid offerId)
         {
             var offer = await _offerService.GetOfferByIdAsync(offerId);
-            if (offer == null)
-            {
-                return NotFound();
-            }
-
+            if (offer == null) return NotFound();
             return Ok(offer);
         }
 
@@ -34,9 +39,7 @@ namespace Quintus.WebAPI.Controllers
         public async Task<IActionResult> AddOfferAsync([FromBody] OfferDTO offer)
         {
             if (offer == null || offer.Items == null || offer.Items.Count == 0)
-            {
                 return BadRequest("Neispravno ispunjena ponuda.");
-            }
             try
             {
                 var result = await _offerService.AddOfferAsync(offer);
@@ -44,25 +47,9 @@ namespace Quintus.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error sending pdf: {ex.ToString()}");
-                return StatusCode(500, "Nešto je pošlo po zlu. Pokušajte kasnije.");
+                Console.WriteLine($"Error sending pdf: {ex}");
+                return StatusCode(500, "Nesto je poslo po zlu. Pokusajte kasnije.");
             }
-        }
-
-        [Authorize(Roles = "Admin,Owner")]
-        [HttpGet("buyerName/{buyerName}")]
-        public async Task<IActionResult> GetOffersByBuyerNameAsync(string buyerName)
-        {
-            var offers = await _offerService.GetOffersByBuyerNameAsync(buyerName);
-            return Ok(offers);
-        }
-
-        [Authorize(Roles = "Admin,Owner")]
-        [HttpGet("buyerEmail/{buyerEmail}")]
-        public async Task<IActionResult> GetOffersByBuyerEmailAsync(string buyerEmail)
-        {
-            var offers = await _offerService.GetOffersByBuyerEmailAsync(buyerEmail);
-            return Ok(offers);
         }
 
         [Authorize(Roles = "Admin,Owner")]
@@ -74,14 +61,8 @@ namespace Quintus.WebAPI.Controllers
                 var pdfBytes = await _offerService.GenerateOfferPdfAsync(offerId);
                 return File(pdfBytes, "application/pdf", $"Ponuda_{offerId:N}.pdf");
             }
-            catch (KeyNotFoundException)
-            {
-                return NotFound("Ponuda nije pronađena.");
-            }
-            catch
-            {
-                return StatusCode(500, "Greška pri generiranju PDF-a.");
-            }
+            catch (KeyNotFoundException) { return NotFound("Ponuda nije pronadjena."); }
+            catch { return StatusCode(500, "Greska pri generiranju PDF-a."); }
         }
 
         [Authorize(Roles = "Admin,Owner")]
@@ -91,16 +72,10 @@ namespace Quintus.WebAPI.Controllers
             try
             {
                 await _offerService.SendOfferEmailAsync(offerId);
-                return Ok("Ponuda je uspješno poslana kupcu.");
+                return Ok("Ponuda je uspjesno poslana kupcu.");
             }
-            catch (KeyNotFoundException)
-            {
-                return NotFound("Ponuda nije pronađena.");
-            }
-            catch
-            {
-                return StatusCode(500, "Greška pri slanju e-maila.");
-            }
+            catch (KeyNotFoundException) { return NotFound("Ponuda nije pronadjena."); }
+            catch { return StatusCode(500, "Greska pri slanju e-maila."); }
         }
     }
 }
