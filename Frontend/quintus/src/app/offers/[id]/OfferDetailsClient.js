@@ -129,6 +129,11 @@ export default function OfferDetailsClient({ offerId }) {
     return items.reduce((sum, item) => sum + item.total, 0);
   }, [items]);
 
+  const customMessage = useMemo(
+    () => pickField(offer, ["CustomMessage", "customMessage"], null),
+    [offer]
+  );
+
   return (
     <>
       <NavBar />
@@ -210,6 +215,13 @@ export default function OfferDetailsClient({ offerId }) {
                   </table>
                 </div>
               )}
+
+              {customMessage ? (
+                <div className={styles.customMessage}>
+                  <span className={styles.label}>Napomena</span>
+                  <p className={styles.customMessageText}>{customMessage}</p>
+                </div>
+              ) : null}
 
               <div className={styles.actions}>
                 <button

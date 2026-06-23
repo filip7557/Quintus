@@ -22,6 +22,7 @@ export default function OfferForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [customMessage, setCustomMessage] = useState(null);
 
   // Unit of measurement state
   const [units, setUnits] = useState([]);
@@ -226,6 +227,7 @@ export default function OfferForm() {
           price: item.price,
           discountPercent: normalizeDiscountPercent(item.discountPercent),
         })),
+        customMessage: customMessage?.trim() || null,
       });
 
       if (response?.status === 200 || response?.status === 201) {
@@ -247,6 +249,7 @@ export default function OfferForm() {
         setItemQuantity("1");
         setItemPrice("");
         setItemDiscountPercent("0");
+        setCustomMessage(null);
         setTimeout(() => setSuccess(false), 3000);
       } else {
         setError(
@@ -521,6 +524,22 @@ export default function OfferForm() {
                 Nema dodanih proizvoda. Dodajte proizvod da biste nastavili.
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Custom message */}
+        <div className={styles.section}>
+          <div className={styles.formGroup}>
+            <label htmlFor="customMessage">Napomena (opcionalno)</label>
+            <textarea
+              id="customMessage"
+              className={styles.notesTextarea}
+              placeholder="Dodajte napomenu uz ponudu..."
+              value={customMessage ?? ""}
+              onChange={(e) => setCustomMessage(e.target.value || null)}
+              rows={4}
+              maxLength={1000}
+            />
           </div>
         </div>
 

@@ -32,7 +32,7 @@ export async function getOfferById(id) {
   }
 }
 
-export async function createOffer({ buyerName, buyerEmail, buyerPhone, items = [] }) {
+export async function createOffer({ buyerName, buyerEmail, buyerPhone, items = [], customMessage = null }) {
   try {
     // Ensure items are properly formatted as ItemDTO
     const formattedItems = (Array.isArray(items) ? items : []).map((item) => ({
@@ -50,6 +50,7 @@ export async function createOffer({ buyerName, buyerEmail, buyerPhone, items = [
         BuyerEmail: buyerEmail,
         BuyerPhone: buyerPhone || null,
         Items: formattedItems,
+        CustomMessage: customMessage || null,
       },
       {
         responseType: "blob", // Expect PDF file as response

@@ -280,6 +280,7 @@ export default function OffersListPage() {
               <input
                 id="startDate"
                 type="date"
+                lang="hr"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
               />
@@ -290,6 +291,7 @@ export default function OffersListPage() {
               <input
                 id="endDate"
                 type="date"
+                lang="hr"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
               />

@@ -98,6 +98,9 @@ namespace Quintus.Repository.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("CustomMessage")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.ToTable("Offers");
