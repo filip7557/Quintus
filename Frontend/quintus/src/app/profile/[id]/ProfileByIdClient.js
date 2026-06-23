@@ -122,7 +122,7 @@ export default function ProfileByIdClient({ userId }) {
       <main className={styles.container}>
         <div className={styles.card}>
           <div className={styles.header}>
-            <h1 className={styles.title}>Profil</h1>
+            <h1 className={styles.title}>Profil drugog korisnika</h1>
           </div>
 
           {loading ? (

@@ -306,13 +306,25 @@
   }
 }
 
+/* Mobile: use a full-width layout instead of a centered card */
 @media (max-width: 600px) {
   .container {
-    --requests-header-offset: 88px;
-    --requests-page-gap: 14px;
-    padding: calc(var(--requests-header-offset) + 8px) 10px 12px;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 84px 0 0;
   }
 
+  .requestCard {
+    max-width: none;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    padding: 18px 16px 20px;
+    box-shadow: none;
+  }
+}
+
+@media (max-width: 480px) {
   .requestCard {
     max-width: none;
     padding: 0;

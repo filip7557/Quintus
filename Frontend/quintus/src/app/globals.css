@@ -402,6 +402,25 @@ header {
   font-size: 2rem;
 }
 
+@media (max-width: 480px) {
+  .hero-container {
+    text-align: center;
+    padding: 0 16px;
+  }
+
+  .hero p {
+    text-align: center;
+  }
+
+  .hero-container .hero-title {
+    font-size: 1.55rem;
+  }
+
+  .hero-buttons {
+    justify-content: center;
+  }
+}
+
 .hero-container .hero-subtitle {
   color: var(--text-muted);
 }
@@ -1750,14 +1769,19 @@ footer {
 
   /* Hero section */
   .hero {
-    padding: 120px 20px;
-    min-height: 80svh;
+    min-height: 100svh;
     height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    padding: 90px 20px 28px;
   }
 
   .hero-container {
     width: 100%;
     padding: 0 1rem;
+    text-align: center;
   }
 
   .hero-button {

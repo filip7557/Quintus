@@ -81,3 +81,10 @@ global.json
 Quintus.WebApi/appsettings.json
 Quintus.WebApi/appsettings.*.json
 Quintus.WebApi/.env
+# Frontend files
+Frontend/portfolio/
+
+# Backend config/secrets
+Backend/Quintus/Quintus.WebApi/appsettings.json
+Backend/Quintus/Quintus.WebApi/appsettings.*.json
+Backend/Quintus/Quintus.WebApi/.env
