@@ -31,8 +31,8 @@ namespace Quintus.WebAPI.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> RegisterAsync([FromBody] UserDTO user)
         {
-            if (user == null)
-                return BadRequest();
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
 
             try
             {
@@ -59,6 +59,9 @@ namespace Quintus.WebAPI.Controllers
         [HttpGet("verify-email")]
         public async Task<IActionResult> VerifyEmailAsync([FromQuery] string token)
         {
+            if (string.IsNullOrWhiteSpace(token))
+                return BadRequest(new VerifyEmailResponse { Verified = false, Message = "Token je obavezan." });
+
             try
             {
                 var verified = await _emailVerificationService.VerifyAsync(token);
@@ -77,8 +80,8 @@ namespace Quintus.WebAPI.Controllers
         [HttpPost("resend-verification")]
         public async Task<IActionResult> ResendVerificationAsync([FromBody] ResendVerificationRequest request)
         {
-            if (request == null || string.IsNullOrWhiteSpace(request.Email))
-                return BadRequest("E-mail adresa je obavezna.");
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
 
             // Always return OK to avoid user enumeration.
             try
@@ -101,8 +104,9 @@ namespace Quintus.WebAPI.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync([FromBody] LoginInfo loginInfo)
         {
-            if (string.IsNullOrWhiteSpace(loginInfo.email) || string.IsNullOrWhiteSpace(loginInfo.password))
-                return BadRequest("Email i lozinka su potrebni.");
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
+
             try
             {
                 var loginResponse = await _tokenService.LoginUserAsync(loginInfo.email, loginInfo.password);
@@ -128,8 +132,9 @@ namespace Quintus.WebAPI.Controllers
         [HttpPost("refresh")]
         public async Task<IActionResult> RefreshTokenAsync([FromBody] RefreshInfo refreshInfo)
         {
-            if (string.IsNullOrWhiteSpace(refreshInfo.Token))
-                return BadRequest("Refresh token is required.");
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
+
             try
             {
                 var loginResponse = await _tokenService.RefreshTokenAsync(refreshInfo.Token);
@@ -169,8 +174,8 @@ namespace Quintus.WebAPI.Controllers
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPasswordAsync([FromBody] ForgotPasswordRequest request)
         {
-            if (request == null || string.IsNullOrWhiteSpace(request.Email))
-                return BadRequest("E-mail adresa je obavezna.");
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
 
             try
             {
@@ -188,8 +193,8 @@ namespace Quintus.WebAPI.Controllers
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPasswordAsync([FromBody] ResetPasswordRequest request)
         {
-            if (request == null || string.IsNullOrWhiteSpace(request.Token) || string.IsNullOrWhiteSpace(request.NewPassword))
-                return BadRequest("Token i nova lozinka su obavezni.");
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
 
             try
             {

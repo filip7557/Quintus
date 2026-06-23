@@ -28,7 +28,6 @@ export async function getOfferById(id) {
     const response = await api.get(`/Offer/${id}`);
     return response;
   } catch (error) {
-    console.error("Error fetching offer by ID:", error);
     return error.response;
   }
 }

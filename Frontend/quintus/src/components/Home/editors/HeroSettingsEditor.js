@@ -228,7 +228,7 @@ export default function HeroSettingsEditor({
 
             <div className="modal-body">
               <div className="modal-help">
-                Odaberite sliku (upload). Nakon spremanja API će vratiti novi URL.
+                Odaberite sliku za pozadinu.
               </div>
 
               <label className="modal-file" aria-label="Odaberi sliku">

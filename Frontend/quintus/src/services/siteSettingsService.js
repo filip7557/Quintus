@@ -36,16 +36,7 @@ export async function getSiteSettings() {
     }
   }
 
-  // Keep rendering resilient; log enough info to diagnose quickly.
-  // Node fetch wraps network/TLS errors as TypeError('fetch failed') with a useful `cause`.
-  if (process.env.NODE_ENV !== "production") {
-    console.error("Greška pri dohvaćanju postavki stranice", {
-      apiBaseUrl: API_BASE_URL,
-      tried: bases,
-      message: lastError?.message,
-      cause: lastError?.cause?.message,
-    });
-  }
+  // Keep rendering resilient
 
   return null;
 }

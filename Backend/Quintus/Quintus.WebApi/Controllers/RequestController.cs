@@ -21,8 +21,8 @@ namespace Quintus.WebAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateRequest([FromForm] RequestDTO request)
         {
-            if (request == null || string.IsNullOrWhiteSpace(request.Title) || string.IsNullOrWhiteSpace(request.Description))
-                return BadRequest("Invalid request data.");
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
 
             var result = await _requestService.CreateRequestAsync(request);
 

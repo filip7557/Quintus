@@ -20,6 +20,9 @@ namespace Quintus.WebAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> SendAsync([FromBody] ContactFormRequest request)
         {
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
+
             try
             {
                 await _contactService.SendContactAsync(request);
