@@ -307,3 +307,43 @@
     padding: 10px;
   }
 }
+
+/* Mobile: use a full-width layout instead of a centered card */
+@media (max-width: 600px) {
+  .container {
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 84px 0 0;
+  }
+
+  .card {
+    max-width: none;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    padding: 18px 16px 20px;
+    box-shadow: none;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .button {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+
+  .requestsBlock {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .requestsMeta {
+    width: 100%;
+  }
+
+  .requestsCount {
+    min-width: 64px;
+  }
+}

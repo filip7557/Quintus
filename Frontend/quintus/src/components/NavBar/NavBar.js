@@ -2,23 +2,15 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import AccountNav from "@/components/AccountNav/AccountNav";
 import NavBehavior from "@/components/NavBehavior";
 
 export default function NavBar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const pathname = usePathname();
   const navMainRef = useRef(null);
   const hamburgerRef = useRef(null);
 
-  // Close the menu when navigating to a different route.
-  useEffect(() => {
-    setIsMenuOpen(false);
-  }, [pathname]);
-
-  // Close the menu when clicking outside or pressing Escape.
   useEffect(() => {
     if (!isMenuOpen) return;
 
@@ -26,10 +18,8 @@ export default function NavBar() {
       const navMain = navMainRef.current;
       const hamburger = hamburgerRef.current;
       if (!navMain || !hamburger) return;
-
-      const clickedHamburger = hamburger.contains(e.target);
-      const clickedInsideMenu = navMain.contains(e.target);
-
+      
+      const clickedInsideMenu = navMainRef.current?.contains(e.target);
       if (!clickedHamburger && !clickedInsideMenu) setIsMenuOpen(false);
     };
 
@@ -47,30 +37,40 @@ export default function NavBar() {
   }, [isMenuOpen]);
 
   const closeMenu = () => setIsMenuOpen(false);
+  const handleToggle = () => {
+    setIsMenuOpen((v) => !v);
+  };
+
+  const handleNavClick = (e) => {
+    const link = e.target?.closest?.("a.nav-link");
+    if (link) setIsMenuOpen(false);
+  };
 
   return (
     <header>
       <NavBehavior />
       <nav className="navbar">
         <div className="logo">
-          <Image
-            src="/images/logo.png"
-            alt="Quintus logo"
-            width={170}
-            height={85}
-            priority={1}
-          />
+          <Link href="/" aria-label="Početna">
+            <Image
+              src="/images/logo.png"
+              alt="Quintus logo"
+              width={170}
+              height={85}
+              priority={1}
+            />
+          </Link>
         </div>
 
         <button
-          type="button"
           className={`hamburger${isMenuOpen ? " open" : ""}`}
           id="hamburger"
           ref={hamburgerRef}
-          aria-label={isMenuOpen ? "Zatvori izbornik" : "Otvori izbornik"}
+          type="button"
+          aria-label="Otvori izbornik"
           aria-expanded={isMenuOpen}
           aria-controls="nav-main"
-          onClick={() => setIsMenuOpen((v) => !v)}
+          onClick={handleToggle}
         >
           ☰
         </button>
@@ -79,6 +79,7 @@ export default function NavBar() {
           className={`nav-main${isMenuOpen ? " show" : ""}`}
           id="nav-main"
           ref={navMainRef}
+          onClick={handleNavClick}
         >
           <li>
             <div className="nav-link-wrapper">
