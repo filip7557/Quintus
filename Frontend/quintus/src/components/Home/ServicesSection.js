@@ -48,7 +48,24 @@ export default function ServicesSection({ services }) {
       out.push(s);
     }
 
-    return out;
+    return out.sort((a, b) => {
+      const aId = getServiceId(a);
+      const bId = getServiceId(b);
+
+      if (aId == null && bId == null) return 0;
+      if (aId == null) return 1;
+      if (bId == null) return -1;
+
+      const aNum = Number(aId);
+      const bNum = Number(bId);
+      const bothNumeric = Number.isFinite(aNum) && Number.isFinite(bNum);
+
+      if (bothNumeric) {
+        return aNum - bNum;
+      }
+
+      return String(aId).localeCompare(String(bId));
+    });
   }, [servicesToRender]);
 
   return (

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Quintus.Common;
 using Quintus.Model;
 using Quintus.Service.Common;
 
@@ -21,37 +22,32 @@ namespace Quintus.WebAPI.Controllers
         public async Task<IActionResult> CreateRequest([FromForm] RequestDTO request)
         {
             if (request == null || string.IsNullOrWhiteSpace(request.Title) || string.IsNullOrWhiteSpace(request.Description))
-            {
                 return BadRequest("Invalid request data.");
-            }
 
             var result = await _requestService.CreateRequestAsync(request);
 
             if (result)
-            {
                 return Ok("Request created successfully.");
-            }
+
             return StatusCode(500, "An error occurred while creating the request.");
         }
 
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> GetAllRequests()
+        public async Task<IActionResult> GetRequestsAsync([FromQuery] RequestFilter filter)
         {
-            // TODO: Add filtering and sorting options.
-            var requests = await _requestService.GetAllRequestsAsync();
-            return Ok(requests);
+            var result = await _requestService.GetRequestsAsync(filter);
+            return Ok(result);
         }
 
         [Authorize]
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetRequestById(Guid id)
+        public async Task<IActionResult> GetRequestByIdAsync(Guid id)
         {
             var request = await _requestService.GetRequestByIdAsync(id);
             if (request == null)
-            {
                 return NotFound("Request not found.");
-            }
+
             return Ok(request);
         }
     }

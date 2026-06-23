@@ -3,6 +3,21 @@ import api from "@/lib/api";
 let cachedToken = undefined;
 let cachedCurrentUserResponse = undefined; // axios response or null
 let inFlightCurrentUserPromise = null;
+const AUTH_CHANGED_EVENT = "quintus:auth-changed";
+
+function notifyAuthChanged() {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new Event(AUTH_CHANGED_EVENT));
+}
+
+export function subscribeToAuthChanges(handler) {
+  if (typeof window === "undefined" || typeof handler !== "function") {
+    return () => {};
+  }
+
+  window.addEventListener(AUTH_CHANGED_EVENT, handler);
+  return () => window.removeEventListener(AUTH_CHANGED_EVENT, handler);
+}
 
 function getAccessToken() {
   try {
@@ -79,6 +94,7 @@ export async function login(email, password) {
   cachedToken = accessToken;
   cachedCurrentUserResponse = undefined;
   inFlightCurrentUserPromise = null;
+  notifyAuthChanged();
 
   return response;
   } catch (error) {
@@ -135,12 +151,16 @@ export async function resetPassword(token, newPassword) {
 }
 
 export async function logout() {
-  await api.post("/Auth/logout");
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
+  try {
+    await api.post("/Auth/logout");
+  } finally {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
 
-  // Invalidate cached user on logout.
-  cachedToken = null;
-  cachedCurrentUserResponse = null;
-  inFlightCurrentUserPromise = null;
+    // Invalidate cached user on logout.
+    cachedToken = null;
+    cachedCurrentUserResponse = null;
+    inFlightCurrentUserPromise = null;
+    notifyAuthChanged();
+  }
 }

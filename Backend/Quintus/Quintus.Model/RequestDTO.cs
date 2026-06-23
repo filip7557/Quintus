@@ -11,9 +11,12 @@ namespace Quintus.Model
 
     public class RequestResponseDTO
     {
+        public Guid Id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public UserDTO RequestedBy { get; set; }
         public List<string> ImageUrls { get; set; } = new();
+        public string Status { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

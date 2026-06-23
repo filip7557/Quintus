@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import NavBar from "@/components/NavBar/NavBar";
-import { getOffers } from "@/services/offerService";
+import { getRequestsPaged } from "@/services/requestService";
 import styles from "./page.module.css";
 
 function pickField(obj, keys, fallback = "") {
@@ -17,29 +17,21 @@ function pickField(obj, keys, fallback = "") {
   return fallback;
 }
 
-function normalizeOffer(offer) {
-  const items = Array.isArray(offer?.Items)
-    ? offer.Items
-    : Array.isArray(offer?.items)
-      ? offer.items
+function normalizeRequest(request) {
+  const imageUrls = Array.isArray(request?.ImageUrls)
+    ? request.ImageUrls
+    : Array.isArray(request?.imageUrls)
+      ? request.imageUrls
       : [];
 
-  const calculatedTotal = items.reduce((sum, item) => {
-    const quantity = Number(pickField(item, ["Quantity", "quantity"], 0));
-    const price = Number(pickField(item, ["Price", "price"], 0));
-    return sum + quantity * price;
-  }, 0);
-
   return {
-    id: pickField(offer, ["Id", "id"], ""),
-    buyerName: pickField(offer, ["BuyerName", "buyerName"], "—"),
-    buyerEmail: pickField(offer, ["BuyerEmail", "buyerEmail"], "—"),
-    buyerPhone: pickField(offer, ["BuyerPhone", "buyerPhone"], "—"),
-    createdAt: pickField(offer, ["CreatedAt", "createdAt", "Date", "date"], ""),
-    total: Number(
-      pickField(offer, ["TotalAmount", "totalAmount", "Total", "total"], calculatedTotal)
-    ),
-    itemsCount: items.length,
+    id: pickField(request, ["Id", "id"], ""),
+    title: pickField(request, ["Title", "title"], "—"),
+    description: pickField(request, ["Description", "description"], "—"),
+    createdAt: pickField(request, ["CreatedAt", "createdAt", "Date", "date"], ""),
+    imagesCount: Number(
+      pickField(request, ["ImagesCount", "imagesCount", "ImageCount", "imageCount"], imageUrls.length)
+    ) || 0,
   };
 }
 
@@ -56,32 +48,36 @@ function formatDate(dateValue) {
   });
 }
 
-export default function OffersListPage() {
+function truncateText(text, maxLength = 120) {
+  const clean = String(text || "").trim();
+  if (clean.length <= maxLength) return clean || "—";
+  return `${clean.slice(0, maxLength - 1)}…`;
+}
+
+export default function RequestsListPage() {
   const router = useRouter();
   const pathname = usePathname();
 
-  const [offers, setOffers] = useState([]);
+  const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(20);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [rowNavigationEnabled, setRowNavigationEnabled] = useState(true);
 
-  const openOfferDetails = (offerId) => {
-    if (!offerId) return;
-    router.push(`/offers/${encodeURIComponent(String(offerId))}`);
+  const openRequestDetails = (requestId) => {
+    if (!requestId) return;
+    router.push(`/requests/${encodeURIComponent(String(requestId))}`);
   };
 
-  const syncUrl = ({ nextSearch, nextStartDate, nextEndDate, nextPage, nextPageSize }) => {
+  const syncUrl = ({ nextStartDate, nextEndDate, nextPage, nextPageSize }) => {
     const params = new URLSearchParams();
 
-    if (nextSearch?.trim()) params.set("search", nextSearch.trim());
     if (nextStartDate) params.set("dateFrom", nextStartDate);
     if (nextEndDate) params.set("dateTo", nextEndDate);
     params.set("page", String(nextPage));
@@ -91,10 +87,9 @@ export default function OffersListPage() {
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
   };
 
-  const loadOffers = async ({
+  const loadRequests = async ({
     nextPage = page,
     nextPageSize = pageSize,
-    nextSearch = searchTerm,
     nextStartDate = startDate,
     nextEndDate = endDate,
     updateUrl = true,
@@ -103,11 +98,10 @@ export default function OffersListPage() {
     setError("");
 
     if (updateUrl) {
-      syncUrl({ nextSearch, nextStartDate, nextEndDate, nextPage, nextPageSize });
+      syncUrl({ nextStartDate, nextEndDate, nextPage, nextPageSize });
     }
 
-    const response = await getOffers({
-      search: nextSearch,
+    const response = await getRequestsPaged({
       dateFrom: nextStartDate || undefined,
       dateTo: nextEndDate || undefined,
       page: nextPage,
@@ -116,42 +110,46 @@ export default function OffersListPage() {
 
     if (response?.status >= 200 && response?.status < 300) {
       const payload = response?.data;
-      const offerItems = Array.isArray(payload)
+      const requestItems = Array.isArray(payload)
         ? payload
         : Array.isArray(payload?.Items)
           ? payload.Items
-        : Array.isArray(payload?.items)
-          ? payload.items
-          : Array.isArray(payload?.Data)
-            ? payload.Data
-          : Array.isArray(payload?.data)
-            ? payload.data
-              : Array.isArray(payload?.Results)
-                ? payload.Results
-                : Array.isArray(payload?.results)
-                  ? payload.results
-            : [];
+          : Array.isArray(payload?.items)
+            ? payload.items
+            : Array.isArray(payload?.Data)
+              ? payload.Data
+              : Array.isArray(payload?.data)
+                ? payload.data
+                : Array.isArray(payload?.Results)
+                  ? payload.Results
+                  : Array.isArray(payload?.results)
+                    ? payload.results
+                    : [];
 
       const resolvedTotalCount = Number(
-        pickField(payload, ["TotalCount", "totalCount", "Count", "count"], offerItems.length)
+        pickField(payload, ["TotalCount", "totalCount", "Count", "count"], requestItems.length)
       );
       const resolvedTotalPages = Number(
-        pickField(payload, ["TotalPages", "totalPages"], Math.max(1, Math.ceil(resolvedTotalCount / nextPageSize)))
+        pickField(
+          payload,
+          ["TotalPages", "totalPages"],
+          Math.max(1, Math.ceil(resolvedTotalCount / nextPageSize))
+        )
       );
       const resolvedPage = Number(
         pickField(payload, ["Page", "page", "CurrentPage", "currentPage"], nextPage)
       );
 
-      setOffers(offerItems.map(normalizeOffer));
-      setTotalCount(Number.isFinite(resolvedTotalCount) ? resolvedTotalCount : offerItems.length);
+      setRequests(requestItems.map(normalizeRequest));
+      setTotalCount(Number.isFinite(resolvedTotalCount) ? resolvedTotalCount : requestItems.length);
       setTotalPages(Number.isFinite(resolvedTotalPages) && resolvedTotalPages > 0 ? resolvedTotalPages : 1);
       setPage(Number.isFinite(resolvedPage) && resolvedPage > 0 ? resolvedPage : nextPage);
       setPageSize(nextPageSize);
     } else {
-      setOffers([]);
+      setRequests([]);
       setTotalCount(0);
       setTotalPages(1);
-      setError(response?.data?.message || "Greška pri dohvaćanju ponuda.");
+      setError(response?.data?.message || "Greška pri dohvaćanju zahtjeva.");
     }
 
     setLoading(false);
@@ -162,7 +160,6 @@ export default function OffersListPage() {
     const mediaNarrow = window.matchMedia("(max-width: 768px)");
 
     const applyInteractionMode = () => {
-      // On touch/narrow screens use explicit button-only navigation to avoid accidental opens while scrolling.
       setRowNavigationEnabled(!(mediaTouch.matches || mediaNarrow.matches));
     };
 
@@ -181,25 +178,22 @@ export default function OffersListPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const initialSearch = params.get("search") || "";
     const initialDateFrom = params.get("dateFrom") || "";
     const initialDateTo = params.get("dateTo") || "";
     const parsedPage = Number.parseInt(params.get("page") || "1", 10);
-    const parsedPageSize = Number.parseInt(params.get("pageSize") || "10", 10);
+    const parsedPageSize = Number.parseInt(params.get("pageSize") || "20", 10);
 
     const initialPage = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
     const initialPageSize = Number.isFinite(parsedPageSize) && parsedPageSize > 0
       ? parsedPageSize
-      : 10;
+      : 20;
 
-    setSearchTerm(initialSearch);
     setStartDate(initialDateFrom);
     setEndDate(initialDateTo);
 
-    loadOffers({
+    loadRequests({
       nextPage: initialPage,
       nextPageSize: initialPageSize,
-      nextSearch: initialSearch,
       nextStartDate: initialDateFrom,
       nextEndDate: initialDateTo,
       updateUrl: false,
@@ -209,23 +203,20 @@ export default function OffersListPage() {
 
   const handleFilterSubmit = async (e) => {
     e.preventDefault();
-    await loadOffers({
+    await loadRequests({
       nextPage: 1,
       nextPageSize: pageSize,
-      nextSearch: searchTerm,
       nextStartDate: startDate,
       nextEndDate: endDate,
     });
   };
 
   const handleReset = async () => {
-    setSearchTerm("");
     setStartDate("");
     setEndDate("");
-    await loadOffers({
+    await loadRequests({
       nextPage: 1,
       nextPageSize: pageSize,
-      nextSearch: "",
       nextStartDate: "",
       nextEndDate: "",
     });
@@ -233,17 +224,17 @@ export default function OffersListPage() {
 
   const handlePageSizeChange = async (e) => {
     const nextPageSize = Number(e.target.value);
-    await loadOffers({ nextPage: 1, nextPageSize });
+    await loadRequests({ nextPage: 1, nextPageSize });
   };
 
   const handlePrevPage = async () => {
     if (page <= 1 || loading) return;
-    await loadOffers({ nextPage: page - 1, nextPageSize: pageSize });
+    await loadRequests({ nextPage: page - 1, nextPageSize: pageSize });
   };
 
   const handleNextPage = async () => {
     if (page >= totalPages || loading) return;
-    await loadOffers({ nextPage: page + 1, nextPageSize: pageSize });
+    await loadRequests({ nextPage: page + 1, nextPageSize: pageSize });
   };
 
   return (
@@ -253,28 +244,17 @@ export default function OffersListPage() {
         <div className={styles.card}>
           <div className={styles.header}>
             <div>
-              <h1 className={styles.title}>Popis ponuda</h1>
+              <h1 className={styles.title}>Popis zahtjeva</h1>
               <p className={styles.subtitle}>
-                Pretražite ponude po emailu ili imenu kupca i filtrirajte po datumu.
+                Pregled zahtjeva s filtriranjem po datumu i stranicama.
               </p>
             </div>
-            <Link href="/offers/create" className={styles.createBtn}>
-              Nova ponuda
+            <Link href="/create-request" className={styles.createBtn}>
+              Novi zahtjev
             </Link>
           </div>
 
           <form className={styles.filters} onSubmit={handleFilterSubmit}>
-            <div className={styles.formGroup}>
-              <label htmlFor="offerSearch">Pretraga</label>
-              <input
-                id="offerSearch"
-                type="text"
-                placeholder="Ime kupca ili email"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-
             <div className={styles.formGroup}>
               <label htmlFor="startDate">Datum od</label>
               <input
@@ -310,62 +290,58 @@ export default function OffersListPage() {
           {error ? <div className={styles.errorMessage}>{error}</div> : null}
 
           <div className={styles.summaryBar}>
-            <span>Prikazano: {offers.length} / Ukupno: {totalCount}</span>
+            <span>Prikazano: {requests.length} / Ukupno: {totalCount}</span>
           </div>
 
-          {offers.length === 0 && !loading ? (
-            <div className={styles.emptyMessage}>Nema ponuda za odabrane filtere.</div>
+          {requests.length === 0 && !loading ? (
+            <div className={styles.emptyMessage}>Nema zahtjeva za odabrane filtere.</div>
           ) : (
             <div className={styles.tableWrapper}>
               <table className={styles.table}>
                 <thead>
                   <tr>
-                    <th>Kupac</th>
-                    <th>Email</th>
-                    <th>Telefon</th>
-                    <th>Stavke</th>
-                    <th>Ukupno (€)</th>
+                    <th>Naslov</th>
+                    <th>Opis</th>
+                    <th>Slike</th>
                     <th>Datum</th>
                     <th>Detalji</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {offers.map((offer) => (
+                  {requests.map((request) => (
                     <tr
-                      key={offer.id || `${offer.buyerName}-${offer.createdAt}`}
-                      className={offer.id && rowNavigationEnabled ? styles.clickableRow : ""}
-                      role={offer.id && rowNavigationEnabled ? "button" : undefined}
-                      tabIndex={offer.id && rowNavigationEnabled ? 0 : undefined}
+                      key={request.id || `${request.title}-${request.createdAt}`}
+                      className={request.id && rowNavigationEnabled ? styles.clickableRow : ""}
+                      role={request.id && rowNavigationEnabled ? "button" : undefined}
+                      tabIndex={request.id && rowNavigationEnabled ? 0 : undefined}
                       onClick={
-                        offer.id && rowNavigationEnabled
-                          ? () => openOfferDetails(offer.id)
+                        request.id && rowNavigationEnabled
+                          ? () => openRequestDetails(request.id)
                           : undefined
                       }
                       onKeyDown={(e) => {
-                        if (!offer.id || !rowNavigationEnabled) return;
+                        if (!request.id || !rowNavigationEnabled) return;
                         if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
-                          openOfferDetails(offer.id);
+                          openRequestDetails(request.id);
                         }
                       }}
                     >
-                      <td data-label="Kupac" className={styles.mobilePrimaryCell}>{offer.buyerName}</td>
-                      <td data-label="Email">{offer.buyerEmail}</td>
-                      <td data-label="Telefon">{offer.buyerPhone}</td>
-                      <td data-label="Stavke">{offer.itemsCount}</td>
-                      <td data-label="Ukupno" className={styles.mobilePriceCell}>
-                        {Number.isFinite(offer.total) ? offer.total.toFixed(2) : "0.00"}
+                      <td data-label="Naslov" className={styles.mobilePrimaryCell}>
+                        {request.title}
                       </td>
-                      <td data-label="Datum">{formatDate(offer.createdAt)}</td>
+                      <td data-label="Opis">{truncateText(request.description, 120)}</td>
+                      <td data-label="Slike">{request.imagesCount}</td>
+                      <td data-label="Datum">{formatDate(request.createdAt)}</td>
                       <td className={styles.detailsCell}>
                         <button
                           type="button"
                           className={styles.detailsBtn}
                           onClick={(e) => {
                             e.stopPropagation();
-                            openOfferDetails(offer.id);
+                            openRequestDetails(request.id);
                           }}
-                          disabled={!offer.id}
+                          disabled={!request.id}
                         >
                           Otvori
                         </button>
@@ -390,7 +366,6 @@ export default function OffersListPage() {
                 onChange={handlePageSizeChange}
                 disabled={loading}
               >
-                <option value={5}>5</option>
                 <option value={10}>10</option>
                 <option value={20}>20</option>
                 <option value={50}>50</option>

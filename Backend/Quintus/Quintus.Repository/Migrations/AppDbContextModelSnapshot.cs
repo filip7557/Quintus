@@ -390,6 +390,9 @@ namespace Quintus.Repository.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<decimal>("DiscountPercent")
+                        .HasColumnType("numeric");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");

@@ -7,8 +7,9 @@
         public required string UnitOfMeasurement { get; set; }
         public required int Quantity { get; set; }
         public required decimal Price { get; set; }
+        public decimal DiscountPercent { get; set; } = 0;
 
-        public decimal Total => Quantity * Price;
+        public decimal Total => Quantity * Price * (1 - DiscountPercent / 100);
     }
 
     public class ItemDTO
@@ -17,5 +18,6 @@
         public required string UnitOfMeasurement { get; set; }
         public required int Quantity { get; set; }
         public required decimal Price { get; set; }
+        public decimal DiscountPercent { get; set; } = 0;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Quintus.Common;
 using Quintus.Model.Entities;
 using Quintus.Repository.Common;
 using Quintus.Repository.Context;
@@ -28,18 +29,34 @@ namespace Quintus.Repository
             }
         }
 
-        public async Task<IEnumerable<Request>> GetAllRequestsAsync()
+        public async Task<PagedResult<Request>> GetRequestsAsync(RequestFilter filter)
         {
-            try
+            var query = _context.Requests
+                .Include(r => r.Images)
+                .Include(r => r.RequestedBy)
+                .AsQueryable();
+
+            if (filter.DateFrom.HasValue)
+                query = query.Where(r => r.CreatedAt >= filter.DateFrom.Value);
+
+            if (filter.DateTo.HasValue)
+                query = query.Where(r => r.CreatedAt <= filter.DateTo.Value);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(r => r.CreatedAt)
+                .Skip((filter.Page - 1) * filter.PageSize)
+                .Take(filter.PageSize)
+                .ToListAsync();
+
+            return new PagedResult<Request>
             {
-                // TODO: Add filtering and sorting capabilities.
-                return await _context.Requests.Include(r => r.Images).Include(r => r.RequestedBy).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Exception occured while fetching all requests: {ex.Message}");
-                return Enumerable.Empty<Request>();
-            }
+                Items = items,
+                TotalCount = totalCount,
+                Page = filter.Page,
+                PageSize = filter.PageSize
+            };
         }
 
         public async Task<Request?> GetRequestByIdAsync(Guid id)

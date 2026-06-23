@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import { getCurrentUser, logout } from "@/services/authService";
+import { getCurrentUser, logout, subscribeToAuthChanges } from "@/services/authService";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "./AccountNav.module.css";
@@ -17,7 +17,7 @@ export default function AccountNav() {
   const rootRef = useRef(null);
 
   useEffect(() => {
-    // Check if user is logged in on component mount
+    // Check auth on mount and whenever auth state changes.
     const checkAuth = () => {
       const token = localStorage.getItem("accessToken");
       if (token) {
@@ -46,6 +46,19 @@ export default function AccountNav() {
     };
 
     checkAuth();
+
+    const unsubscribeAuth = subscribeToAuthChanges(checkAuth);
+    const onStorage = (e) => {
+      if (!e || e.key === null || e.key === "accessToken") {
+        checkAuth();
+      }
+    };
+    window.addEventListener("storage", onStorage);
+
+    return () => {
+      unsubscribeAuth();
+      window.removeEventListener("storage", onStorage);
+    };
   }, []);
 
   useEffect(() => {
@@ -68,25 +81,17 @@ export default function AccountNav() {
     };
   }, [isOpen]);
 
-  const handleLogout = () => {
-    logout().then(() => {
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } finally {
       setIsLoggedIn(false);
       setAdmin(false);
       setIsAdminOrOwnerUser(false);
       setIsOpen(false);
+      router.refresh();
       router.push("/");
-    }).catch(() => {
-      // Even if logout fails, clear the state
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      setIsLoggedIn(false);
-      setAdmin(false);
-      setIsAdminOrOwnerUser(false);
-      setIsOpen(false);
-      router.push("/");
-    });
+    }
   };
 
   const handleToggle = () => {

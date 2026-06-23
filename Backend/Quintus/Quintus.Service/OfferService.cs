@@ -21,7 +21,7 @@ namespace Quintus.Service
 
         public async Task<KeyValuePair<Guid, byte[]>> AddOfferAsync(OfferDTO offer)
         {
-            var newOffer = await _offerRepository.AddOfferAsync(new Offer { BuyerName = offer.BuyerName, BuyerEmail = offer.BuyerEmail, BuyerPhone = offer.BuyerPhone, Items = offer.Items.Select(i => new Item { Name = i.Name, UnitOfMeasurement = i.UnitOfMeasurement, Quantity = i.Quantity, Price = i.Price }).ToList() });
+            var newOffer = await _offerRepository.AddOfferAsync(new Offer { BuyerName = offer.BuyerName, BuyerEmail = offer.BuyerEmail, BuyerPhone = offer.BuyerPhone, Items = offer.Items.Select(i => new Item { Name = i.Name, UnitOfMeasurement = i.UnitOfMeasurement, Quantity = i.Quantity, Price = i.Price, DiscountPercent = i.DiscountPercent }).ToList() });
             if (newOffer == null) return new KeyValuePair<Guid, byte[]>(Guid.Empty, Array.Empty<byte>());
             if (newOffer.BuyerEmail != null) _emailQueue.Enqueue(new EmailJobItem(newOffer.Id));
             return new KeyValuePair<Guid, byte[]>(newOffer.Id, await GenerateOfferPdfAsync(newOffer.Id));

@@ -1,14 +1,17 @@
 /* Container and layout */
 .container {
-  min-height: 100vh;
+  --requests-header-offset: 108px;
+  --requests-page-gap: 20px;
+  min-height: 100svh;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 80px 20px 20px;
+  padding: calc(var(--requests-header-offset) + var(--requests-page-gap)) 20px
+    var(--requests-page-gap);
   box-sizing: border-box;
   background-color: #2e3336;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 /* Modern “blob” backdrop (matches /profile) */
@@ -278,11 +281,14 @@
 /* Responsive */
 @media (max-width: 768px) {
   .container {
-    padding: 100px 16px 24px;
+    --requests-header-offset: 92px;
+    --requests-page-gap: 16px;
+    padding: calc(var(--requests-header-offset) + var(--requests-page-gap)) 16px
+      var(--requests-page-gap);
   }
 
   .requestCard {
-    padding: 24px;
+    padding: 18px;
   }
 
   .title {
@@ -300,9 +306,27 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
+  .container {
+    --requests-header-offset: 88px;
+    --requests-page-gap: 14px;
+    padding: calc(var(--requests-header-offset) + 8px) 10px 12px;
+  }
+
   .requestCard {
-    padding: 16px;
+    max-width: none;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .header {
+    gap: 10px;
+    margin-bottom: 14px;
   }
 
   .title {
@@ -310,23 +334,63 @@
   }
 
   .subtitle {
-    font-size: 0.8rem;
+    font-size: 0.82rem;
+    line-height: 1.4;
   }
 
   .formGroup {
-    gap: 6px;
+    gap: 8px;
+  }
+
+  .formGroup label {
+    font-size: 0.72rem;
+    letter-spacing: 0.45px;
+    text-transform: uppercase;
+  }
+
+  .formGroup input[type="text"],
+  .formGroup textarea {
+    min-height: 46px;
+    padding: 11px 12px;
+    font-size: 16px;
+    border-radius: 10px;
+  }
+
+  .formGroup textarea {
+    min-height: 150px;
   }
 
   .fileInput {
-    padding: 12px;
+    min-height: 52px;
+    padding: 14px 12px;
+    border-radius: 10px;
   }
 
   .fileLabel {
     font-size: 0.85rem;
   }
 
+  .fileInfo {
+    font-size: 0.72rem;
+    line-height: 1.35;
+  }
+
+  .charCount {
+    font-size: 0.72rem;
+  }
+
   .submitBtn {
-    padding: 10px 12px;
-    font-size: 0.95rem;
+    min-height: 48px;
+    padding: 12px;
+    font-size: 0.96rem;
+    margin-top: 4px;
+  }
+
+  .backBtn {
+    min-height: 46px;
+    padding: 11px 12px;
+    font-size: 0.94rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
   }
 }

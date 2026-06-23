@@ -1,4 +1,4 @@
-/* ── Page container (matches offers/page.module.css) ── */
+/* Based on offers list visual style */
 .container {
   --offers-header-offset: 108px;
   --offers-page-gap: 20px;
@@ -32,7 +32,6 @@
   z-index: 1;
 }
 
-/* ── Card (matches OfferForm .card) ── */
 .card {
   width: 100%;
   max-width: 1060px;
@@ -53,7 +52,6 @@
   }
 }
 
-/* ── Header ── */
 .header {
   display: flex;
   align-items: flex-start;
@@ -75,7 +73,6 @@
   margin: 8px 0 0;
 }
 
-/* ── Create button ── */
 .createBtn {
   flex-shrink: 0;
   display: inline-flex;
@@ -96,16 +93,14 @@
   box-shadow: 0 8px 20px rgba(110, 168, 254, 0.2);
 }
 
-/* ── Filters form ── */
 .filters {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr auto;
+  grid-template-columns: 1fr 1fr auto;
   gap: 12px;
   align-items: end;
   margin-bottom: 16px;
 }
 
-/* ── Form group (matches OfferForm .formGroup) ── */
 .formGroup {
   display: flex;
   flex-direction: column;
@@ -139,17 +134,11 @@
   transform: translateY(-1px);
 }
 
-.formGroup input::placeholder {
-  color: rgba(234, 242, 255, 0.45);
-}
-
-/* date inputs — keep native picker readable on dark bg */
 .formGroup input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(0.7);
   cursor: pointer;
 }
 
-/* ── Filter action buttons ── */
 .filterActions {
   display: flex;
   flex-direction: column;
@@ -161,7 +150,6 @@
   display: block;
   font-size: 0.75rem;
   line-height: 1;
-  /* invisible spacer that matches label height so buttons sit at input level */
 }
 
 .filterActionsButtons {
@@ -214,7 +202,6 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* ── Error / empty messages ── */
 .errorMessage {
   background: rgba(255, 107, 107, 0.1);
   border: 1px solid rgba(255, 107, 107, 0.2);
@@ -235,7 +222,6 @@
   border: 1px dashed rgba(138, 180, 255, 0.2);
 }
 
-/* ── Summary bar ── */
 .summaryBar {
   display: flex;
   justify-content: space-between;
@@ -251,14 +237,6 @@
   font-size: 0.95rem;
 }
 
-.summaryTotal {
-  font-weight: 700;
-  color: #6ea8fe;
-  font-size: 1.05rem;
-  font-variant-numeric: tabular-nums;
-}
-
-/* ── Table (matches OfferForm table styles) ── */
 .tableWrapper {
   overflow-x: auto;
   overflow-y: hidden;
@@ -363,7 +341,11 @@
   cursor: not-allowed;
 }
 
-/* ── Pagination ── */
+.mobilePrimaryCell {
+  font-weight: 700;
+  color: #eef5ff;
+}
+
 .paginationBar {
   display: flex;
   justify-content: space-between;
@@ -432,7 +414,6 @@
   color: #eaf2ff;
 }
 
-/* ── Responsive ── */
 @media (max-width: 920px) {
   .filters {
     grid-template-columns: 1fr 1fr;
@@ -570,14 +551,9 @@
     flex-shrink: 0;
   }
 
-  .mobilePrimaryCell {
-    font-weight: 700;
-    color: #eef5ff;
-  }
-
-  .mobilePriceCell {
-    font-weight: 700;
-    color: #8fc6ff;
+  .paginationBar {
+    margin-top: 16px;
+    gap: 10px;
   }
 
   .detailsCell {
@@ -594,11 +570,6 @@
     width: 100%;
     padding: 11px 12px;
     font-size: 0.88rem;
-  }
-
-  .paginationBar {
-    margin-top: 16px;
-    gap: 10px;
   }
 
   .paginationInfo {

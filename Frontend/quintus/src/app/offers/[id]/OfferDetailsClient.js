@@ -91,13 +91,18 @@ export default function OfferDetailsClient({ offerId }) {
     return rawItems.map((item, index) => {
       const quantity = Number(pickField(item, ["Quantity", "quantity"], 0));
       const price = Number(pickField(item, ["Price", "price"], 0));
+      const discountPercent = Number(
+        pickField(item, ["DiscountPercent", "discountPercent"], 0)
+      );
+      const discountMultiplier = 1 - Math.min(100, Math.max(0, discountPercent)) / 100;
       return {
         id: pickField(item, ["Id", "id"], index),
         name: pickField(item, ["Name", "name"], "—"),
         unit: pickField(item, ["UnitOfMeasurement", "unitOfMeasurement"], "—"),
         quantity,
         price,
-        total: quantity * price,
+        discountPercent,
+        total: quantity * price * discountMultiplier,
       };
     });
   }, [offer]);
@@ -182,6 +187,7 @@ export default function OfferDetailsClient({ offerId }) {
                         <th>Jed. mjera</th>
                         <th>Količina</th>
                         <th>Cijena (€)</th>
+                        <th>Popust (%)</th>
                         <th>Ukupno (€)</th>
                       </tr>
                     </thead>
@@ -192,6 +198,11 @@ export default function OfferDetailsClient({ offerId }) {
                           <td data-label="Jed. mjera">{item.unit}</td>
                           <td data-label="Količina">{Number.isFinite(item.quantity) ? item.quantity : 0}</td>
                           <td data-label="Cijena (€)">{Number.isFinite(item.price) ? item.price.toFixed(2) : "0.00"}</td>
+                          <td data-label="Popust (%)">
+                            {Number.isFinite(item.discountPercent)
+                              ? item.discountPercent.toFixed(2)
+                              : "0.00"}
+                          </td>
                           <td data-label="Ukupno (€)">{Number.isFinite(item.total) ? item.total.toFixed(2) : "0.00"}</td>
                         </tr>
                       ))}
@@ -225,6 +236,7 @@ export default function OfferDetailsClient({ offerId }) {
                           unitOfMeasurement: item.unit,
                           quantity: item.quantity,
                           price: item.price,
+                          discountPercent: item.discountPercent,
                         })),
                       })
                     );

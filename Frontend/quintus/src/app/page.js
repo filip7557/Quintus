@@ -1,5 +1,4 @@
 import Animations from "../components/Animations";
-import NavBehavior from "../components/NavBehavior";
 import NavBar from "@/components/NavBar/NavBar";
 
 import HeroSection from "@/components/Home/HeroSection";
@@ -45,7 +44,6 @@ export default async function HomePage() {
   return (
     <>
       <Animations />
-      <NavBehavior />
 
       <NavBar />
 

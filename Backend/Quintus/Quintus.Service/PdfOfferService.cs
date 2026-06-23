@@ -126,7 +126,7 @@ namespace Quintus.Service
                             .SetTextAlignment(alignment);
 
                     // Column widths: name wider, numbers narrower
-                    var table = new Table(UnitValue.CreatePercentArray(new float[] { 36, 16, 16, 16, 16 }))
+                    var table = new Table(UnitValue.CreatePercentArray(new float[] { 30, 13, 13, 14, 14, 16 }))
                         .SetWidth(UnitValue.CreatePercentValue(100))
                         .SetMarginTop(10)
                         .SetFontSize(10);
@@ -172,6 +172,7 @@ namespace Quintus.Service
                     table.AddHeaderCell(HeaderCellModern("Mj. jed.", TextAlignment.CENTER));
                     table.AddHeaderCell(HeaderCellModern("Količina", TextAlignment.RIGHT));
                     table.AddHeaderCell(HeaderCellModern("Cijena (€)", TextAlignment.RIGHT));
+                    table.AddHeaderCell(HeaderCellModern("Popust (%)", TextAlignment.RIGHT));
                     table.AddHeaderCell(HeaderCellModern("Ukupno (€)", TextAlignment.RIGHT));
 
                     // Body rows (zebra striping)
@@ -184,6 +185,7 @@ namespace Quintus.Service
                         table.AddCell(BodyCellModern(item.UnitOfMeasurement ?? "", TextAlignment.CENTER, shade));
                         table.AddCell(BodyCellModern(item.Quantity.ToString("F2", hrCulture), TextAlignment.RIGHT, shade));
                         table.AddCell(BodyCellModern(item.Price.ToString("F2", hrCulture), TextAlignment.RIGHT, shade));
+                        table.AddCell(BodyCellModern(item.DiscountPercent > 0 ? item.DiscountPercent.ToString("F0", hrCulture) : "-", TextAlignment.RIGHT, shade));
                         table.AddCell(BodyCellModern(item.Total.ToString("F2", hrCulture), TextAlignment.RIGHT, shade));
 
                         row++;

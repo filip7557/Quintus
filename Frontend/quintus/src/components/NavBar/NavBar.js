@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import AccountNav from "@/components/AccountNav/AccountNav";
+import NavBehavior from "@/components/NavBehavior";
 
 export default function NavBar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -15,40 +16,6 @@ export default function NavBar() {
   // Close the menu when navigating to a different route.
   useEffect(() => {
     setIsMenuOpen(false);
-  }, [pathname]);
-
-  // On non-home pages, pin the gold indicator under the "Račun" button.
-  useEffect(() => {
-    // Home page: NavBehavior handles the indicator via IntersectionObserver.
-    if (pathname === "/" || pathname === "") return;
-
-    const navMain = navMainRef.current;
-    if (!navMain) return;
-
-    const positionIndicator = () => {
-      const trigger = navMain.querySelector("button[aria-haspopup='menu']");
-      if (!trigger) {
-        navMain.style.setProperty("--nav-indicator-opacity", "0");
-        return;
-      }
-      const triggerRect = trigger.getBoundingClientRect();
-      const navRect = navMain.getBoundingClientRect();
-      navMain.style.setProperty("--nav-indicator-left", `${Math.max(0, triggerRect.left - navRect.left)}px`);
-      navMain.style.setProperty("--nav-indicator-width", `${Math.max(0, triggerRect.width)}px`);
-      navMain.style.setProperty("--nav-indicator-opacity", "1");
-    };
-
-    // Slight delay so fonts/layout are settled.
-    const timer = setTimeout(positionIndicator, 60);
-    window.addEventListener("resize", positionIndicator);
-
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener("resize", positionIndicator);
-      if (navMainRef.current) {
-        navMainRef.current.style.setProperty("--nav-indicator-opacity", "0");
-      }
-    };
   }, [pathname]);
 
   // Close the menu when clicking outside or pressing Escape.
@@ -83,6 +50,7 @@ export default function NavBar() {
 
   return (
     <header>
+      <NavBehavior />
       <nav className="navbar">
         <div className="logo">
           <Image

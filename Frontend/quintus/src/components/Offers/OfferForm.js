@@ -17,6 +17,7 @@ export default function OfferForm() {
   const [itemName, setItemName] = useState("");
   const [itemQuantity, setItemQuantity] = useState("1");
   const [itemPrice, setItemPrice] = useState("");
+  const [itemDiscountPercent, setItemDiscountPercent] = useState("0");
   const [itemUnit, setItemUnit] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -30,6 +31,17 @@ export default function OfferForm() {
   const [unitLoading, setUnitLoading] = useState(false);
   const [deleteUnitId, setDeleteUnitId] = useState(null);
   const unitDropdownRef = useRef(null);
+
+  const normalizeDiscountPercent = (value) => {
+    const numeric = Number.parseFloat(String(value ?? "0").replace(",", "."));
+    if (!Number.isFinite(numeric)) return 0;
+    return Math.min(100, Math.max(0, numeric));
+  };
+
+  const parseItemNumber = (value, fallback = 0) => {
+    const numeric = Number.parseFloat(String(value ?? fallback).replace(",", "."));
+    return Number.isFinite(numeric) ? numeric : fallback;
+  };
 
   // Fetch units on mount
   useEffect(() => {
@@ -47,7 +59,18 @@ export default function OfferForm() {
       if (prefill.buyerEmail) setBuyerEmail(prefill.buyerEmail);
       if (prefill.buyerPhone) setBuyerPhone(prefill.buyerPhone);
       if (Array.isArray(prefill.items) && prefill.items.length > 0) {
-        setItems(prefill.items);
+        setItems(
+          prefill.items.map((item) => ({
+            id: item.id ?? Date.now() + Math.random(),
+            name: item.name || "",
+            unitOfMeasurement: item.unitOfMeasurement || "",
+            quantity: parseItemNumber(item.quantity, 1),
+            price: parseItemNumber(item.price, 0),
+            discountPercent: normalizeDiscountPercent(
+              item.discountPercent ?? item.DiscountPercent ?? 0
+            ),
+          }))
+        );
       }
     } catch {
       // ignore malformed data
@@ -125,8 +148,9 @@ export default function OfferForm() {
       id: Date.now(),
       name: itemName.trim(),
       unitOfMeasurement: selectedUnit ? selectedUnit.name : "",
-      quantity: parseInt(itemQuantity),
-      price: parseFloat(itemPrice),
+      quantity: parseItemNumber(itemQuantity, 1),
+      price: parseItemNumber(itemPrice, 0),
+      discountPercent: normalizeDiscountPercent(itemDiscountPercent),
     };
 
     setItems([...items, newItem]);
@@ -134,6 +158,7 @@ export default function OfferForm() {
     setItemUnit("");
     setItemQuantity("1");
     setItemPrice("");
+    setItemDiscountPercent("0");
   };
 
   // Remove item from table
@@ -141,15 +166,32 @@ export default function OfferForm() {
     setItems(items.filter((item) => item.id !== itemId));
   };
 
+  const handleItemDiscountChange = (itemId, value) => {
+    const normalized = normalizeDiscountPercent(value);
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === itemId ? { ...item, discountPercent: normalized } : item
+      )
+    );
+  };
+
   // Calculate item total
-  const calculateItemTotal = (quantity, price) => {
-    return (quantity * price).toFixed(2);
+  const calculateItemTotal = (quantity, price, discountPercent = 0) => {
+    const discountMultiplier = 1 - normalizeDiscountPercent(discountPercent) / 100;
+    return (quantity * price * discountMultiplier).toFixed(2);
   };
 
   // Calculate grand total
   const calculateGrandTotal = () => {
     return items
-      .reduce((sum, item) => sum + item.quantity * item.price, 0)
+      .reduce(
+        (sum, item) =>
+          sum +
+          item.quantity *
+            item.price *
+            (1 - normalizeDiscountPercent(item.discountPercent) / 100),
+        0
+      )
       .toFixed(2);
   };
 
@@ -182,6 +224,7 @@ export default function OfferForm() {
           unitOfMeasurement: item.unitOfMeasurement || null,
           quantity: item.quantity,
           price: item.price,
+          discountPercent: normalizeDiscountPercent(item.discountPercent),
         })),
       });
 
@@ -203,6 +246,7 @@ export default function OfferForm() {
         setItemUnit("");
         setItemQuantity("1");
         setItemPrice("");
+        setItemDiscountPercent("0");
         setTimeout(() => setSuccess(false), 3000);
       } else {
         setError(
@@ -373,6 +417,20 @@ export default function OfferForm() {
                 />
               </div>
 
+              <div className={styles.formGroup}>
+                <label htmlFor="itemDiscountPercent">Popust (%)</label>
+                <input
+                  id="itemDiscountPercent"
+                  type="number"
+                  placeholder="0"
+                  value={itemDiscountPercent}
+                  onChange={(e) => setItemDiscountPercent(e.target.value)}
+                  min="0"
+                  max="100"
+                  step="0.01"
+                />
+              </div>
+
               <button
                 type="button"
                 className={styles.addItemBtn}
@@ -392,6 +450,7 @@ export default function OfferForm() {
                     <col className={styles.unitColumn} />
                     <col className={styles.quantityColumn} />
                     <col className={styles.priceColumn} />
+                    <col className={styles.discountColumn} />
                     <col className={styles.totalColumn} />
                     <col className={styles.actionColumn} />
                   </colgroup>
@@ -401,6 +460,7 @@ export default function OfferForm() {
                       <th className={styles.unitHeader}>Jed. mjera</th>
                       <th className={styles.quantityHeader}>Količina</th>
                       <th className={styles.priceHeader}>Cijena (€)</th>
+                      <th className={styles.discountHeader}>Popust (%)</th>
                       <th className={styles.totalHeader}>Ukupno (€)</th>
                       <th className={styles.actionHeader}>Radnja</th>
                     </tr>
@@ -422,9 +482,21 @@ export default function OfferForm() {
                             {item.price.toFixed(2)}
                           </span>
                         </td>
+                        <td className={styles.discountCell} data-label="Popust (%)">
+                          <input
+                            type="number"
+                            value={normalizeDiscountPercent(item.discountPercent)}
+                            onChange={(e) => handleItemDiscountChange(item.id, e.target.value)}
+                            min="0"
+                            max="100"
+                            step="0.01"
+                            className={styles.discountInput}
+                            aria-label={`Popust za ${item.name}`}
+                          />
+                        </td>
                         <td className={styles.totalCell} data-label="Ukupno (€)">
                           <span className={styles.cellValue}>
-                            {calculateItemTotal(item.quantity, item.price)}
+                            {calculateItemTotal(item.quantity, item.price, item.discountPercent)}
                           </span>
                         </td>
                         <td className={styles.actionCell} data-label="Radnja">

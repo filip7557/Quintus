@@ -175,7 +175,7 @@
 
 .itemInputGroup {
   display: grid;
-  grid-template-columns: 1fr 130px 120px 120px auto;
+  grid-template-columns: 1fr 130px 110px 120px 120px auto;
   gap: 12px;
   align-items: flex-end;
 }
@@ -458,7 +458,7 @@
 
 .itemsTable {
   width: 100%;
-  min-width: 820px;
+  min-width: 930px;
   border-collapse: collapse;
   table-layout: fixed;
   font-size: 0.9rem;
@@ -474,6 +474,7 @@
 
 .quantityColumn,
 .priceColumn,
+.discountColumn,
 .totalColumn {
   width: 110px;
 }
@@ -540,6 +541,35 @@
 .priceCell {
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+.discountHeader,
+.discountCell {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.discountInput {
+  width: 92px;
+  max-width: 100%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0.01)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  color: #eaf2ff;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 0.86rem;
+  text-align: right;
+  font-family: inherit;
+}
+
+.discountInput:focus {
+  outline: none;
+  border-color: rgba(138, 180, 255, 0.8);
+  box-shadow: 0 0 0 3px rgba(110, 168, 254, 0.12);
 }
 
 .totalHeader,
@@ -710,7 +740,7 @@
 
   .itemsTable {
     font-size: 0.85rem;
-    min-width: 740px;
+    min-width: 860px;
   }
 
   .unitColumn {
@@ -719,6 +749,7 @@
 
   .quantityColumn,
   .priceColumn,
+  .discountColumn,
   .totalColumn {
     width: 96px;
   }
@@ -867,6 +898,7 @@
   .unitCell,
   .quantityCell,
   .priceCell,
+  .discountCell,
   .totalCell,
   .actionCell {
     text-align: left;
@@ -893,6 +925,12 @@
     min-width: 104px;
     justify-self: end;
     font-size: 0.84rem;
+  }
+
+  .discountInput {
+    width: 100%;
+    max-width: 120px;
+    justify-self: end;
   }
 
   .itemsTable tbody tr:hover {

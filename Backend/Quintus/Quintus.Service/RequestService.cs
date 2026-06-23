@@ -1,4 +1,5 @@
-﻿using Quintus.Model;
+﻿using Quintus.Common;
+using Quintus.Model;
 using Quintus.Model.Entities;
 using Quintus.Repository.Common;
 using Quintus.Service.Common;
@@ -57,26 +58,33 @@ namespace Quintus.Service
             return await _requestRepository.AddRequestAsync(newRequest);
         }
 
-        public async Task<IEnumerable<RequestResponseDTO>> GetAllRequestsAsync()
+        public async Task<PagedResult<RequestResponseDTO>> GetRequestsAsync(RequestFilter filter)
         {
-            return (await _requestRepository.GetAllRequestsAsync()).Select(r => new RequestResponseDTO
+            var paged = await _requestRepository.GetRequestsAsync(filter);
+            return new PagedResult<RequestResponseDTO>
             {
-                Title = r.Title,
-                Description = r.Description,
-                RequestedBy = r.RequestedBy.ToDataTransferObject(),
-                ImageUrls = r.Images.Select(img => img.Url).ToList(),
-            });
+                Items = paged.Items.Select(MapToDTO),
+                TotalCount = paged.TotalCount,
+                Page = paged.Page,
+                PageSize = paged.PageSize
+            };
         }
 
         public async Task<RequestResponseDTO?> GetRequestByIdAsync(Guid id)
         {
-            return (await _requestRepository.GetRequestByIdAsync(id)) is Request r ? new RequestResponseDTO
-            {
-                Title = r.Title,
-                Description = r.Description,
-                RequestedBy = r.RequestedBy.ToDataTransferObject(),
-                ImageUrls = r.Images.Select(img => img.Url).ToList(),
-            } : null;
+            var r = await _requestRepository.GetRequestByIdAsync(id);
+            return r is null ? null : MapToDTO(r);
         }
+
+        private static RequestResponseDTO MapToDTO(Request r) => new()
+        {
+            Id = r.Id,
+            Title = r.Title,
+            Description = r.Description,
+            RequestedBy = r.RequestedBy.ToDataTransferObject(),
+            ImageUrls = r.Images.Select(img => img.Url).ToList(),
+            Status = r.Status.ToString(),
+            CreatedAt = r.CreatedAt
+        };
     }
 }

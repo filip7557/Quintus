@@ -61,6 +61,14 @@ export default function NavBehavior() {
         if (!navMain) return;
         const active = navMain.querySelector(".nav-link.active");
         if (!active) {
+          const isHomePath = window.location.pathname === "/";
+          if (!isHomePath) {
+            const accountTrigger = navMain.querySelector("button[aria-haspopup='menu']");
+            if (accountTrigger) {
+              setIndicatorToEl(accountTrigger);
+              return;
+            }
+          }
           setIndicatorHidden();
           return;
         }
@@ -170,6 +178,31 @@ export default function NavBehavior() {
           wr.addEventListener("mouseleave", onLeave);
           hoverListeners.push([wr, onEnter, onLeave]);
         });
+
+        // Keep indicator under "Račun" while hovering its whole dropdown area.
+        const accountTrigger = navMain.querySelector("button[aria-haspopup='menu']");
+        const accountContainer = accountTrigger?.closest("li") || accountTrigger?.parentElement;
+        if (accountTrigger && accountContainer) {
+          const onAccountEnter = () => {
+            hoverState.isHovering = true;
+            hoverState.el = accountTrigger;
+            setIndicatorToEl(accountTrigger);
+          };
+
+          const onAccountLeave = (e) => {
+            const to = e.relatedTarget;
+            if (to && accountContainer.contains(to)) {
+              return;
+            }
+            hoverState.isHovering = false;
+            hoverState.el = null;
+            updateIndicator();
+          };
+
+          accountContainer.addEventListener("mouseenter", onAccountEnter);
+          accountContainer.addEventListener("mouseleave", onAccountLeave);
+          hoverListeners.push([accountContainer, onAccountEnter, onAccountLeave]);
+        }
       }
 
       return () => {
