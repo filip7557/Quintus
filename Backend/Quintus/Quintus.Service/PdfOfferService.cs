@@ -200,6 +200,35 @@ namespace Quintus.Service
                         .SetTextAlignment(TextAlignment.RIGHT)
                         .SetMarginTop(16));
 
+                    if (!string.IsNullOrWhiteSpace(offer.CustomMessage))
+                    {
+                        var customBox = new Div()
+                            .SetBorder(new SolidBorder(new DeviceRgb(32, 41, 57), 1f))
+                            .SetBorderRadius(new BorderRadius(6))
+                            .SetPaddingTop(10)
+                            .SetPaddingBottom(10)
+                            .SetPaddingLeft(12)
+                            .SetPaddingRight(12)
+                            .SetMarginTop(14)
+                            .SetWidth(UnitValue.CreatePercentValue(100));
+
+                        customBox.Add(new Paragraph("Napomena")
+                            .SetFontSize(11)
+                            .SimulateBold()
+                            .SetMarginTop(0)
+                            .SetMarginBottom(6));
+
+                        if (!string.IsNullOrWhiteSpace(offer.CustomMessage))
+                        {
+                            customBox.Add(new Paragraph(offer.CustomMessage)
+                                .SetFontSize(10)
+                                .SetMarginTop(0)
+                                .SetMarginBottom(0));
+                        }
+
+                        document.Add(customBox);
+                    }
+
                     // Footer
                     document.Add(new Paragraph("Hvala na vašem interesu!")
                         .SetMarginTop(24)

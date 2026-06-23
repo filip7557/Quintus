@@ -6,6 +6,7 @@
         public required string BuyerName { get; set; }
         public string? BuyerEmail { get; set; }
         public string? BuyerPhone { get; set; }
+        public string? CustomMessage { get; set; }
         public required List<Item> Items { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -18,6 +19,7 @@
         public required string BuyerName { get; set; }
         public string? BuyerEmail { get; set; }
         public string? BuyerPhone { get; set; }
+        public string? CustomMessage { get; set; }
         public required List<ItemDTO> Items { get; set; }
     }
 }

@@ -260,6 +260,7 @@ export default function RequestsListPage() {
               <input
                 id="startDate"
                 type="date"
+                lang="hr"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
               />
@@ -270,6 +271,7 @@ export default function RequestsListPage() {
               <input
                 id="endDate"
                 type="date"
+                lang="hr"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
               />

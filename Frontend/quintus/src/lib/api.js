@@ -9,11 +9,7 @@ const isDev = process.env.NODE_ENV !== "production";
 
 function logRefreshEvent(message, meta) {
   if (!isDev) return;
-  if (meta !== undefined) {
-    console.info("[auth-refresh]", message, meta);
-    return;
-  }
-  console.info("[auth-refresh]", message);
+  // Debug logging disabled
 }
 
 let isRefreshing = false;
@@ -126,7 +122,6 @@ api.interceptors.response.use(
         status: refreshError?.response?.status,
         message: refreshError?.message,
       });
-      console.error("Refresh token failed:", refreshError);
       notifyRefreshSubscribers(null, refreshError);
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");

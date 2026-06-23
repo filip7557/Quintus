@@ -1,7 +1,10 @@
-﻿namespace Quintus.Common
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Quintus.Common
 {
     public class RefreshInfo
     {
-        public string Token { get; set; }
+        [Required]
+        public string Token { get; set; } = string.Empty;
     }
 }

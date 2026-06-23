@@ -28,12 +28,24 @@ if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ASPNETCORE_URL
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAllOrigins", policy =>
+    options.AddPolicy("AllowQuintusDevOrigins", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins(
+                    "http://localhost:3000",
+                    "http://127.0.0.1:3000")
               .AllowAnyMethod()
               .AllowAnyHeader()
-               .WithExposedHeaders("Authorization");
+              .WithExposedHeaders("Authorization");
+    });
+
+    options.AddPolicy("AllowQuintusProdOrigins", policy =>
+    {
+        policy.WithOrigins(
+                    "https://instalacije-qiuntus.hr",
+                    "https://quintus.fcuric.eu")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .WithExposedHeaders("Authorization");
     });
 });
 
@@ -175,7 +187,14 @@ if (app.Environment.IsDevelopment())
 
 //app.UseHttpsRedirection();
 
-app.UseCors("AllowAllOrigins");
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("AllowQuintusDevOrigins");
+}
+else
+{
+    app.UseCors("AllowQuintusProdOrigins");
+}
 
 app.UseRateLimiter();
 

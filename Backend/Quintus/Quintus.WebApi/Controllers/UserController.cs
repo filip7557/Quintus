@@ -31,6 +31,9 @@ namespace Quintus.WebAPI.Controllers
         [HttpGet("email/{email}")]
         public async Task<IActionResult> GetUserByEmail(string email)
         {
+            if (string.IsNullOrWhiteSpace(email))
+                return BadRequest("Email is required.");
+
             var user = await _userService.GetUserByEmailAsync(email);
             if (user == null)
             {
