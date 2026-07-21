@@ -122,7 +122,7 @@ namespace Quintus.Service
             return await _siteSettingsRepository.AddServiceAsync(service);
         }
 
-        public async Task<bool> UpdateServiceAsync(Guid serviceId, string? title, string? description, List<Microsoft.AspNetCore.Http.IFormFile>? images, List<string>? keyWords)
+        public async Task<bool> UpdateServiceAsync(Guid serviceId, string? title, string? description, List<Microsoft.AspNetCore.Http.IFormFile>? images, List<string>? deletedImageUrls, List<string>? keyWords)
         {
             var settings = await _siteSettingsRepository.GetSiteSettingsAsync();
             var existing = settings.Services.FirstOrDefault(s => s.Id == serviceId);
@@ -133,17 +133,50 @@ namespace Quintus.Service
             var updatedDescription = description == null ? existing.Description : ValidateRequired(description, "Opis usluge");
             var updatedKeyWords = keyWords ?? existing.KeyWords;
 
-            var updatedImageUrls = existing.ImageUrls;
+            var updatedImageUrls = new List<string>(existing.ImageUrls);
+            var changed = false;
+
+            var urlsToDelete = deletedImageUrls?
+                .Where(url => !string.IsNullOrWhiteSpace(url))
+                .Select(url => url.Trim())
+                .Distinct(StringComparer.Ordinal)
+                .ToList();
+
+            if (urlsToDelete != null && urlsToDelete.Count > 0)
+            {
+                var beforeCount = updatedImageUrls.Count;
+                updatedImageUrls.RemoveAll(url => urlsToDelete.Contains(url));
+                if (updatedImageUrls.Count != beforeCount)
+                    changed = true;
+
+                foreach (var url in urlsToDelete)
+                    await _imageService.DeleteImageByUrlAsync(url);
+            }
+
             if (images != null && images.Count > 0)
             {
-                updatedImageUrls = new List<string>(existing.ImageUrls);
                 foreach (var img in images)
                 {
                     var image = await _imageService.AddImageAsync(img);
                     if (image != null)
+                    {
                         updatedImageUrls.Add(image.Url);
+                        changed = true;
+                    }
                 }
             }
+
+            if (!string.Equals(existing.Title, updatedTitle, StringComparison.Ordinal))
+                changed = true;
+
+            if (!string.Equals(existing.Description, updatedDescription, StringComparison.Ordinal))
+                changed = true;
+
+            if (!existing.KeyWords.SequenceEqual(updatedKeyWords, StringComparer.Ordinal))
+                changed = true;
+
+            if (!changed)
+                return false;
 
             var updated = new Quintus.Model.Entities.Service
             {

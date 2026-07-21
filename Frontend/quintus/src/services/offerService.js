@@ -1,5 +1,22 @@
 import api from "@/lib/api";
 
+function decodeFileName(value) {
+  if (!value) return null;
+  const match = /filename\*=(?:UTF-8''|utf-8''|)([^;]+)|filename="?([^";]+)"?/i.exec(value);
+  const raw = match?.[1] ?? match?.[2];
+  if (!raw) return null;
+  try {
+    return decodeURIComponent(raw.replace(/\"/g, ''));
+  } catch {
+    return raw.replace(/\"/g, '');
+  }
+}
+
+export function getFileNameFromResponse(response, fallback = "Ponuda.pdf") {
+  const header = response?.headers?.["content-disposition"] ?? response?.headers?.["Content-Disposition"];
+  return decodeFileName(header) ?? fallback;
+}
+
 export async function getOffers({
   search,
   dateFrom,

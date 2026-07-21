@@ -1,4 +1,5 @@
-﻿using Quintus.Model.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using Quintus.Model.Entities;
 using Quintus.Repository.Common;
 using Quintus.Repository.Context;
 
@@ -42,6 +43,26 @@ namespace Quintus.Repository
             catch (Exception ex)
             {
                 Console.WriteLine("Exception occurred while deleting image: " + ex.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteImageByUrlAsync(string url)
+        {
+            try
+            {
+                var images = await _context.Images.Where(i => i.Url == url).ToListAsync();
+                if (images.Count == 0)
+                {
+                    return false;
+                }
+
+                _context.Images.RemoveRange(images);
+                return await _context.SaveChangesAsync() > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Exception occurred while deleting image by url: " + ex.Message);
                 return false;
             }
         }

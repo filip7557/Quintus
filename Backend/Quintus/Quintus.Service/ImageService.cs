@@ -36,6 +36,11 @@ namespace Quintus.Service
             return await _imageRepository.DeleteImageAsync(id);
         }
 
+        public async Task<bool> DeleteImageByUrlAsync(string url)
+        {
+            return await _imageRepository.DeleteImageByUrlAsync(url);
+        }
+
         public async Task<Image?> GetImageByIdAsync(Guid id)
         {
             return await _imageRepository.GetImageByIdAsync(id);

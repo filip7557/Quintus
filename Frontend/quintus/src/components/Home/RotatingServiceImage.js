@@ -20,6 +20,8 @@ export default function RotatingServiceImage({
   alt,
   intervalMs = 4500,
   fadeMs = 900,
+  isEditing = false,
+  onRemoveImage,
 }) {
   const urls = useMemo(() => normalizeUrls(imageUrls), [imageUrls]);
   const urlsKey = useMemo(() => urls.join("|"), [urls]);
@@ -174,7 +176,7 @@ export default function RotatingServiceImage({
 
   return (
     <div
-      className={`rotating-service-image${isFading ? " is-fading" : ""}`}
+      className={`rotating-service-image${isFading ? " is-fading" : ""}${isEditing ? " is-editing" : ""}`}
       style={{ "--rs-fade-ms": `${Math.max(0, Number(fadeMs) || 0)}ms` }}
     >
       <Image
@@ -210,6 +212,22 @@ export default function RotatingServiceImage({
           }}
           onError={() => cancelNextWithFallback(nextSrc)}
         />
+      ) : null}
+
+      {isEditing && currentSrc && onRemoveImage ? (
+        <button
+          type="button"
+          className="image-remove-button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onRemoveImage(currentSrc);
+          }}
+          aria-label="Ukloni sliku"
+          title="Klikni za brisanje slike"
+        >
+          ×
+        </button>
       ) : null}
     </div>
   );

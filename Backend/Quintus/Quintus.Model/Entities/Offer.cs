@@ -9,6 +9,8 @@
         public string? CustomMessage { get; set; }
         public required List<Item> Items { get; set; }
 
+        public int OfferNumber { get; set; }
+        public int OfferYear { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public decimal Total => Items.Sum(i => i.Total);

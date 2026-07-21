@@ -1,4 +1,5 @@
 import FooterSettingsEditor from "@/components/Home/editors/FooterSettingsEditor";
+import Link from "next/link";
 
 export default function SiteFooter({
   settingsId,
@@ -16,7 +17,7 @@ export default function SiteFooter({
   return (
     <footer className="editable-block">
       <div className="footer-container">
-        <p>© {currentYear} Filip Ćurić | Sva prava pridržana.</p>
+        <p>© {currentYear} Quintus | Sva prava pridržana.</p>
         <div className="footer-details">
           Quintus vl. Matej Peti | OIB: {safeOib}
           <br />
@@ -26,6 +27,20 @@ export default function SiteFooter({
           <br />
           Bankovni račun – <strong>IBAN: {safeIban}</strong>
         </div>
+        <p className="footer-policy">
+          <Link href="/politika-privatnosti">Politika privatnosti</Link>
+        </p>
+        <p className="footer-credit">
+          Web izrada i razvoj: Filip Ćurić
+          <br />
+          <a
+            href="https://www.fcuric.eu"
+            target="_blank"
+            rel="noreferrer"
+          >
+            www.fcuric.eu
+          </a>
+        </p>
       </div>
 
       <FooterSettingsEditor

@@ -2,12 +2,15 @@
 
 import { useState, useEffect, useRef } from "react";
 import styles from "./OfferForm.module.css";
-import { createOffer, downloadPDF } from "@/services/offerService";
+import { createOffer, downloadPDF, getFileNameFromResponse } from "@/services/offerService";
 import {
   getUnitsOfMeasurement,
   createUnitOfMeasurement,
   deleteUnitOfMeasurement,
 } from "@/services/unitOfMeasurementService";
+
+const FIXED_NOTICE_TEXT =
+  "Ova ponuda izrađena je na temelju stanja utvrđenog prilikom pregleda objekta. Tijekom izvođenja radova mogu se pojaviti skrivene ili nepredviđene okolnosti koje nije bilo moguće utvrditi unaprijed. U tom slučaju naručitelj će biti pravovremeno obaviješten, a dodatni radovi i eventualna promjena cijene izvršit će se isključivo uz prethodni dogovor.";
 
 export default function OfferForm() {
   const [buyerName, setBuyerName] = useState("");
@@ -22,7 +25,7 @@ export default function OfferForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
-  const [customMessage, setCustomMessage] = useState(null);
+  const [customMessage, setCustomMessage] = useState("");
 
   // Unit of measurement state
   const [units, setUnits] = useState([]);
@@ -227,7 +230,9 @@ export default function OfferForm() {
           price: item.price,
           discountPercent: normalizeDiscountPercent(item.discountPercent),
         })),
-        customMessage: customMessage?.trim() || null,
+        customMessage: customMessage?.trim() 
+          ? `${FIXED_NOTICE_TEXT}\n\n${customMessage.trim()}`
+          : FIXED_NOTICE_TEXT,
       });
 
       if (response?.status === 200 || response?.status === 201) {
@@ -235,8 +240,7 @@ export default function OfferForm() {
 
         // Download PDF if backend returned it
         if (response?.data instanceof Blob) {
-          const fileName = `ponuda_${buyerName.replace(/\s+/g, '_')}_${new Date().getTime()}.pdf`;
-          downloadPDF(response.data, fileName);
+          downloadPDF(response.data, getFileNameFromResponse(response, "Ponuda.pdf"));
         }
 
         // Clear form
@@ -247,7 +251,7 @@ export default function OfferForm() {
         setItemName("");
         setItemUnit("");
         setItemQuantity("1");
-        setItemPrice("");
+        setItemPrice("");""
         setItemDiscountPercent("0");
         setCustomMessage(null);
         setTimeout(() => setSuccess(false), 3000);
@@ -333,7 +337,7 @@ export default function OfferForm() {
                 <input
                   id="itemName"
                   type="text"
-                  placeholder="npr. Laptop"
+                  placeholder="npr. Instalacija klime"
                   value={itemName}
                   onChange={(e) => setItemName(e.target.value)}
                 />
@@ -530,16 +534,29 @@ export default function OfferForm() {
         {/* Custom message */}
         <div className={styles.section}>
           <div className={styles.formGroup}>
-            <label htmlFor="customMessage">Napomena (opcionalno)</label>
+            <label htmlFor="customMessage">Napomena</label>
+            
+            {/* Fixed notice text (read-only) */}
+            <div className={styles.fixedNoticeBox}>
+              <p>{FIXED_NOTICE_TEXT}</p>
+            </div>
+
+            {/* Additional user message */}
+            <label htmlFor="customMessageAdditional" style={{ fontSize: "0.9rem", display: "block", marginTop: "12px", marginBottom: "6px", color: "#999" }}>
+              Dodajte dodatnu napomenu (opcionalno):
+            </label>
             <textarea
-              id="customMessage"
+              id="customMessageAdditional"
               className={styles.notesTextarea}
-              placeholder="Dodajte napomenu uz ponudu..."
-              value={customMessage ?? ""}
-              onChange={(e) => setCustomMessage(e.target.value || null)}
-              rows={4}
-              maxLength={1000}
+              placeholder="Upišite dodatnu napomenu ovdje..."
+              value={customMessage || ""}
+              onChange={(e) => setCustomMessage(e.target.value)}
+              rows={3}
+              maxLength={500}
             />
+            <small style={{ display: "block", marginTop: "6px", color: "#666" }}>
+              {(customMessage || "").length}/500 znakova
+            </small>
           </div>
         </div>
 

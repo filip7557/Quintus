@@ -33,7 +33,7 @@ export async function createService({
 
 export async function patchService(
   id,
-  { title, description, keyWords = [], images = [], existingImageUrls = [] }
+  { title, description, keyWords = [], images = [], existingImageUrls = [], deletedImageUrls = [] }
 ) {
   try {
     const formData = new FormData();
@@ -48,10 +48,17 @@ export async function patchService(
       if (file) formData.append("Images", file);
     });
 
-    // Preserve existing images while adding new ones (backend should merge these).
+    // Preserve existing images (except those being deleted).
     (Array.isArray(existingImageUrls) ? existingImageUrls : []).forEach((url) => {
       if (typeof url === "string" && url.trim()) {
         formData.append("ExistingImageUrls", url);
+      }
+    });
+
+    // Add deleted image URLs
+    (Array.isArray(deletedImageUrls) ? deletedImageUrls : []).forEach((url) => {
+      if (typeof url === "string" && url.trim()) {
+        formData.append("DeletedImageUrls", url);
       }
     });
 

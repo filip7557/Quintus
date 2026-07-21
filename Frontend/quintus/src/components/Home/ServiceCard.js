@@ -9,6 +9,8 @@ export default function ServiceCard({
   rotateIntervalMs = 4500,
   canEdit = false,
   onEdit,
+  isEditing = false,
+  onRemoveImage,
 }) {
   const keywordText = Array.isArray(keywords) ? keywords.join(" - ") : "";
 
@@ -37,6 +39,8 @@ export default function ServiceCard({
         imageUrls={imageUrls}
         alt={title}
         intervalMs={rotateIntervalMs}
+        isEditing={isEditing}
+        onRemoveImage={onRemoveImage}
       />
       <p className="service-description">{description}</p>
       {keywordText ? <p className="service-keywords">{keywordText}</p> : null}

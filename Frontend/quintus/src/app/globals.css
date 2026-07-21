@@ -496,6 +496,17 @@ header {
   color: rgba(0, 123, 255, 0.95);
 }
 
+/* Mobile: Hero edit button positioning */
+@media (max-width: 600px) {
+  .hero-bg-edit-button {
+    bottom: 10px;
+    right: 10px;
+    padding: 6px 8px;
+    font-size: 0.8rem;
+    gap: 6px;
+  }
+}
+
 .services {
   display: flex;
   flex-direction: column;
@@ -794,9 +805,49 @@ header {
   opacity: 1;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .rotating-service-image-img.is-next {
-    transition: none;
+.rotating-service-image.is-editing .image-remove-button {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.image-remove-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #dc3545;
+  color: white;
+  border: 2px solid white;
+  font-size: 22px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease-in-out, background-color 0.2s ease-in-out;
+  z-index: 10;
+}
+
+.image-remove-button:hover {
+  background-color: #c82333;
+  transform: scale(1.1);
+}
+
+.image-remove-button:active {
+  transform: scale(0.95);
+}
+
+@media (max-width: 768px) {
+  .image-remove-button {
+    width: 44px;
+    height: 44px;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
   }
 }
 
@@ -880,6 +931,19 @@ header {
 
 .section-edit-button-icon {
   color: rgba(0, 123, 255, 0.95);
+}
+
+/* Mobile: Section edit button adjustments */
+@media (max-width: 600px) {
+  .section-edit-button-wrap {
+    margin: 12px auto 0;
+  }
+
+  .section-edit-button {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    gap: 6px;
+  }
 }
 
 /* Add-service card */
@@ -1615,6 +1679,41 @@ footer {
     border-top: 1px solid var(--border-color);
 }
 
+.footer-credit {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: 18px 0 0;
+}
+
+.footer-credit a {
+  color: #ffffff;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.35);
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.footer-credit a:hover {
+  color: #6ea8fe;
+  border-color: #6ea8fe;
+}
+
+.footer-policy {
+  margin: 14px 0 0;
+}
+
+.footer-policy a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+  border-bottom: 1px solid rgba(169, 177, 189, 0.28);
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.footer-policy a:hover {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.42);
+}
+
 .scroll-to-top.show {
     opacity: 1;
     visibility: visible;
@@ -1904,6 +2003,15 @@ footer {
   .footer-details {
     font-size: 0.7rem;
     line-height: 1.4;
+  }
+
+  .footer-credit {
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+
+  .footer-policy a {
+    font-size: 0.75rem;
   }
 
   /* Scroll to top button */

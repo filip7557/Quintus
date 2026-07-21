@@ -18,7 +18,7 @@
         Task UpdateIbanAsync(string value);
 
         Task<Guid> AddServiceAsync(string title, string description, List<Microsoft.AspNetCore.Http.IFormFile> images, List<string> keyWords);
-        Task<bool> UpdateServiceAsync(Guid serviceId, string? title, string? description, List<Microsoft.AspNetCore.Http.IFormFile>? images, List<string>? keyWords);
+        Task<bool> UpdateServiceAsync(Guid serviceId, string? title, string? description, List<Microsoft.AspNetCore.Http.IFormFile>? images, List<string>? deletedImageUrls, List<string>? keyWords);
         Task<bool> DeleteServiceAsync(Guid serviceId);
         Task<bool> ReorderServicesAsync(List<Guid> orderedServiceIds);
     }

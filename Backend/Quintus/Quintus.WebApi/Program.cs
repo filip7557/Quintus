@@ -35,7 +35,7 @@ builder.Services.AddCors(options =>
                     "http://127.0.0.1:3000")
               .AllowAnyMethod()
               .AllowAnyHeader()
-              .WithExposedHeaders("Authorization");
+              .WithExposedHeaders("Authorization", "Content-Disposition");
     });
 
     options.AddPolicy("AllowQuintusProdOrigins", policy =>
@@ -45,7 +45,7 @@ builder.Services.AddCors(options =>
                     "https://quintus.fcuric.eu")
               .AllowAnyMethod()
               .AllowAnyHeader()
-              .WithExposedHeaders("Authorization");
+              .WithExposedHeaders("Authorization", "Content-Disposition");
     });
 });
 
