@@ -216,6 +216,36 @@ export default function ServicesSection({ services }) {
           }
           return response;
         }}
+        onRemoveImageInstant={async (imageUrl) => {
+          const serviceId = editing?.Id || editing?.id;
+          const currentImages = editing?.ImageUrls ?? editing?.imageUrls ?? [];
+
+          const response = await patchService(serviceId, {
+            title: editing?.Title ?? editing?.title,
+            description: editing?.Description ?? editing?.description,
+            keyWords: editing?.KeyWords ?? editing?.keyWords ?? editing?.keywords ?? [],
+            images: [],
+            existingImageUrls: currentImages.filter((url) => url !== imageUrl),
+            deletedImageUrls: [imageUrl],
+          });
+
+          const ok = response?.status === 200 || response?.status === 204;
+          if (!ok) {
+            throw new Error(response?.data?.message || "Greška pri brisanju slike.");
+          }
+
+          // Update local editing state to remove the image
+          setEditing((prev) => {
+            if (!prev) return prev;
+            const key = prev.ImageUrls ? "ImageUrls" : "imageUrls";
+            return {
+              ...prev,
+              [key]: prev[key].filter((url) => url !== imageUrl),
+            };
+          });
+
+          router.refresh();
+        }}
         initial={
           editing
             ? {

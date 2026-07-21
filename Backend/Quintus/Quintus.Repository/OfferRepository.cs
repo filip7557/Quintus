@@ -30,6 +30,15 @@ namespace Quintus.Repository
             }
         }
 
+        public async Task<int> GetNextOfferNumberAsync(int offerYear)
+        {
+            var currentMax = await _context.Offers
+                .Where(o => o.OfferYear == offerYear)
+                .MaxAsync(o => (int?)o.OfferNumber);
+
+            return (currentMax ?? 0) + 1;
+        }
+
         public async Task<Offer?> GetOfferByIdAsync(Guid offerId)
         {
             try

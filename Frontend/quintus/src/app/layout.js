@@ -13,6 +13,12 @@ function getMetadataBase() {
   }
 }
 
+export const viewport = {
+  themeColor: "#6ea8fe",
+  width: "device-width",
+  initialScale: 1,
+};
+
 export const metadata = {
   metadataBase: getMetadataBase(),
   title: "Quintus | Stručne instalaterske usluge",
@@ -41,6 +47,10 @@ export const metadata = {
     description:
       "Klimatizacija, grijanje i vodoinstalacije – stručne usluge po pristupačnim cijenama.",
     images: ["/images/logo.png"],
+  },
+  icons: {
+    icon: "/images/favicon.ico",
+    apple: "/images/apple-touch-icon.png",
   },
 };
 

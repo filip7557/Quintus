@@ -22,6 +22,7 @@ export default function ServiceCreateModal({
   onAdd,
   onSubmit,
   onDelete,
+  onRemoveImageInstant,
   deleteId,
   deleteLabel = "Obriši",
   deleteConfirmMessage = "Jeste li sigurni da želite obrisati ovu uslugu?",
@@ -129,14 +130,34 @@ export default function ServiceCreateModal({
     });
   };
 
-  const handleRemoveExistingImage = (url) => {
+  const handleRemoveExistingImage = async (url) => {
     const confirmed = window.confirm(
       "Jeste li sigurni da želite obrisati ovu sliku?"
     );
     if (!confirmed) return;
 
-    setExistingImages((prev) => prev.filter((u) => u !== url));
-    setDeletedImageUrls((prev) => [...prev, url]);
+    // If callback is provided, call API instantly
+    if (onRemoveImageInstant) {
+      try {
+        await onRemoveImageInstant(url);
+        setExistingImages((prev) => prev.filter((u) => u !== url));
+        showToast({
+          type: "success",
+          title: "Obrisano",
+          message: "Slika je obrisana.",
+        });
+      } catch (err) {
+        showToast({
+          type: "error",
+          title: "Greška",
+          message: "Greška pri brisanju slike.",
+        });
+      }
+    } else {
+      // Fallback: mark for deletion on submit
+      setExistingImages((prev) => prev.filter((u) => u !== url));
+      setDeletedImageUrls((prev) => [...prev, url]);
+    }
     setDeleteImageUrl(null);
   };
 

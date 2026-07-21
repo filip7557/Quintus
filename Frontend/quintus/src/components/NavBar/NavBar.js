@@ -19,6 +19,7 @@ export default function NavBar() {
       const hamburger = hamburgerRef.current;
       if (!navMain || !hamburger) return;
       
+      const clickedHamburger = hamburger.contains(e.target);
       const clickedInsideMenu = navMainRef.current?.contains(e.target);
       if (!clickedHamburger && !clickedInsideMenu) setIsMenuOpen(false);
     };

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import styles from "./OfferForm.module.css";
-import { createOffer, downloadPDF } from "@/services/offerService";
+import { createOffer, downloadPDF, getFileNameFromResponse } from "@/services/offerService";
 import {
   getUnitsOfMeasurement,
   createUnitOfMeasurement,
@@ -240,8 +240,7 @@ export default function OfferForm() {
 
         // Download PDF if backend returned it
         if (response?.data instanceof Blob) {
-          const fileName = `ponuda_${buyerName.replace(/\s+/g, '_')}_${new Date().getTime()}.pdf`;
-          downloadPDF(response.data, fileName);
+          downloadPDF(response.data, getFileNameFromResponse(response, "Ponuda.pdf"));
         }
 
         // Clear form
@@ -338,7 +337,7 @@ export default function OfferForm() {
                 <input
                   id="itemName"
                   type="text"
-                  placeholder="npr. Laptop"
+                  placeholder="npr. Instalacija klime"
                   value={itemName}
                   onChange={(e) => setItemName(e.target.value)}
                 />
@@ -543,23 +542,21 @@ export default function OfferForm() {
             </div>
 
             {/* Additional user message */}
-            <div style={{ marginTop: "12px" }}>
-              <label htmlFor="customMessage" style={{ fontSize: "0.9rem", display: "block", marginBottom: "6px", color: "#999" }}>
-                Dodajte dodatnu napomenu (opcionalno):
-              </label>
-              <textarea
-                id="customMessage"
-                className={styles.notesTextarea}
-                placeholder="Upišite dodatnu napomenu ovdje..."
-                value={customMessage}
-                onChange={(e) => setCustomMessage(e.target.value)}
-                rows={3}
-                maxLength={500}
-              />
-              <small style={{ display: "block", marginTop: "6px", color: "#666" }}>
-                {customMessage.length}/500 znakova
-              </small>
-            </div>
+            <label htmlFor="customMessageAdditional" style={{ fontSize: "0.9rem", display: "block", marginTop: "12px", marginBottom: "6px", color: "#999" }}>
+              Dodajte dodatnu napomenu (opcionalno):
+            </label>
+            <textarea
+              id="customMessageAdditional"
+              className={styles.notesTextarea}
+              placeholder="Upišite dodatnu napomenu ovdje..."
+              value={customMessage || ""}
+              onChange={(e) => setCustomMessage(e.target.value)}
+              rows={3}
+              maxLength={500}
+            />
+            <small style={{ display: "block", marginTop: "6px", color: "#666" }}>
+              {(customMessage || "").length}/500 znakova
+            </small>
           </div>
         </div>
 

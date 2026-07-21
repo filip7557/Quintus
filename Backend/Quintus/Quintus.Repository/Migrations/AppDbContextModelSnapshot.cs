@@ -101,6 +101,12 @@ namespace Quintus.Repository.Migrations
                     b.Property<string>("CustomMessage")
                         .HasColumnType("text");
 
+                    b.Property<int>("OfferNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("OfferYear")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.ToTable("Offers");

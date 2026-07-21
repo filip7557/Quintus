@@ -59,7 +59,7 @@ namespace Quintus.Worker
                         subject,
                         html,
                         pdfBytes,
-                        $"Ponuda_{offer.Id:N}.pdf"
+                        OfferFileNameFormatter.GetFileName(offer)
                     );
 
                     _logger.LogInformation("Email sent to {ToEmail} for offer {OfferId}.", offer.BuyerEmail, job.OfferId);

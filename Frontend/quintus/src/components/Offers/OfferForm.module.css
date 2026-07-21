@@ -217,6 +217,14 @@
   word-wrap: break-word;
 }
 
+@media (max-width: 600px) {
+  .fixedNoticeBox {
+    padding: 12px;
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+}
+
 /* Item Input Section */
 .itemInputSection {
   display: flex;
@@ -859,6 +867,11 @@
 
   .itemInputGroup {
     gap: 10px;
+    grid-template-columns: 1fr;
+  }
+
+  .addItemBtn {
+    width: 100%;
   }
 
   .formGroup label {

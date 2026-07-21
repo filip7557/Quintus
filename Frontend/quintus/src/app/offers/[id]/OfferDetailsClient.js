@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import NavBar from "@/components/NavBar/NavBar";
-import { getOfferById, getOfferPdf, downloadPDF } from "@/services/offerService";
+import { getOfferById, getOfferPdf, downloadPDF, getFileNameFromResponse } from "@/services/offerService";
 import styles from "./page.module.css";
 
 function pickField(obj, keys, fallback = "") {
@@ -41,7 +41,7 @@ export default function OfferDetailsClient({ offerId }) {
     setPdfLoading(true);
     const response = await getOfferPdf(requestedId);
     if (response?.status >= 200 && response?.status < 300 && response?.data) {
-      downloadPDF(response.data, `ponuda-${requestedId}.pdf`);
+      downloadPDF(response.data, getFileNameFromResponse(response, `ponuda-${requestedId}.pdf`));
     }
     setPdfLoading(false);
   };
@@ -134,6 +134,16 @@ export default function OfferDetailsClient({ offerId }) {
     [offer]
   );
 
+  const offerNumber = useMemo(
+    () => pickField(offer, ["OfferNumber", "offerNumber"], ""),
+    [offer]
+  );
+
+  const offerYear = useMemo(
+    () => pickField(offer, ["OfferYear", "offerYear"], ""),
+    [offer]
+  );
+
   return (
     <>
       <NavBar />
@@ -158,6 +168,12 @@ export default function OfferDetailsClient({ offerId }) {
           {!loading && !error && offer ? (
             <>
               <div className={styles.infoGrid}>
+                <div className={styles.infoField}>
+                  <span className={styles.label}>Broj ponude</span>
+                  <div className={styles.value}>
+                    {offerNumber && offerYear ? `${offerNumber}/${offerYear}` : "—"}
+                  </div>
+                </div>
                 <div className={styles.infoField}>
                   <span className={styles.label}>Kupac</span>
                   <div className={styles.value}>{buyerName}</div>

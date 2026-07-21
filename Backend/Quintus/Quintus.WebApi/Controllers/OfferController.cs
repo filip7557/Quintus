@@ -43,7 +43,9 @@ namespace Quintus.WebAPI.Controllers
             try
             {
                 var result = await _offerService.AddOfferAsync(offer);
-                return File(result.Value, "application/pdf", $"Ponuda_{result.Key:N}.pdf");
+                var createdOffer = await _offerService.GetOfferByIdAsync(result.Key);
+                var fileName = createdOffer == null ? $"Ponuda_{result.Key:N}.pdf" : OfferFileNameFormatter.GetFileName(createdOffer);
+                return File(result.Value, "application/pdf", fileName);
             }
             catch (Exception ex)
             {
@@ -58,8 +60,12 @@ namespace Quintus.WebAPI.Controllers
         {
             try
             {
+                var offer = await _offerService.GetOfferByIdAsync(offerId);
+                if (offer == null)
+                    return NotFound("Ponuda nije pronadjena.");
+
                 var pdfBytes = await _offerService.GenerateOfferPdfAsync(offerId);
-                return File(pdfBytes, "application/pdf", $"Ponuda_{offerId:N}.pdf");
+                return File(pdfBytes, "application/pdf", OfferFileNameFormatter.GetFileName(offer));
             }
             catch (KeyNotFoundException) { return NotFound("Ponuda nije pronadjena."); }
             catch { return StatusCode(500, "Greska pri generiranju PDF-a."); }

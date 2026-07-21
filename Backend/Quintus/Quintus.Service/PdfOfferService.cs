@@ -94,7 +94,11 @@ namespace Quintus.Service
                     document.Add(headerTable);
 
                     // Title centered
-                    document.Add(new Paragraph("PONUDA")
+                    var offerTitle = offer.OfferNumber > 0
+                        ? $"Ponuda {offer.OfferNumber}/{(offer.OfferYear > 0 ? offer.OfferYear : offer.CreatedAt.Year)}"
+                        : "Ponuda";
+
+                    document.Add(new Paragraph(offerTitle)
                         .SetFontSize(24)
                         .SimulateBold()
                         .SetTextAlignment(TextAlignment.CENTER)

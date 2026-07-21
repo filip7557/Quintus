@@ -7,6 +7,7 @@ namespace Quintus.Repository.Common
     {
         Task<Offer?> GetOfferByIdAsync(Guid offerId);
         Task<PagedResult<Offer>> GetOffersAsync(OfferFilter filter);
+        Task<int> GetNextOfferNumberAsync(int offerYear);
         Task<Offer?> AddOfferAsync(Offer offer);
     }
 }

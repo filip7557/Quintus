@@ -35,6 +35,8 @@ function normalizeOffer(offer) {
     buyerName: pickField(offer, ["BuyerName", "buyerName"], "—"),
     buyerEmail: pickField(offer, ["BuyerEmail", "buyerEmail"], "—"),
     buyerPhone: pickField(offer, ["BuyerPhone", "buyerPhone"], "—"),
+    offerNumber: pickField(offer, ["OfferNumber", "offerNumber"], ""),
+    offerYear: pickField(offer, ["OfferYear", "offerYear"], ""),
     createdAt: pickField(offer, ["CreatedAt", "createdAt", "Date", "date"], ""),
     total: Number(
       pickField(offer, ["TotalAmount", "totalAmount", "Total", "total"], calculatedTotal)
@@ -322,6 +324,7 @@ export default function OffersListPage() {
               <table className={styles.table}>
                 <thead>
                   <tr>
+                    <th>Broj ponude</th>
                     <th>Kupac</th>
                     <th>Email</th>
                     <th>Telefon</th>
@@ -351,7 +354,10 @@ export default function OffersListPage() {
                         }
                       }}
                     >
-                      <td data-label="Kupac" className={styles.mobilePrimaryCell}>{offer.buyerName}</td>
+                      <td data-label="Broj ponude" className={styles.mobilePrimaryCell}>
+                        {offer.offerNumber && offer.offerYear ? `${offer.offerNumber}/${offer.offerYear}` : "—"}
+                      </td>
+                      <td data-label="Kupac">{offer.buyerName}</td>
                       <td data-label="Email">{offer.buyerEmail}</td>
                       <td data-label="Telefon">{offer.buyerPhone}</td>
                       <td data-label="Stavke">{offer.itemsCount}</td>
