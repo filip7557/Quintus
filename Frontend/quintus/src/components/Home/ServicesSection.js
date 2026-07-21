@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 
 import ServiceCard from "@/components/Home/ServiceCard";
 import ServiceCreateModal from "@/components/Home/ServiceCreateModal";
+import ImageRemovalModal from "@/components/Home/ImageRemovalModal";
 import useCanManageSite from "@/hooks/useCanManageSite";
 import { useToast } from "@/components/Common/ToastProvider";
 import { createService, deleteService, patchService } from "@/services/serviceService";
+
 export default function ServicesSection({ services }) {
   const router = useRouter();
   const { showToast } = useToast();
@@ -16,6 +18,8 @@ export default function ServicesSection({ services }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [editingWithImageRemoval, setEditingWithImageRemoval] = useState(null);
+  const [removingImageUrl, setRemovingImageUrl] = useState(null);
 
   useEffect(() => {
     // Copy array to avoid accidental mutations and make debugging simpler.
@@ -95,7 +99,13 @@ export default function ServicesSection({ services }) {
             canEdit={canManage}
             onEdit={() => {
               setEditing(service);
+              setEditingWithImageRemoval(null);
               setEditOpen(true);
+            }}
+            isEditing={editingWithImageRemoval?.Id === getServiceId(service) || editingWithImageRemoval?.id === getServiceId(service)}
+            onRemoveImage={(imageUrl) => {
+              setEditingWithImageRemoval(service);
+              setRemovingImageUrl(imageUrl);
             }}
           />
         ))}
@@ -114,6 +124,56 @@ export default function ServicesSection({ services }) {
             Dodaj uslugu
           </button>
         </div>
+      ) : null}
+
+      {removingImageUrl && editingWithImageRemoval ? (
+        <ImageRemovalModal
+          open={!!removingImageUrl}
+          imageUrl={removingImageUrl}
+          serviceName={editingWithImageRemoval.Title ?? editingWithImageRemoval.title}
+          onConfirm={async () => {
+            const serviceId = getServiceId(editingWithImageRemoval);
+            const currentImages =
+              editingWithImageRemoval.ImageUrls ?? editingWithImageRemoval.imageUrls ?? [];
+
+            const response = await patchService(serviceId, {
+              title: editingWithImageRemoval.Title ?? editingWithImageRemoval.title,
+              description:
+                editingWithImageRemoval.Description ??
+                editingWithImageRemoval.description,
+              keyWords:
+                editingWithImageRemoval.KeyWords ??
+                editingWithImageRemoval.keyWords ??
+                editingWithImageRemoval.keywords ??
+                [],
+              images: [],
+              existingImageUrls: currentImages.filter((url) => url !== removingImageUrl),
+              deletedImageUrls: [removingImageUrl],
+            });
+
+            const ok = response?.status === 200 || response?.status === 204;
+            if (!ok) {
+              const msg = response?.data?.message || "Greška pri brisanju slike.";
+              showToast({ type: "error", title: "Neuspješno", message: msg });
+              setRemovingImageUrl(null);
+              setEditingWithImageRemoval(null);
+              return;
+            }
+
+            showToast({
+              type: "success",
+              title: "Obrisano",
+              message: "Slika je obrisana.",
+            });
+            setRemovingImageUrl(null);
+            setEditingWithImageRemoval(null);
+            router.refresh();
+          }}
+          onCancel={() => {
+            setRemovingImageUrl(null);
+            setEditingWithImageRemoval(null);
+          }}
+        />
       ) : null}
 
       <ServiceCreateModal
@@ -169,7 +229,7 @@ export default function ServicesSection({ services }) {
               }
             : undefined
         }
-        onSubmit={async ({ title, description, keyWords, images, existingImageUrls }) => {
+        onSubmit={async ({ title, description, keyWords, images, existingImageUrls, deletedImageUrls }) => {
           const id = editing?.Id || editing?.id;
           if (!id) {
             return { status: 400, data: { message: "Uslugu nije moguće spremiti." } };
@@ -181,6 +241,7 @@ export default function ServicesSection({ services }) {
             keyWords,
             images,
             existingImageUrls,
+            deletedImageUrls,
           });
 
           if (response?.status === 200 || response?.status === 204) {

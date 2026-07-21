@@ -137,7 +137,7 @@ namespace Quintus.WebAPI.Controllers
         {
             try
             {
-                var updated = await _siteSettingsService.UpdateServiceAsync(serviceId, request.Title, request.Description, request.Images, request.KeyWords);
+                var updated = await _siteSettingsService.UpdateServiceAsync(serviceId, request.Title, request.Description, request.Images, request.DeletedImageUrls, request.KeyWords);
                 if (!updated)
                     return Ok("Nema promjena.");
 

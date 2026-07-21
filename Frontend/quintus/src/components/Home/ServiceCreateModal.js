@@ -37,9 +37,12 @@ export default function ServiceCreateModal({
   const [keywordInput, setKeywordInput] = useState("");
   const [keywords, setKeywords] = useState([]);
   const [images, setImages] = useState([]); // { file, url }
+  const [existingImages, setExistingImages] = useState([]); // URLs of existing images
+  const [deletedImageUrls, setDeletedImageUrls] = useState([]); // URLs to delete
   const [submitting, setSubmitting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
+  const [deleteImageUrl, setDeleteImageUrl] = useState(null); // For image delete confirmation
 
   const dialogRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -52,8 +55,14 @@ export default function ServiceCreateModal({
     setKeywordInput("");
     setKeywords(Array.isArray(initial?.keyWords) ? initial.keyWords : []);
     setError("");
+    setDeleteImageUrl(null);
+    setDeletedImageUrls([]);
 
-    // Cleanup old previews
+    // Set existing images and cleanup old previews
+    setExistingImages(
+      Array.isArray(initial?.existingImageUrls) ? [...initial.existingImageUrls] : []
+    );
+
     setImages((prev) => {
       prev.forEach((p) => URL.revokeObjectURL(p.url));
       return [];
@@ -120,6 +129,17 @@ export default function ServiceCreateModal({
     });
   };
 
+  const handleRemoveExistingImage = (url) => {
+    const confirmed = window.confirm(
+      "Jeste li sigurni da želite obrisati ovu sliku?"
+    );
+    if (!confirmed) return;
+
+    setExistingImages((prev) => prev.filter((u) => u !== url));
+    setDeletedImageUrls((prev) => [...prev, url]);
+    setDeleteImageUrl(null);
+  };
+
   const handleSubmit = async () => {
     setError("");
     if (!canSubmit || submitting || deleting) return;
@@ -132,9 +152,8 @@ export default function ServiceCreateModal({
         description: description.trim(),
         keyWords: keywords,
         images: images.map((x) => x.file),
-        existingImageUrls: Array.isArray(initial?.existingImageUrls)
-          ? initial.existingImageUrls
-          : [],
+        existingImageUrls: existingImages,
+        deletedImageUrls: deletedImageUrls,
       });
 
       const ok = response?.status === 200 || response?.status === 201;
@@ -341,10 +360,10 @@ export default function ServiceCreateModal({
             <div>
               <div className="modal-label">Postojeće slike</div>
               <div className="modal-help">
-                Nove slike će se dodati uz postojeće.
+                Nove slike će se dodati uz postojeće. Klikni X za brisanje slike.
               </div>
               <div className="image-preview-grid image-preview-grid-existing">
-                {initial.existingImageUrls.map((url) => (
+                {existingImages.map((url) => (
                   <div key={url} className="image-preview-item">
                     <Image
                       src={url}
@@ -355,6 +374,15 @@ export default function ServiceCreateModal({
                       loader={passthroughLoader}
                       unoptimized
                     />
+                    <button
+                      type="button"
+                      className="image-remove"
+                      onClick={() => handleRemoveExistingImage(url)}
+                      aria-label="Ukloni sliku"
+                      disabled={submitting || deleting}
+                    >
+                      ×
+                    </button>
                   </div>
                 ))}
               </div>

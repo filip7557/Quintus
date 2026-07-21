@@ -195,6 +195,28 @@
   color: rgba(234, 242, 255, 0.45);
 }
 
+.fixedNoticeBox {
+  background: linear-gradient(
+    180deg,
+    rgba(138, 180, 255, 0.08),
+    rgba(110, 168, 254, 0.04)
+  );
+  border: 1px solid rgba(138, 180, 255, 0.2);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 0;
+  color: rgba(234, 242, 255, 0.85);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  box-sizing: border-box;
+}
+
+.fixedNoticeBox p {
+  margin: 0;
+  padding: 0;
+  word-wrap: break-word;
+}
+
 /* Item Input Section */
 .itemInputSection {
   display: flex;
