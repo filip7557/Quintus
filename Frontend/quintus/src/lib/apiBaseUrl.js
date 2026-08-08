@@ -3,6 +3,8 @@ function normalizeBaseUrl(url) {
   return u.endsWith("/") ? u.slice(0, -1) : u;
 }
 
+const PRODUCTION_API_BASE_URL = "https://www.instalacije-quintus.hr/api";
+
 function isLoopbackHost(hostname) {
   const h = String(hostname || "").trim().toLowerCase();
   return h === "localhost" || h === "127.0.0.1" || h === "[::1]";
@@ -21,6 +23,10 @@ function getDevBrowserBaseUrl() {
   return `http://${hostname}:5113/api`;
 }
 
+function getProductionBaseUrl() {
+  return PRODUCTION_API_BASE_URL;
+}
+
 // Prefer explicit configuration.
 const fromEnv =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -29,10 +35,12 @@ const fromEnv =
 
 // Safe defaults:
 // - dev: use HTTP to avoid self-signed HTTPS issues in Node/SSR
-// - prod: use the public host
+// - prod: use the public host matching the current site domain
 const defaultBaseUrl =
   process.env.NODE_ENV === "production"
-    ? "https://quintus.fcuric.eu/api"
+    ? getProductionBaseUrl()
     : getDevBrowserBaseUrl();
 
-export const API_BASE_URL = normalizeBaseUrl(fromEnv || defaultBaseUrl);
+export const API_BASE_URL = normalizeBaseUrl(
+  process.env.NODE_ENV === "production" ? PRODUCTION_API_BASE_URL : fromEnv || defaultBaseUrl
+);
