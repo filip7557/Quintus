@@ -1,0 +1,217 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using Quintus.Common;
+using Quintus.Common.Exceptions;
+using Quintus.Model;
+using Quintus.Service.Common;
+
+namespace Quintus.WebAPI.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class AuthController : ControllerBase
+    {
+        private readonly ITokenService _tokenService;
+        private readonly IAuthService _authService;
+        private readonly IEmailVerificationService _emailVerificationService;
+        private readonly IUserService _userService;
+        private readonly IPasswordResetService _passwordResetService;
+
+        public AuthController(ITokenService tokenService, IAuthService authService, IEmailVerificationService emailVerificationService, IUserService userService, IPasswordResetService passwordResetService)
+        {
+            _tokenService = tokenService;
+            _authService = authService;
+            _emailVerificationService = emailVerificationService;
+            _userService = userService;
+            _passwordResetService = passwordResetService;
+        }
+
+        [EnableRateLimiting("LoginRegisterPolicy")]
+        [HttpPost("register")]
+        public async Task<IActionResult> RegisterAsync([FromBody] UserDTO user)
+        {
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
+
+            try
+            {
+                var success = await _tokenService.RegisterUserAsync(user);
+                if (!success)
+                    return StatusCode(500, "An error occurred during registration.");
+            }
+            catch (InvalidPasswordException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DuplicateUserException ex)
+            {
+                return Conflict(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+
+            return Ok("Korisnik je uspješno registriran. Molimo potvrdite e-mail adresu.");
+        }
+
+        [HttpGet("verify-email")]
+        public async Task<IActionResult> VerifyEmailAsync([FromQuery] string token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+                return BadRequest(new VerifyEmailResponse { Verified = false, Message = "Token je obavezan." });
+
+            try
+            {
+                var verified = await _emailVerificationService.VerifyAsync(token);
+                if (!verified)
+                    return BadRequest(new VerifyEmailResponse { Verified = false, Message = "Nevažeći ili istekao token za potvrdu e-maila." });
+
+                return Ok(new VerifyEmailResponse { Verified = true, Message = "E-mail adresa je uspješno potvrđena." });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new VerifyEmailResponse { Verified = false, Message = "Došlo je do pogreške prilikom potvrde e-mail adrese." });
+            }
+        }
+
+        [EnableRateLimiting("LoginRegisterPolicy")]
+        [HttpPost("resend-verification")]
+        public async Task<IActionResult> ResendVerificationAsync([FromBody] ResendVerificationRequest request)
+        {
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
+
+            // Always return OK to avoid user enumeration.
+            try
+            {
+                var user = await _userService.GetUserByEmailAsync(request.Email);
+                if (user != null && !user.EmailVerified)
+                {
+                    await _emailVerificationService.SendVerificationAsync(user.Id, user.Email);
+                }
+            }
+            catch
+            {
+                // swallow to keep response consistent
+            }
+
+            return Ok("Ako račun postoji, poslana je poruka za potvrdu e-mail adrese.");
+        }
+
+        [EnableRateLimiting("LoginRegisterPolicy")]
+        [HttpPost("login")]
+        public async Task<IActionResult> LoginAsync([FromBody] LoginInfo loginInfo)
+        {
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
+
+            try
+            {
+                var loginResponse = await _tokenService.LoginUserAsync(loginInfo.email, loginInfo.password);
+                return Ok(loginResponse);
+            }
+            catch (Exception ex)
+            {
+                if (ex is InvalidLoginInfoException)
+                    return Unauthorized(ex.Message);
+                else
+                    return StatusCode(500, "An error occurred during login.");
+            }
+        }
+
+        [Authorize]
+        [HttpPost("logout")]
+        public async Task<IActionResult> LogoutAsync()
+        {
+            await _tokenService.LogoutUserAsync();
+            return Ok("Logged out successfully.");
+        }
+
+        [HttpPost("refresh")]
+        public async Task<IActionResult> RefreshTokenAsync([FromBody] RefreshInfo refreshInfo)
+        {
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
+
+            try
+            {
+                var loginResponse = await _tokenService.RefreshTokenAsync(refreshInfo.Token);
+                return Ok(loginResponse);
+            }
+            catch (Exception ex)
+            {
+                if (ex is InvalidRefreshTokenException)
+                    return Unauthorized("Invalid refresh token.");
+                else if (ex is InactiveRefreshTokenException)
+                    return Unauthorized("Refresh token is inactive or revoked.");
+                else
+                    return StatusCode(500, "An error occurred while refreshing the token.");
+            }
+        }
+
+        [Authorize]
+        [HttpGet("getCurrentUser")]
+        public async Task<IActionResult> GetCurrentUserAsync()
+        {
+            try
+            {
+                var user = await _authService.GetCurrentUserAsync();
+
+                if (user == null)
+                    return NotFound("Current user not found.");
+
+                return Ok(user);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while retrieving the current user.");
+            }
+        }
+
+        [EnableRateLimiting("LoginRegisterPolicy")]
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPasswordAsync([FromBody] ForgotPasswordRequest request)
+        {
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
+
+            try
+            {
+                await _passwordResetService.SendResetAsync(request.Email);
+            }
+            catch
+            {
+                // swallow to avoid leaking details
+            }
+
+            return Ok("Ako račun postoji, poslana je poruka za reset lozinke.");
+        }
+
+        [EnableRateLimiting("LoginRegisterPolicy")]
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPasswordAsync([FromBody] ResetPasswordRequest request)
+        {
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
+
+            try
+            {
+                var ok = await _passwordResetService.ResetAsync(request.Token, request.NewPassword);
+                if (!ok)
+                    return BadRequest("Nevažeći ili istekao token za reset lozinke.");
+
+                return Ok("Lozinka je uspješno promijenjena.");
+            }
+            catch (InvalidPasswordException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch
+            {
+                return StatusCode(500, "Došlo je do pogreške prilikom resetiranja lozinke.");
+            }
+        }
+    }
+}

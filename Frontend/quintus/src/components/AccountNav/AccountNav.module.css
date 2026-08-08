@@ -1,0 +1,196 @@
+.navAccount {
+  position: relative;
+}
+
+.open .dropdownArrow {
+  transform: rotate(180deg);
+  color: white;
+}
+
+.open .accountTrigger {
+  color: white;
+}
+
+.accountTrigger {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  /* Match .nav-link styling (globals.css) */
+  padding: 0.35rem 0.2rem;
+  color: rgba(234, 242, 255, 0.85);
+  font-size: large;
+  font-weight: 200;
+  font-family: var(--font-body);
+  transition: color 0.3s;
+}
+
+.accountTrigger:hover {
+  color: white;
+}
+
+.dropdownArrow {
+  transition: transform 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .navAccount:hover .dropdownArrow {
+    transform: rotate(180deg);
+    color: white;
+  }
+
+  .navAccount:hover .accountTrigger {
+    color: white;
+  }
+}
+
+.accountDropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: rgba(40, 46, 50, 0.92);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  min-width: 160px;
+  padding: 6px;
+  box-sizing: border-box;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.2s ease;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 992px) {
+  .accountTrigger {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    text-align: left;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    font-weight: 500;
+    font-family: var(--font-body);
+  }
+
+  .accountTrigger:hover {
+    color: #fff;
+  }
+
+  .accountDropdown {
+    /* behave like an accordion section inside the hamburger menu */
+    position: static;
+    width: 100%;
+    min-width: unset;
+    margin-top: 0;
+    transform: none;
+    background: rgba(0, 0, 0, 0.25);
+    border: 0 solid rgba(255, 255, 255, 0.12);
+    box-shadow: none;
+
+    /* collapsed by default (no layout gap) */
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    padding: 0;
+    transition: max-height 200ms ease, opacity 160ms ease, padding 160ms ease,
+      border-width 160ms ease, margin-top 160ms ease;
+  }
+
+  .open .accountDropdown {
+    margin-top: 8px;
+    max-height: 340px;
+    opacity: 1;
+    padding: 6px;
+    border-width: 1px;
+  }
+
+  .dropdownItem {
+    color: #fff;
+  }
+
+  .dropdownItem:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .navAccount:hover .accountDropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+}
+
+.open .accountDropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdownItem {
+  display: block;
+  padding: 8px 12px;
+  color: rgba(234, 242, 255, 0.85);
+  text-decoration: none;
+  transition: background-color 0.12s ease, color 0.12s ease;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  font-size: inherit;
+  cursor: pointer;
+  margin: 2px 0;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+.dropdownItem:hover {
+  background: rgba(110, 168, 254, 0.22);
+  color: #eaf2ff;
+}
+
+/* ── Ponude sub-menu ── */
+.subMenuWrapper {
+  /* contains the trigger + collapsible sub-items */
+}
+
+.subMenuTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.subMenuArrow {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.subMenuOpen .subMenuArrow {
+  transform: rotate(180deg);
+}
+
+.subMenuItems {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease, opacity 0.15s ease;
+  opacity: 0;
+}
+
+.subMenuOpen .subMenuItems {
+  max-height: 120px;
+  opacity: 1;
+}
+
+.subMenuItem {
+  padding-left: 24px;
+  font-size: 0.93em;
+  margin-top: 0;
+  margin-bottom: 0;
+}

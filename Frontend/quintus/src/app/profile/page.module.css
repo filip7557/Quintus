@@ -1,0 +1,349 @@
+/* Match app styling (see create-request) */
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px 20px;
+  box-sizing: border-box;
+  background-color: #2e3336;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Modern “blob” backdrop (no image assets) */
+.container::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(
+      650px circle at 18% 22%,
+      rgba(110, 168, 254, 0.26),
+      transparent 60%
+    ),
+    radial-gradient(
+      520px circle at 82% 28%,
+      rgba(143, 198, 255, 0.18),
+      transparent 58%
+    ),
+    radial-gradient(
+      720px circle at 50% 84%,
+      rgba(110, 168, 254, 0.12),
+      transparent 64%
+    ),
+    linear-gradient(180deg, #2e3336 0%, #23272a 100%);
+  filter: blur(42px) saturate(125%);
+  transform: scale(1.08);
+  opacity: 0.95;
+  pointer-events: none;
+}
+
+.container > * {
+  position: relative;
+  z-index: 1;
+}
+
+.card {
+  width: 100%;
+  max-width: 600px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 14px;
+  padding: 24px;
+  box-sizing: border-box;
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  box-shadow: 0 10px 30px rgba(6, 10, 22, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+/* Header */
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #eaf2ff;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 0.8rem;
+  color: rgba(234, 242, 255, 0.7);
+  margin: 0;
+}
+
+.infoGrid {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+@media (min-width: 720px) {
+  .infoGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.field {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 12px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02),
+    rgba(255, 255, 255, 0.01)
+  );
+}
+
+.label {
+  display: block;
+  font-size: 0.75rem;
+  color: rgba(234, 242, 255, 0.7);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.value {
+  font-size: 0.95rem;
+  color: #eaf2ff;
+  word-break: break-word;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+
+.requestsBlock {
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.requestsText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.requestsTitle {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #eaf2ff;
+}
+
+.requestsSubtitle {
+  margin: 0;
+  font-size: 0.78rem;
+  color: rgba(234, 242, 255, 0.7);
+}
+
+.requestsMeta {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.requestsCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 56px;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 10px;
+  box-sizing: border-box;
+  border: 1px solid rgba(110, 168, 254, 0.3);
+  background: rgba(110, 168, 254, 0.1);
+  color: #eaf2ff;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.button {
+  flex: 1 1 160px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  line-height: 1;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  border: none;
+  color: #ffffff;
+  background: linear-gradient(90deg, #6ea8fe, #8fc6ff);
+  box-shadow: 0 8px 20px rgba(110, 168, 254, 0.18),
+    0 2px 6px rgba(0, 0, 0, 0.18);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+}
+
+.button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(110, 168, 254, 0.25),
+    0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.button:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 20px rgba(110, 168, 254, 0.18),
+    0 2px 6px rgba(0, 0, 0, 0.18);
+  opacity: 0.9;
+}
+
+.buttonSecondary {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(234, 242, 255, 0.8);
+  box-shadow: none;
+}
+
+.buttonSecondary:hover {
+  transform: none;
+  box-shadow: none;
+  color: #eaf2ff;
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.buttonSecondary:active {
+  opacity: 0.9;
+}
+
+.buttonDisabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.notice {
+  text-align: center;
+  color: rgba(234, 242, 255, 0.7);
+  font-size: 1rem;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.error {
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 100px 16px 24px;
+  }
+
+  .card {
+    padding: 24px;
+  }
+
+  .title {
+    font-size: 1.25rem;
+  }
+
+  .actions {
+    gap: 10px;
+  }
+
+  .button {
+    flex: 1 1 100%;
+  }
+
+  .requestsBlock {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .requestsMeta {
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 92px 14px 18px;
+  }
+
+  .card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .subtitle {
+    font-size: 0.85rem;
+  }
+
+  .field {
+    padding: 10px;
+  }
+}
+
+/* Mobile: use a full-width layout instead of a centered card */
+@media (max-width: 600px) {
+  .container {
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 84px 0 0;
+  }
+
+  .card {
+    max-width: none;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    padding: 18px 16px 20px;
+    box-shadow: none;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .button {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+
+  .requestsBlock {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .requestsMeta {
+    width: 100%;
+  }
+
+  .requestsCount {
+    min-width: 64px;
+  }
+}

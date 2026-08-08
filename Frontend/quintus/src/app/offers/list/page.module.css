@@ -1,0 +1,644 @@
+/* ── Page container (matches offers/page.module.css) ── */
+.container {
+  --offers-header-offset: 108px;
+  --offers-page-gap: 20px;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: calc(var(--offers-header-offset) + var(--offers-page-gap)) 20px 0;
+  box-sizing: border-box;
+  background-color: #2e3336;
+  position: relative;
+  overflow: hidden;
+}
+
+.container::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(650px circle at 18% 22%, rgba(110, 168, 254, 0.26), transparent 60%),
+    radial-gradient(520px circle at 82% 28%, rgba(143, 198, 255, 0.18), transparent 58%),
+    linear-gradient(180deg, #2e3336 0%, #23272a 100%);
+  filter: blur(42px) saturate(125%);
+  transform: scale(1.08);
+  opacity: 0.95;
+  pointer-events: none;
+}
+
+.container > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Card (matches OfferForm .card) ── */
+.card {
+  width: 100%;
+  max-width: 1060px;
+  margin-bottom: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 14px;
+  padding: 24px 24px 16px;
+  box-sizing: border-box;
+  backdrop-filter: blur(10px) saturate(120%);
+  -webkit-backdrop-filter: blur(10px) saturate(120%);
+  box-shadow: 0 10px 30px rgba(6, 10, 22, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+@media (min-width: 1024px) {
+  .card {
+    padding: 28px 28px 18px;
+  }
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #eaf2ff;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 0.8rem;
+  color: rgba(234, 242, 255, 0.7);
+  margin: 8px 0 0;
+}
+
+/* ── Create button ── */
+.createBtn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: linear-gradient(90deg, #6ea8fe, #8fc6ff);
+  color: white;
+  text-decoration: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: 0 6px 16px rgba(110, 168, 254, 0.15);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.createBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(110, 168, 254, 0.2);
+}
+
+/* ── Filters form ── */
+.filters {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 16px;
+}
+
+/* ── Form group (matches OfferForm .formGroup) ── */
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.formGroup label {
+  font-size: 0.75rem;
+  color: rgba(234, 242, 255, 0.7);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.formGroup input {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  color: #eaf2ff;
+  padding: 12px;
+  border-radius: 10px;
+  outline: none;
+  font-size: 0.95rem;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: box-shadow 0.18s ease, border-color 0.12s ease, transform 0.05s ease;
+}
+
+.formGroup input:focus {
+  border-color: rgba(138, 180, 255, 0.8);
+  box-shadow: 0 6px 20px rgba(110, 168, 254, 0.12), 0 0 0 4px rgba(110, 168, 254, 0.06);
+  transform: translateY(-1px);
+}
+
+.formGroup input::placeholder {
+  color: rgba(234, 242, 255, 0.45);
+}
+
+/* date inputs — themed to match site's dark + blue-accent style */
+.formGroup input[type="date"] {
+  color-scheme: dark;
+}
+
+.formGroup input[type="date"]::-webkit-calendar-picker-indicator {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236ea8fe' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.formGroup input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  transform: scale(1.2);
+}
+
+/* ── Filter action buttons ── */
+.filterActions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filterActions::before {
+  content: "\00a0";
+  display: block;
+  font-size: 0.75rem;
+  line-height: 1;
+  /* invisible spacer that matches label height so buttons sit at input level */
+}
+
+.filterActionsButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.primaryBtn {
+  padding: 0 16px;
+  height: 46px;
+  background: linear-gradient(90deg, #6ea8fe, #8fc6ff);
+  border: none;
+  color: white;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(110, 168, 254, 0.15);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.primaryBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(110, 168, 254, 0.2);
+}
+
+.primaryBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.secondaryBtn {
+  padding: 0 16px;
+  height: 46px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(234, 242, 255, 0.8);
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.secondaryBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ── Error / empty messages ── */
+.errorMessage {
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.2);
+  color: #ff6b6b;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+
+.emptyMessage {
+  text-align: center;
+  padding: 24px;
+  color: rgba(234, 242, 255, 0.5);
+  font-size: 0.9rem;
+  background: rgba(110, 168, 254, 0.03);
+  border-radius: 10px;
+  border: 1px dashed rgba(138, 180, 255, 0.2);
+}
+
+/* ── Summary bar ── */
+.summaryBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: linear-gradient(90deg, rgba(110, 168, 254, 0.12), rgba(143, 198, 255, 0.06));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  margin-bottom: 14px;
+  font-weight: 600;
+  color: #eaf2ff;
+  font-size: 0.95rem;
+}
+
+.summaryTotal {
+  font-weight: 700;
+  color: #6ea8fe;
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Table (matches OfferForm table styles) ── */
+.tableWrapper {
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(143, 198, 255, 0.45) rgba(255, 255, 255, 0.05);
+}
+
+.tableWrapper::-webkit-scrollbar {
+  height: 10px;
+}
+
+.tableWrapper::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tableWrapper::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, rgba(110, 168, 254, 0.78), rgba(143, 198, 255, 0.58));
+  border-radius: 999px;
+  border: 2px solid rgba(35, 39, 42, 0.6);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.table thead tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(110, 168, 254, 0.05);
+}
+
+.table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #eaf2ff;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.2s ease;
+}
+
+.table tbody tr:hover {
+  background: rgba(110, 168, 254, 0.03);
+}
+
+.clickableRow {
+  cursor: pointer;
+}
+
+.clickableRow:hover {
+  background: rgba(110, 168, 254, 0.08) !important;
+}
+
+.clickableRow:focus-visible {
+  outline: 2px solid rgba(143, 198, 255, 0.8);
+  outline-offset: -2px;
+}
+
+.table td {
+  padding: 12px;
+  color: rgba(234, 242, 255, 0.9);
+  vertical-align: middle;
+}
+
+.detailsCell {
+  width: 120px;
+}
+
+.detailsBtn {
+  padding: 6px 12px;
+  background: rgba(110, 168, 254, 0.12);
+  border: 1px solid rgba(110, 168, 254, 0.35);
+  color: #8fc6ff;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
+}
+
+.detailsBtn:hover:not(:disabled) {
+  background: rgba(110, 168, 254, 0.2);
+  border-color: rgba(143, 198, 255, 0.6);
+}
+
+.detailsBtn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.detailsBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Pagination ── */
+.paginationBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.paginationInfo {
+  color: rgba(234, 242, 255, 0.8);
+  font-size: 0.9rem;
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pageSizeLabel {
+  font-size: 0.8rem;
+  color: rgba(234, 242, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.pageSizeSelect {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  color: #eaf2ff;
+  padding: 10px 38px 10px 12px;
+  border-radius: 10px;
+  outline: none;
+  font-size: 0.9rem;
+  font-family: inherit;
+  line-height: 1.2;
+  min-height: 42px;
+  cursor: pointer;
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9l6 6 6-6' stroke='%23bcd6f5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat, no-repeat;
+  background-position: 0 0, right 12px center;
+  background-size: auto, 12px;
+}
+
+.pageSizeSelect:focus {
+  border-color: rgba(138, 180, 255, 0.8);
+  box-shadow: 0 6px 20px rgba(110, 168, 254, 0.12), 0 0 0 4px rgba(110, 168, 254, 0.06);
+}
+
+.pageSizeSelect:hover:not(:disabled) {
+  border-color: rgba(143, 198, 255, 0.5);
+}
+
+.pageSizeSelect:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.pageSizeSelect option {
+  background: #23272a;
+  color: #eaf2ff;
+}
+
+/* ── Responsive ── */
+@media (max-width: 920px) {
+  .filters {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .filterActions {
+    grid-column: span 2;
+  }
+
+  .paginationBar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    --offers-header-offset: 92px;
+    --offers-page-gap: 16px;
+    padding: calc(var(--offers-header-offset) + var(--offers-page-gap)) 16px 0;
+  }
+
+  .card {
+    padding: 18px;
+  }
+
+  .header {
+    flex-direction: column;
+  }
+
+  .createBtn {
+    align-self: stretch;
+    justify-content: center;
+  }
+
+  .summaryBar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .paginationControls {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 600px) {
+  .container {
+    --offers-header-offset: 88px;
+    --offers-page-gap: 14px;
+    padding: calc(var(--offers-header-offset) + 8px) 10px 0;
+  }
+
+  .card {
+    max-width: none;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .filters {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .filterActions {
+    grid-column: span 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+  }
+
+  .filterActions .primaryBtn,
+  .filterActions .secondaryBtn {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .tableWrapper {
+    overflow: visible;
+    background: transparent;
+    border: none;
+    padding: 0;
+  }
+
+  .table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .table thead {
+    display: none;
+  }
+
+  .table tbody {
+    display: grid;
+    gap: 10px;
+  }
+
+  .table tbody tr {
+    display: block;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 10px;
+  }
+
+  .table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    padding: 7px 2px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.9rem;
+  }
+
+  .table td:last-child {
+    border-bottom: none;
+    padding-top: 10px;
+  }
+
+  .table td::before {
+    content: attr(data-label);
+    color: rgba(234, 242, 255, 0.62);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.45px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .mobilePrimaryCell {
+    font-weight: 700;
+    color: #eef5ff;
+  }
+
+  .mobilePriceCell {
+    font-weight: 700;
+    color: #8fc6ff;
+  }
+
+  .detailsCell {
+    width: auto;
+    display: block;
+    padding: 10px 0 0;
+  }
+
+  .detailsCell::before {
+    content: none;
+  }
+
+  .detailsBtn {
+    width: 100%;
+    padding: 11px 12px;
+    font-size: 0.88rem;
+  }
+
+  .paginationBar {
+    margin-top: 16px;
+    gap: 10px;
+  }
+
+  .paginationInfo {
+    font-size: 0.85rem;
+  }
+
+  .paginationControls {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .pageSizeLabel {
+    grid-column: 1 / -1;
+  }
+
+  .pageSizeSelect {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .paginationControls .primaryBtn,
+  .paginationControls .secondaryBtn {
+    width: 100%;
+  }
+}

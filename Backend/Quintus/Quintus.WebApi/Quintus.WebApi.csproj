@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>03174c53-a229-4508-a8aa-e912f8c713d8</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.21" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.21" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Scalar.AspNetCore" Version="2.9.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Quintus.Common\Quintus.Common.csproj" />
+    <ProjectReference Include="..\Quintus.Model\Quintus.Model.csproj" />
+    <ProjectReference Include="..\Quintus.Repository\Quintus.Repository.csproj" />
+    <ProjectReference Include="..\Quintus.Service.Common\Quintus.Service.Common.csproj" />
+    <ProjectReference Include="..\Quintus.Service\Quintus.Service.csproj" />
+    <ProjectReference Include="..\Quintus.Worker\Quintus.Worker.csproj" />
+  </ItemGroup>
+
+</Project>
