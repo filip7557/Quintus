@@ -18,7 +18,7 @@ namespace Quintus.Service
 {
     public class PdfOfferService
     {
-        private const string LogoUrl = "https://quintus.fcuric.eu/_next/image?url=%2Fimages%2Flogo.png&w=256&q=75";
+        private const string LogoUrl = "https://www.instalacije-quintus.hr/_next/image?url=%2Fimages%2Flogo.png&w=256&q=75";
         private readonly ISiteSettingsService _siteSettingsService;
 
         public PdfOfferService(ISiteSettingsService siteSettingsService)

@@ -24,6 +24,7 @@ export const metadata = {
   title: "Quintus | Stručne instalaterske usluge",
   description:
     "Klimatizacija, grijanje i vodoinstalacije – stručne usluge po pristupačnim cijenama.",
+  manifest: "/site.webmanifest",
   alternates: {
     canonical: "https://www.instalacije-quintus.hr",
     languages: {
@@ -56,7 +57,8 @@ export const metadata = {
   },
   icons: {
     icon: "/favicon.ico",
-    apple: "/images/logo.png",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
   },
 };
 
