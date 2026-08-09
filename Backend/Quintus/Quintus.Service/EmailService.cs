@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Quintus.Service.Common;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 
 namespace Quintus.Service
@@ -10,6 +11,11 @@ namespace Quintus.Service
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _config;
+
+        private static readonly JsonSerializerOptions _jsonOptions = new()
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        };
 
         public EmailService(HttpClient httpClient, IConfiguration config)
         {
@@ -38,7 +44,7 @@ namespace Quintus.Service
                 htmlContent
             };
 
-            request.Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+            request.Content = new StringContent(JsonSerializer.Serialize(payload, _jsonOptions), Encoding.UTF8, "application/json");
 
             using var response = await _httpClient.SendAsync(request);
             if (!response.IsSuccessStatusCode)
@@ -77,7 +83,7 @@ namespace Quintus.Service
                 }
             };
 
-            request.Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+            request.Content = new StringContent(JsonSerializer.Serialize(payload, _jsonOptions), Encoding.UTF8, "application/json");
 
             using var response = await _httpClient.SendAsync(request);
             if (!response.IsSuccessStatusCode)

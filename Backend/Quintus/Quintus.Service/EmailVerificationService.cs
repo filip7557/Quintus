@@ -51,7 +51,7 @@ namespace Quintus.Service
                 ctaText: "Potvrdi email",
                 ctaUrl: verifyUrl,
                 outro: "Ako niste vi napravili ovaj račun, ignorirajte ovu poruku.",
-                logoUrl: "https://quintus.fcuric.eu/_next/image?url=%2Fimages%2Flogo.png&w=256&q=75"
+                logoUrl: "https://www.instalacije-quintus.hr/_next/image?url=%2Fimages%2Flogo.png&w=256&q=75"
             );
 
             await _emailService.SendEmailAsync(toEmail, subject, html);

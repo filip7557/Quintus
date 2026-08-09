@@ -56,7 +56,7 @@ namespace Quintus.Service
                 ctaText: "Odgovori",
                 ctaUrl: mailto,
                 outro: "Ova poruka je automatski generirana.",
-                logoUrl: "https://quintus.fcuric.eu/_next/image?url=%2Fimages%2Flogo.png&w=256&q=75"
+                logoUrl: "https://www.instalacije-quintus.hr/_next/image?url=%2Fimages%2Flogo.png&w=256&q=75"
             );
 
             await _emailService.SendEmailAsync(to, subject, html);

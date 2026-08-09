@@ -51,7 +51,7 @@ namespace Quintus.Worker
                         title: "Vaša ponuda",
                         intro: $"Poštovani {offer.BuyerName},\n\nU prilogu se nalazi Vaša ponuda.",
                         outro: "Hvala što ste nas odabrali!",
-                        logoUrl: "https://quintus.fcuric.eu/_next/image?url=%2Fimages%2Flogo.png&w=256&q=75"
+                        logoUrl: "https://www.instalacije-quintus.hr/_next/image?url=%2Fimages%2Flogo.png&w=256&q=75"
                     );
 
                     await emailService.SendEmailWithAttachmentAsync(
