@@ -59,7 +59,7 @@ namespace Quintus.Service
                 ctaText: "Reset lozinke",
                 ctaUrl: resetUrl,
                 outro: "Ovaj link vrijedi 1 sat. Ako niste tražili reset, ignorirajte ovu poruku.",
-                logoUrl: "https://quintus.fcuric.eu/_next/image?url=%2Fimages%2Flogo.png&w=256&q=75"
+                logoUrl: "https://www.instalacije-quintus.hr/_next/image?url=%2Fimages%2Flogo.png&w=256&q=75"
             );
 
             await _emailService.SendEmailAsync(user.Email, subject, html);
