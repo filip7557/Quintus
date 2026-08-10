@@ -24,8 +24,9 @@ function normalizeBaseUrl(url) {
   return value.endsWith("/") ? value.slice(0, -1) : value;
 }
 
-function buildFallbackBaseUrls(baseUrl) {
+function buildFallbackBaseUrls(baseUrl, preferredBaseUrl = "") {
   const candidates = [
+    normalizeBaseUrl(preferredBaseUrl),
     normalizeBaseUrl(baseUrl),
     normalizeBaseUrl(API_BASE_URL_FALLBACK),
     normalizeBaseUrl(swapWwwHost(baseUrl)),
@@ -93,10 +94,19 @@ function unwrapSettingsPayload(payload) {
   };
 }
 
-export async function getSiteSettings() {
-  const bases = buildFallbackBaseUrls(API_BASE_URL);
+function shouldLogResolvedUrl(options) {
+  return (
+    options?.logResolvedUrl === true ||
+    process.env.LOG_SITE_SETTINGS_SOURCE === "true"
+  );
+}
+
+export async function getSiteSettings(options = {}) {
+  const preferredBaseUrl = normalizeBaseUrl(options?.baseUrl);
+  const bases = buildFallbackBaseUrls(API_BASE_URL, preferredBaseUrl);
   const routes = ["/SiteSettings", "/siteSettings"];
   let lastError = null;
+  const logResolvedUrl = shouldLogResolvedUrl(options);
 
   for (const base of bases) {
     for (const route of routes) {
@@ -109,6 +119,9 @@ export async function getSiteSettings() {
         }
 
         const payload = await response.json();
+        if (logResolvedUrl) {
+          console.info(`[siteSettingsService] Loaded site settings from ${url}`);
+        }
         return unwrapSettingsPayload(payload);
       } catch (error) {
         lastError = error;

@@ -84,7 +84,7 @@ export default function ForgotPasswordPage() {
           ) : null}
 
           <div className={styles.actions}>
-            <Link href="/auth" className={styles.link}>
+            <Link href="/auth" prefetch={false} className={styles.link}>
               Povratak na prijavu
             </Link>
           </div>
