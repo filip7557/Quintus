@@ -41,8 +41,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowQuintusProdOrigins", policy =>
     {
         policy.WithOrigins(
-                    "https://instalacije-qiuntus.hr",
-                    "https://quintus.fcuric.eu")
+                    "https://www.instalacije-quintus.hr")
               .AllowAnyMethod()
               .AllowAnyHeader()
               .WithExposedHeaders("Authorization", "Content-Disposition");

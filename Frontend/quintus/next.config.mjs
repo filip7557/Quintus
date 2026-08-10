@@ -5,9 +5,9 @@ const nextConfig = {
         remotePatterns: [
             {
                 protocol: 'https',
-                hostname: 'quintus.fcuric.eu',
+                hostname: 'www.instalacije-quintus.hr',
                 pathname: '/**',
-            },
+            }
             {
                 protocol: 'https',
                 hostname: 'res.cloudinary.com',

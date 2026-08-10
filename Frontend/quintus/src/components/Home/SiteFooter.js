@@ -34,11 +34,11 @@ export default function SiteFooter({
           Web izrada i razvoj: Filip Ćurić
           <br />
           <a
-            href="https://www.fcuric.eu"
+            href="https://www.instalacije-quintus.hr"
             target="_blank"
             rel="noreferrer"
           >
-            www.fcuric.eu
+            www.instalacije-quintus.hr
           </a>
         </p>
       </div>
