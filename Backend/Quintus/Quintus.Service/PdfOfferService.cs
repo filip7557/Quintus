@@ -8,6 +8,7 @@ using iText.Layout;
 using iText.Layout.Borders;
 using iText.Layout.Element;
 using iText.Layout.Properties;
+using Microsoft.Extensions.Logging;
 using Quintus.Model;
 using Quintus.Model.Entities;
 using Quintus.Service.Common;
@@ -18,12 +19,14 @@ namespace Quintus.Service
 {
     public class PdfOfferService
     {
-        private const string LogoUrl = "https://www.instalacije-quintus.hr/_next/image?url=%2Fimages%2Flogo.png&w=256&q=75";
+        private const string LogoUrl = "https://www.instalacije-quintus.hr/images/logo.png";
         private readonly ISiteSettingsService _siteSettingsService;
+        private readonly ILogger<PdfOfferService> _logger;
 
-        public PdfOfferService(ISiteSettingsService siteSettingsService)
+        public PdfOfferService(ISiteSettingsService siteSettingsService, ILogger<PdfOfferService> logger)
         {
             _siteSettingsService = siteSettingsService;
+            _logger = logger;
         }
 
         public async Task<byte[]> GenerateOfferPdfAsync(Offer offer)
@@ -75,9 +78,9 @@ namespace Quintus.Service
 
                         logoCell.Add(logo);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // ignore
+                        _logger.LogWarning(ex, "Failed to load logo image for offer PDF from {LogoUrl}", LogoUrl);
                     }
                     headerTable.AddCell(logoCell);
 
