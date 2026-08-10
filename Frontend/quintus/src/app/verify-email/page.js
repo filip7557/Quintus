@@ -138,7 +138,7 @@ function VerifyEmailInner() {
 
           {!verifyState.loading && verifyState.ok ? (
             <div className={styles.primaryActions}>
-              <Link href="/auth" className={styles.buttonLink}>
+              <Link href="/auth" prefetch={false} className={styles.buttonLink}>
                 Prijava
               </Link>
             </div>
@@ -186,7 +186,7 @@ function VerifyEmailInner() {
           </div>
 
           <div className={styles.actions}>
-            <Link href="/auth" className={styles.link}>
+            <Link href="/auth" prefetch={false} className={styles.link}>
               Prijava
             </Link>
             <span className={styles.divider}>•</span>

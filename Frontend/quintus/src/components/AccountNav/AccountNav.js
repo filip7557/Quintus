@@ -203,6 +203,7 @@ export default function AccountNav() {
         ) : (
           <Link
             href="/auth"
+            prefetch={false}
             className={styles.dropdownItem}
             onClick={handleItemClick}
           >

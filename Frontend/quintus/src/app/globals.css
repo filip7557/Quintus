@@ -628,6 +628,14 @@ header {
   overscroll-behavior: contain;
 }
 
+@media (max-width: 768px) {
+  .service-description {
+    /* Allow page scroll handoff when inner card text reaches top/bottom on touch devices. */
+    overscroll-behavior-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
 .service-description::-webkit-scrollbar {
   width: 8px;
 }
@@ -790,6 +798,7 @@ header {
 
 .rotating-service-image-img {
   will-change: opacity, transform;
+  transition: opacity var(--rs-fade-ms, 900ms) ease-in-out;
 }
 
 .rotating-service-image-img.is-current {
@@ -798,11 +807,6 @@ header {
 
 .rotating-service-image-img.is-next {
   opacity: 0;
-  transition: opacity var(--rs-fade-ms, 900ms) ease-in-out;
-}
-
-.rotating-service-image.is-fading .rotating-service-image-img.is-next {
-  opacity: 1;
 }
 
 .rotating-service-image.is-editing .image-remove-button {

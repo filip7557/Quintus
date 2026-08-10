@@ -1,25 +1,20 @@
-﻿using iText.IO.Font;
-using iText.IO.Image;
-using iText.Kernel.Colors;
-using iText.Kernel.Font;
-using iText.Kernel.Pdf;
-using iText.Kernel.Pdf.Canvas.Draw;
-using iText.Layout;
-using iText.Layout.Borders;
-using iText.Layout.Element;
-using iText.Layout.Properties;
 using Microsoft.Extensions.Logging;
+using QuestPDF.Drawing;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 using Quintus.Model;
 using Quintus.Model.Entities;
 using Quintus.Service.Common;
 using System.Globalization;
-using static iText.Kernel.Font.PdfFontFactory;
 
 namespace Quintus.Service
 {
     public class PdfOfferService
     {
         private const string LogoUrl = "https://www.instalacije-quintus.hr/images/logo.png";
+        private const string FontFamily = "DejaVu Sans";
+
         private readonly ISiteSettingsService _siteSettingsService;
         private readonly ILogger<PdfOfferService> _logger;
 
@@ -33,227 +28,257 @@ namespace Quintus.Service
         {
             if (offer == null) throw new ArgumentNullException(nameof(offer));
 
+            QuestPDF.Settings.License = LicenseType.Community;
+
             var hrCulture = new CultureInfo("hr-HR");
+            var siteSettings = await _siteSettingsService.GetSiteSettingsAsync();
+            var logoBytes = await TryGetLogoBytesAsync();
 
-            // If SmartMode caused BC dependency pain, set false instead:
-            // var props = new WriterProperties().SetSmartMode(false);
-            var props = new WriterProperties().UseSmartMode();
+            EnsureFontRegistered();
 
-            using (var ms = new MemoryStream())
+            var offerTitle = offer.OfferNumber > 0
+                ? $"Ponuda {offer.OfferNumber}/{(offer.OfferYear > 0 ? offer.OfferYear : offer.CreatedAt.Year)}"
+                : "Ponuda";
+
+            var hasDiscount = (offer.Items ?? Enumerable.Empty<Item>()).Any(i => i.DiscountPercent > 0);
+
+            return Document.Create(container =>
             {
-                using (var writer = new PdfWriter(ms, props))
-                using (var pdf = new PdfDocument(writer))
-                using (var document = new Document(pdf))
+                container.Page(page =>
                 {
-                    // Margins
-                    document.SetMargins(36, 36, 36, 36);
+                    page.Size(PageSizes.A4);
+                    page.Margin(36);
+                    page.DefaultTextStyle(x => x.FontFamily(FontFamily).FontSize(10));
 
-                    // Unicode font for Croatian diacritics
-                    // Put the file here: <project>/assets/fonts/DejaVuSans.ttf
-                    // and set it to "Copy to Output Directory"
-                    var fontPath = Path.Combine(AppContext.BaseDirectory, "assets", "fonts", "DejaVuSans.ttf");
-                    var font = PdfFontFactory.CreateFont(fontPath, PdfEncodings.IDENTITY_H, EmbeddingStrategy.PREFER_EMBEDDED);
-                    if (!File.Exists(fontPath))
-                        throw new FileNotFoundException($"Font not found: {fontPath}");
-                    document.SetFont(font);
+                    page.Header().Element(header => ComposeHeader(header, logoBytes, siteSettings));
+                    page.Content().Element(content => ComposeContent(content, offer, hrCulture, offerTitle, hasDiscount));
+                    page.Footer().Element(ComposeFooter);
+                });
+            }).GeneratePdf();
+        }
 
-                    // Header: logo on the left, company info on the right
-                    var siteSettings = await _siteSettingsService.GetSiteSettingsAsync();
+        private async Task<byte[]?> TryGetLogoBytesAsync()
+        {
+            try
+            {
+                using var client = new HttpClient();
+                return await client.GetByteArrayAsync(LogoUrl);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to load logo image for offer PDF from {LogoUrl}", LogoUrl);
+                return null;
+            }
+        }
 
-                    var headerTable = new Table(UnitValue.CreatePercentArray(new float[] { 50, 50 }))
-                        .SetWidth(UnitValue.CreatePercentValue(100))
-                        .SetBorder(Border.NO_BORDER);
+        private void EnsureFontRegistered()
+        {
+            var fontPath = Path.Combine(AppContext.BaseDirectory, "assets", "fonts", "DejaVuSans.ttf");
 
-                    // Logo cell
-                    var logoCell = new Cell().SetBorder(Border.NO_BORDER).SetVerticalAlignment(VerticalAlignment.MIDDLE);
-                    try
-                    {
-                        using var client = new HttpClient();
-                        var imageBytes = await client.GetByteArrayAsync(LogoUrl);
-                        var imageData = ImageDataFactory.Create(imageBytes);
+            if (!File.Exists(fontPath))
+                throw new FileNotFoundException($"Font not found: {fontPath}");
 
-                        var logo = new iText.Layout.Element.Image(imageData)
-                            .ScaleToFit(200, 200)
-                            .SetHorizontalAlignment(HorizontalAlignment.LEFT);
+            using var fontStream = File.OpenRead(fontPath);
+            FontManager.RegisterFont(fontStream);
+        }
 
-                        logoCell.Add(logo);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "Failed to load logo image for offer PDF from {LogoUrl}", LogoUrl);
-                    }
-                    headerTable.AddCell(logoCell);
+        private static void ComposeHeader(IContainer container, byte[]? logoBytes, SiteSettings siteSettings)
+        {
+            container.Row(row =>
+            {
+                row.RelativeItem().AlignLeft().Element(left =>
+                {
+                    if (logoBytes is { Length: > 0 })
+                        left.Height(60).Image(logoBytes).FitHeight();
+                });
 
-                    // Company info cell
-                    var infoCell = new Cell().SetBorder(Border.NO_BORDER)
-                        .SetVerticalAlignment(VerticalAlignment.MIDDLE)
-                        .SetTextAlignment(TextAlignment.RIGHT);
-                    infoCell.Add(new Paragraph(siteSettings.Address).SetFontSize(9).SetMarginBottom(2));
-                    infoCell.Add(new Paragraph(siteSettings.PhoneNumber).SetFontSize(9).SetMarginBottom(2));
-                    infoCell.Add(new Paragraph(siteSettings.ContactEmail).SetFontSize(9).SetMarginBottom(2));
-                    infoCell.Add(new Paragraph($"OIB: {siteSettings.Oib}").SetFontSize(9).SetMarginBottom(0));
-                    headerTable.AddCell(infoCell);
+                row.RelativeItem().AlignRight().Column(info =>
+                {
+                    info.Item().AlignRight().Text(siteSettings.Address ?? string.Empty).FontSize(9);
+                    info.Item().PaddingTop(2).AlignRight().Text(siteSettings.PhoneNumber ?? string.Empty).FontSize(9);
+                    info.Item().PaddingTop(2).AlignRight().Text(siteSettings.ContactEmail ?? string.Empty).FontSize(9);
+                    info.Item().PaddingTop(2).AlignRight().Text($"OIB: {siteSettings.Oib ?? string.Empty}").FontSize(9);
+                });
+            });
+        }
 
-                    document.Add(headerTable);
+        private static void ComposeContent(IContainer container, Offer offer, CultureInfo hrCulture, string offerTitle, bool hasDiscount)
+        {
+            container.PaddingTop(36).Column(column =>
+            {
+                column.Item().AlignCenter().Text(offerTitle).Bold().FontSize(24);
 
-                    // Title centered
-                    var offerTitle = offer.OfferNumber > 0
-                        ? $"Ponuda {offer.OfferNumber}/{(offer.OfferYear > 0 ? offer.OfferYear : offer.CreatedAt.Year)}"
-                        : "Ponuda";
+                column.Item().PaddingTop(18).Column(buyer =>
+                {
+                    buyer.Item().Text($"Kupac: {offer.BuyerName ?? string.Empty}").FontSize(10);
 
-                    document.Add(new Paragraph(offerTitle)
-                        .SetFontSize(24)
-                        .SimulateBold()
-                        .SetTextAlignment(TextAlignment.CENTER)
-                        .SetMarginTop(16)
-                        .SetMarginBottom(18));
-
-                    // Buyer info
-                    document.Add(new Paragraph($"Kupac: {offer.BuyerName ?? ""}").SetMarginBottom(5).SetFontSize(10));
                     if (!string.IsNullOrWhiteSpace(offer.BuyerEmail))
-                        document.Add(new Paragraph($"Email: {offer.BuyerEmail ?? ""}").SetMarginBottom(5).SetFontSize(10));
+                        buyer.Item().PaddingTop(2).Text($"Email: {offer.BuyerEmail}").FontSize(10);
+
                     if (!string.IsNullOrWhiteSpace(offer.BuyerPhone))
-                        document.Add(new Paragraph($"Telefon: {offer.BuyerPhone}").SetMarginBottom(15).SetFontSize(10));
+                        buyer.Item().PaddingTop(2).Text($"Telefon: {offer.BuyerPhone}").FontSize(10);
+                });
 
-                    // Date with Croatian month
-                    document.Add(new Paragraph($"Datum: {offer.CreatedAt.ToString("dd. MMMM yyyy.", hrCulture)}")
-                        .SetTextAlignment(TextAlignment.RIGHT)
-                        .SetMarginBottom(16).SetFontSize(10));
+                column.Item().PaddingTop(16).AlignRight().Text($"Datum: {offer.CreatedAt.ToString("dd. MMMM yyyy.", hrCulture)}").FontSize(10);
 
-                    // Column widths: name wider, numbers narrower
-                    bool hasDiscount = (offer.Items ?? Enumerable.Empty<Item>()).Any(i => i.DiscountPercent > 0);
-                    var columnWidths = hasDiscount
-                        ? new float[] { 30, 13, 13, 14, 14, 16 }
-                        : new float[] { 36, 16, 16, 16, 16 };
-                    var table = new Table(UnitValue.CreatePercentArray(columnWidths))
-                        .UseAllAvailableWidth()
-                        .SetMarginTop(10)
-                        .SetFontSize(10);
-
-                    // Helper styles
-                    static Cell HeaderCellModern(string text, TextAlignment align = TextAlignment.LEFT)
+                column.Item().PaddingTop(16).Element(tableContainer =>
+                {
+                    tableContainer.Table(table =>
                     {
-                        return new Cell()
-                            .Add(new Paragraph(text).SimulateBold())
-                            .SetPaddingTop(8)
-                            .SetPaddingBottom(8)
-                            .SetPaddingLeft(8)
-                            .SetPaddingRight(8)
-                            .SetVerticalAlignment(VerticalAlignment.MIDDLE)
-                            .SetTextAlignment(align)
-                            .SetBorder(Border.NO_BORDER)
-                            .SetFontColor(ColorConstants.WHITE)
-                            .SetBackgroundColor(new DeviceRgb(32, 41, 57)); // dark slate-ish
-                    }
-
-                    static Cell BodyCellModern(string text, TextAlignment align, bool shade)
-                    {
-                        var cell = new Cell()
-                            .Add(new Paragraph(text))
-                            .SetPaddingTop(7)
-                            .SetPaddingBottom(7)
-                            .SetPaddingLeft(8)
-                            .SetPaddingRight(8)
-                            .SetVerticalAlignment(VerticalAlignment.MIDDLE)
-                            .SetTextAlignment(align)
-                            .SetBorder(Border.NO_BORDER)
-                            // subtle row separator
-                            .SetBorderBottom(new SolidBorder(ColorConstants.LIGHT_GRAY, 0.6f));
-
-                        if (shade)
-                            cell.SetBackgroundColor(new DeviceRgb(247, 248, 250)); // very light zebra
-
-                        return cell;
-                    }
-
-                    // Header row
-                    table.AddHeaderCell(HeaderCellModern("Naziv", TextAlignment.LEFT));
-                    table.AddHeaderCell(HeaderCellModern("Mj. jed.", TextAlignment.CENTER));
-                    table.AddHeaderCell(HeaderCellModern("Količina", TextAlignment.RIGHT));
-                    table.AddHeaderCell(HeaderCellModern("Cijena (€)", TextAlignment.RIGHT));
-                    if (hasDiscount)
-                        table.AddHeaderCell(HeaderCellModern("Popust (%)", TextAlignment.RIGHT));
-                    table.AddHeaderCell(HeaderCellModern("Ukupno (€)", TextAlignment.RIGHT));
-
-                    // Body rows (zebra striping)
-                    int row = 0;
-                    foreach (var item in offer.Items ?? Enumerable.Empty<Item>())
-                    {
-                        bool shade = (row % 2 == 1);
-
-                        table.AddCell(BodyCellModern(item.Name ?? "", TextAlignment.LEFT, shade));
-                        table.AddCell(BodyCellModern(item.UnitOfMeasurement ?? "", TextAlignment.CENTER, shade));
-                        table.AddCell(BodyCellModern(item.Quantity.ToString("F2", hrCulture), TextAlignment.RIGHT, shade));
-                        table.AddCell(BodyCellModern(item.Price.ToString("F2", hrCulture), TextAlignment.RIGHT, shade));
                         if (hasDiscount)
                         {
-                            table.AddCell(BodyCellModern(item.DiscountPercent > 0 ? item.DiscountPercent.ToString("F2", hrCulture) : "", TextAlignment.RIGHT, shade));
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.RelativeColumn(30);
+                                columns.RelativeColumn(13);
+                                columns.RelativeColumn(13);
+                                columns.RelativeColumn(14);
+                                columns.RelativeColumn(14);
+                                columns.RelativeColumn(16);
+                            });
                         }
-                        table.AddCell(BodyCellModern(item.Total.ToString("F2", hrCulture), TextAlignment.RIGHT, shade));
-
-                        row++;
-                    }
-
-                    document.Add(table);
-
-                    // Total
-                    document.Add(new Paragraph($"Ukupno: {offer.Total.ToString("F2", hrCulture)} €")
-                        .SetFontSize(14)
-                        .SimulateBold()
-                        .SetTextAlignment(TextAlignment.RIGHT)
-                        .SetMarginTop(16));
-
-                    if (!string.IsNullOrWhiteSpace(offer.CustomMessage))
-                    {
-                        var customBox = new Div()
-                            .SetBorder(new SolidBorder(new DeviceRgb(32, 41, 57), 1f))
-                            .SetBorderRadius(new BorderRadius(6))
-                            .SetPaddingTop(10)
-                            .SetPaddingBottom(10)
-                            .SetPaddingLeft(12)
-                            .SetPaddingRight(12)
-                            .SetMarginTop(14)
-                            .SetWidth(UnitValue.CreatePercentValue(100));
-
-                        customBox.Add(new Paragraph("Napomena")
-                            .SetFontSize(11)
-                            .SimulateBold()
-                            .SetMarginTop(0)
-                            .SetMarginBottom(6));
-
-                        if (!string.IsNullOrWhiteSpace(offer.CustomMessage))
+                        else
                         {
-                            customBox.Add(new Paragraph(offer.CustomMessage)
-                                .SetFontSize(10)
-                                .SetMarginTop(0)
-                                .SetMarginBottom(0));
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.RelativeColumn(36);
+                                columns.RelativeColumn(16);
+                                columns.RelativeColumn(16);
+                                columns.RelativeColumn(16);
+                                columns.RelativeColumn(16);
+                            });
                         }
 
-                        document.Add(customBox);
-                    }
+                        table.Header(header =>
+                        {
+                            HeaderCell(header.Cell(), "Naziv", CellAlign.Left);
+                            HeaderCell(header.Cell(), "Mj. jed.", CellAlign.Center);
+                            HeaderCell(header.Cell(), "Količina", CellAlign.Right);
+                            HeaderCell(header.Cell(), "Cijena (€)", CellAlign.Right);
 
-                    // Footer
-                    document.Add(new Paragraph("Hvala na vašem interesu!")
-                        .SetMarginTop(24)
-                        .SetFontSize(10)
-                        .SimulateItalic());
+                            if (hasDiscount)
+                                HeaderCell(header.Cell(), "Popust (%)", CellAlign.Right);
 
-                    var separator = new LineSeparator(new SolidLine(0.5f))
-                        .SetMarginTop(25)
-                        .SetMarginBottom(8);
+                            HeaderCell(header.Cell(), "Ukupno (€)", CellAlign.Right);
+                        });
 
-                    document.Add(separator);
+                        var totalColumns = hasDiscount ? 6u : 5u;
+                        var rowIndex = 0;
+                        foreach (var item in offer.Items ?? Enumerable.Empty<Item>())
+                        {
+                            var rowBackgroundColor = rowIndex % 2 == 1 ? "#F7F8FA" : "#FFFFFF";
 
-                    document.Add(new Paragraph("Ova ponuda je računalno generirana te je valjana bez potpisa i pečata.")
-                        .SetFontSize(8)
-                        .SetFontColor(ColorConstants.GRAY)
-                        .SetTextAlignment(TextAlignment.CENTER)
-                        .SetMarginTop(0)
-                        .SetMarginBottom(0));
+                            BodyCell(table.Cell(), item.Name ?? string.Empty, CellAlign.Left, rowBackgroundColor);
+                            BodyCell(table.Cell(), item.UnitOfMeasurement ?? string.Empty, CellAlign.Center, rowBackgroundColor);
+                            BodyCell(table.Cell(), item.Quantity.ToString("F2", hrCulture), CellAlign.Right, rowBackgroundColor);
+                            BodyCell(table.Cell(), item.Price.ToString("F2", hrCulture), CellAlign.Right, rowBackgroundColor);
+
+                            if (hasDiscount)
+                            {
+                                BodyCell(
+                                    table.Cell(),
+                                    item.DiscountPercent > 0 ? item.DiscountPercent.ToString("F2", hrCulture) : string.Empty,
+                                    CellAlign.Right,
+                                    rowBackgroundColor);
+                            }
+
+                            BodyCell(table.Cell(), item.Total.ToString("F2", hrCulture), CellAlign.Right, rowBackgroundColor);
+
+                            table.Cell()
+                                .ColumnSpan(totalColumns)
+                                .PaddingTop(0)
+                                .LineHorizontal(0.6f)
+                                .LineColor(Colors.Grey.Lighten2);
+
+                            rowIndex++;
+                        }
+                    });
+                });
+
+                column.Item().LineHorizontal(0.8f).LineColor(Colors.Grey.Lighten2);
+
+                column.Item().PaddingTop(16).AlignRight().Text($"Ukupno: {offer.Total.ToString("F2", hrCulture)} €").Bold().FontSize(14);
+
+                if (!string.IsNullOrWhiteSpace(offer.CustomMessage))
+                {
+                    column.Item().ShowEntire().PaddingTop(22).Border(1).BorderColor("#202939").Padding(12).Column(custom =>
+                    {
+                        custom.Item().Text("Napomena").Bold().FontSize(11);
+                        custom.Item().PaddingTop(6).Text(offer.CustomMessage).FontSize(10);
+                    });
                 }
 
-                return ms.ToArray();
-            }
+                column.Item().PaddingTop(24).Text("Hvala na vašem interesu!").Italic().FontSize(10);
+            });
+        }
+
+        private static void ComposeFooter(IContainer container)
+        {
+            container.Column(column =>
+            {
+                column.Item().LineHorizontal(0.5f).LineColor(Colors.Grey.Lighten1);
+                column.Item().PaddingTop(8)
+                    .AlignCenter()
+                    .Text("Ova ponuda je računalno generirana te je valjana bez potpisa i pečata.")
+                    .FontSize(8)
+                    .FontColor(Colors.Grey.Medium);
+
+                column.Item().PaddingTop(4)
+                    .AlignCenter()
+                    .Text(text =>
+                    {
+                        text.Span("Stranica ").FontSize(8).FontColor(Colors.Grey.Medium);
+                        text.CurrentPageNumber().FontSize(8).FontColor(Colors.Grey.Medium);
+                        text.Span("/").FontSize(8).FontColor(Colors.Grey.Medium);
+                        text.TotalPages().FontSize(8).FontColor(Colors.Grey.Medium);
+                    });
+            });
+        }
+
+        private static void HeaderCell(IContainer container, string text, CellAlign align)
+        {
+            var alignedContainer = ApplyHorizontalAlignment(
+                container
+                    .Background("#202939")
+                    .PaddingVertical(8)
+                    .PaddingHorizontal(8)
+                    .AlignMiddle(),
+                align);
+
+            alignedContainer
+                .Text(text)
+                .Bold()
+                .FontColor(Colors.White);
+        }
+
+        private static void BodyCell(IContainer container, string text, CellAlign align, string rowBackgroundColor)
+        {
+            var cell = container
+                .ShowEntire()
+                .Background(rowBackgroundColor)
+                .PaddingTop(9)
+                .PaddingBottom(9)
+                .PaddingHorizontal(8);
+
+            ApplyHorizontalAlignment(cell, align).Text(text);
+        }
+
+        private static IContainer ApplyHorizontalAlignment(IContainer container, CellAlign align)
+        {
+            return align switch
+            {
+                CellAlign.Left => container.AlignLeft(),
+                CellAlign.Center => container.AlignCenter(),
+                CellAlign.Right => container.AlignRight(),
+                _ => container
+            };
+        }
+
+        private enum CellAlign
+        {
+            Left,
+            Center,
+            Right
         }
     }
 }
