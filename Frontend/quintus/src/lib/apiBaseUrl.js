@@ -4,6 +4,7 @@ function normalizeBaseUrl(url) {
 }
 
 const PRODUCTION_API_BASE_URL = "https://www.instalacije-quintus.hr/api";
+const PRODUCTION_API_BASE_URL_FALLBACK = "https://instalacije-quintus.hr/api";
 
 function isLoopbackHost(hostname) {
   const h = String(hostname || "").trim().toLowerCase();
@@ -42,5 +43,11 @@ const defaultBaseUrl =
     : getDevBrowserBaseUrl();
 
 export const API_BASE_URL = normalizeBaseUrl(
-  process.env.NODE_ENV === "production" ? PRODUCTION_API_BASE_URL : fromEnv || defaultBaseUrl
+  process.env.NODE_ENV === "production"
+    ? fromEnv || PRODUCTION_API_BASE_URL
+    : fromEnv || defaultBaseUrl
+);
+
+export const API_BASE_URL_FALLBACK = normalizeBaseUrl(
+  process.env.NODE_ENV === "production" ? PRODUCTION_API_BASE_URL_FALLBACK : ""
 );

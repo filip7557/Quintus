@@ -1,4 +1,22 @@
-import { API_BASE_URL } from "@/lib/apiBaseUrl";
+import { API_BASE_URL, API_BASE_URL_FALLBACK } from "@/lib/apiBaseUrl";
+
+function swapWwwHost(baseUrl) {
+  const value = normalizeBaseUrl(baseUrl);
+  if (!value) return "";
+
+  if (value.includes("://www.")) {
+    return value.replace("://www.", "://");
+  }
+
+  const match = value.match(/^(https?:\/\/)([^/]+)(\/?.*)$/i);
+  if (!match) return "";
+
+  const scheme = match[1];
+  const host = match[2];
+  const rest = match[3] || "";
+  if (host.toLowerCase().startsWith("www.")) return "";
+  return `${scheme}www.${host}${rest}`;
+}
 
 function normalizeBaseUrl(url) {
   const value = String(url || "").trim();
@@ -9,6 +27,8 @@ function normalizeBaseUrl(url) {
 function buildFallbackBaseUrls(baseUrl) {
   const candidates = [
     normalizeBaseUrl(baseUrl),
+    normalizeBaseUrl(API_BASE_URL_FALLBACK),
+    normalizeBaseUrl(swapWwwHost(baseUrl)),
     normalizeBaseUrl(process.env.NEXT_PUBLIC_API_BASE_URL),
     normalizeBaseUrl(process.env.API_BASE_URL),
   ];
