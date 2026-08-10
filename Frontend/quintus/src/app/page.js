@@ -10,6 +10,10 @@ import ScrollToTop from "@/components/Home/ScrollToTop";
 
 import { getSiteSettings } from "@/services/siteSettingsService";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 function pick(settings, pascalKey, camelKey) {
   if (!settings) return undefined;
   return settings[pascalKey] ?? settings[camelKey];
