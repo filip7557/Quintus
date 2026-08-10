@@ -1,4 +1,4 @@
-const fallbackSiteUrl = "https://instalacije-quintus.hr";
+const fallbackSiteUrl = "https://www.instalacije-quintus.hr";
 
 function getSiteUrl() {
   const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL;

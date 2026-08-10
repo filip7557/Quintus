@@ -208,7 +208,7 @@ namespace Quintus.Repository
                     {
                         Title = "Klimatizacija",
                         Description = "Precizan pristup svakoj instalaciji - od odabira idealnog položaja do završnog testiranja rada. Naše dugogodišnje iskustvo osigurava optimalno hlađenje uz minimalni trošak.",
-                        ImageUrls = new List<string> { "https://quintus.fcuric.eu/_next/image?url=%2Fimages%2Fklima.webp&w=256&q=75" },
+                        ImageUrls = new List<string> { "https://www.instalacije-quintus.hr/_next/image?url=%2Fimages%2Fklima.webp&w=256&q=75" },
                         KeyWords = new List<string> { "Garancija na ugradnju", "Servis", "Savjetovanje" }
                     }
                 }
