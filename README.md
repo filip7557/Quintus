@@ -1,6 +1,6 @@
 # 🧰 Quintus
 
-**Quintus** je moderno web rješenje dizajnirano za instalaterske tvrtke.  
+**Quintus** je moderno web rješenje dizajnirano za lokalnu instalatersku tvrtku.  
 Aplikacija primarno služi kao **digitalna vizitka i prezentacija usluga**, ali i kao **interaktivna platforma** koja klijentima omogućuje brzo slanje upita uz vizualnu dokumentaciju (fotografije). Uz to, sustav majstorima olakšava svakodnevno poslovanje kroz centralizirano upravljanje zahtjevima i **automatiziranu izradu te slanje službenih ponuda**.
 
 ---
