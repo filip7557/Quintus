@@ -28,7 +28,9 @@ export default function SiteFooter({
           Bankovni račun – <strong>IBAN: {safeIban}</strong>
         </div>
         <p className="footer-policy">
-          <Link href="/politika-privatnosti">Politika privatnosti</Link>
+          <Link href="/politika-privatnosti" prefetch={false}>
+            Politika privatnosti
+          </Link>
         </p>
         <p className="footer-credit">
           Web izrada i razvoj: Filip Ćurić
