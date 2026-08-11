@@ -15,6 +15,19 @@ const nextConfig = {
             },
         ],
     },
+    async headers() {
+        return [
+            {
+                source: '/:path*',
+                headers: [
+                    {
+                        key: 'Permissions-Policy',
+                        value: 'join-ad-interest-group=(), run-ad-auction=(), browsing-topics=()'
+                    }
+                ]
+            }
+        ];
+    },
 };
 
 export default nextConfig;
