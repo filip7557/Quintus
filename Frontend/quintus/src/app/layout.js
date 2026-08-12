@@ -2,7 +2,7 @@
 import "./globals.css";
 import { ToastProvider } from "@/components/Common/ToastProvider";
 
-const fallbackSiteUrl = "http://localhost:3000";
+const fallbackSiteUrl = "https://www.instalacije-quintus.hr"; // Fallback URL if NEXT_PUBLIC_SITE_URL is not set or invalid
 
 function getMetadataBase() {
   const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL;
@@ -14,7 +14,7 @@ function getMetadataBase() {
 }
 
 export const viewport = {
-  themeColor: "#6ea8fe",
+  themeColor: "#333a3d",
   width: "device-width",
   initialScale: 1,
 };
@@ -41,9 +41,9 @@ export const metadata = {
     type: "website",
     images: [
       {
-        url: "/images/logo.png",
-        width: 512,
-        height: 512,
+        url: "https://www.instalacije-quintus.hr/_next/image?url=https%3A%2F%2Fres.cloudinary.com%2Fdzhmn7c4d%2Fimage%2Fupload%2Fv1780157613%2Fquintus_images%2Fzv34ptnsgknm1jookolw.png&w=640&q=75",
+        width: 640,
+        height: 640,
         alt: "Quintus logo",
       },
     ],
@@ -53,7 +53,9 @@ export const metadata = {
     title: "Quintus | Stručne instalaterske usluge",
     description:
       "Klimatizacija, grijanje i vodoinstalacije – stručne usluge po pristupačnim cijenama.",
-    images: ["/images/logo.png"],
+    images: [
+      "https://www.instalacije-quintus.hr/_next/image?url=https%3A%2F%2Fres.cloudinary.com%2Fdzhmn7c4d%2Fimage%2Fupload%2Fv1780157613%2Fquintus_images%2Fzv34ptnsgknm1jookolw.png&w=640&q=75",
+    ],
   },
   icons: {
     icon: "/favicon.ico",
