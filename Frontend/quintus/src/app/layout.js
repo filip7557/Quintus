@@ -21,6 +21,7 @@ export const viewport = {
 
 export const metadata = {
   metadataBase: getMetadataBase(),
+  applicationName: "Quintus",
   title: "Quintus | Stručne instalaterske usluge",
   description:
     "Klimatizacija, grijanje i vodoinstalacije – stručne usluge po pristupačnim cijenama.",
@@ -36,7 +37,7 @@ export const metadata = {
     description:
       "Klimatizacija, grijanje i vodoinstalacije – stručne usluge po pristupačnim cijenama.",
     url: "/",
-    siteName: "Quintus",
+    siteName: "Quintus | Stručne instalaterske usluge",
     locale: "hr_HR",
     type: "website",
     images: [
