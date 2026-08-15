@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import ServiceCard from "@/components/Home/ServiceCard";
 import ServiceCreateModal from "@/components/Home/ServiceCreateModal";
 import ImageRemovalModal from "@/components/Home/ImageRemovalModal";
+import ServiceDetailsModal from "@/components/Home/ServiceDetailsModal";
 import useCanManageSite from "@/hooks/useCanManageSite";
 import { useToast } from "@/components/Common/ToastProvider";
 import { createService, deleteService, patchService } from "@/services/serviceService";
@@ -17,6 +18,7 @@ export default function ServicesSection({ services }) {
   const { canManage } = useCanManageSite();
   const [modalOpen, setModalOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState(null);
   const [editing, setEditing] = useState(null);
   const [editingWithImageRemoval, setEditingWithImageRemoval] = useState(null);
   const [removingImageUrl, setRemovingImageUrl] = useState(null);
@@ -107,6 +109,7 @@ export default function ServicesSection({ services }) {
               setEditingWithImageRemoval(service);
               setRemovingImageUrl(imageUrl);
             }}
+            onOpen={() => setSelectedService(service)}
           />
         ))}
       </div>
@@ -125,6 +128,12 @@ export default function ServicesSection({ services }) {
           </button>
         </div>
       ) : null}
+
+      <ServiceDetailsModal
+        open={!!selectedService}
+        service={selectedService}
+        onClose={() => setSelectedService(null)}
+      />
 
       {removingImageUrl && editingWithImageRemoval ? (
         <ImageRemovalModal

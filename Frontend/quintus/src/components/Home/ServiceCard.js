@@ -11,11 +11,24 @@ export default function ServiceCard({
   onEdit,
   isEditing = false,
   onRemoveImage,
+  onOpen,
 }) {
   const keywordText = Array.isArray(keywords) ? keywords.join(" - ") : "";
 
   return (
-    <div className="service service-card">
+    <div
+      className="service service-card service-card-button"
+      onClick={onOpen}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onOpen?.();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label={`Pogledaj detalje za ${title}`}
+    >
       {canEdit ? (
         <div className="service-edit-button-wrap">
           <button

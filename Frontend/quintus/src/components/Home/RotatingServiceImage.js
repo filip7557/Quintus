@@ -26,7 +26,9 @@ export default function RotatingServiceImage({
   const urls = useMemo(() => normalizeUrls(imageUrls), [imageUrls]);
   const urlsKey = useMemo(() => urls.join("|"), [urls]);
   const [index, setIndex] = useState(0);
+  const [isNearViewport, setIsNearViewport] = useState(false);
   const failedSrcRef = useRef(new Set());
+  const containerRef = useRef(null);
 
   useEffect(() => {
     // Reset component state when the image list changes.
@@ -55,6 +57,45 @@ export default function RotatingServiceImage({
     return () => clearInterval(id);
   }, [urls, intervalMs]);
 
+  useEffect(() => {
+    const target = containerRef.current;
+    if (!target) return;
+
+    if (!("IntersectionObserver" in window)) {
+      // Fallback for older browsers: keep preloading behavior enabled.
+      setIsNearViewport(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        setIsNearViewport(Boolean(entry?.isIntersecting));
+      },
+      {
+        // Start preloading shortly before the card enters viewport.
+        root: null,
+        rootMargin: "220px 0px",
+        threshold: 0.01,
+      }
+    );
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (urls.length <= 1 || !isNearViewport) return;
+
+    const nextIndex = (index + 1) % urls.length;
+    const nextSrc = urls[nextIndex];
+    if (!nextSrc || failedSrcRef.current?.has(nextSrc)) return;
+
+    // Preload only the upcoming image to avoid downloading full galleries at once.
+    const preloader = new window.Image();
+    preloader.src = nextSrc;
+  }, [index, urls, isNearViewport]);
+
   const currentSrc = urls[index] || null;
 
   if (!currentSrc) return null;
@@ -76,29 +117,23 @@ export default function RotatingServiceImage({
 
   return (
     <div
+      ref={containerRef}
       className={`rotating-service-image${isEditing ? " is-editing" : ""}`}
       style={{ "--rs-fade-ms": `${Math.max(0, Number(fadeMs) || 0)}ms` }}
     >
-      {urls.map((src, idx) => {
-        const localSrc = isLocalUrl(src);
-        const isActive = idx === index;
-
-        return (
-        <Image
-          key={`${src}:${idx}`}
-          src={src}
-          alt={alt || ""}
-          fill
-          sizes="(max-width: 600px) 92vw, (max-width: 992px) 45vw, 360px"
-          priority={false}
-          loading={idx === 0 ? "eager" : "lazy"}
-          className={`rotating-service-image-img ${isActive ? "is-current" : "is-next"}`}
-          loader={localSrc ? undefined : passthroughLoader}
-          unoptimized={!localSrc}
-          onError={() => handleImageError(src, idx)}
-        />
-        );
-      })}
+      <Image
+        key={currentSrc}
+        src={currentSrc}
+        alt={alt || ""}
+        fill
+        sizes="(max-width: 600px) 92vw, (max-width: 992px) 45vw, 360px"
+        priority={false}
+        loading="lazy"
+        className="rotating-service-image-img is-current"
+        loader={isLocalUrl(currentSrc) ? undefined : passthroughLoader}
+        unoptimized={!isLocalUrl(currentSrc)}
+        onError={() => handleImageError(currentSrc, index)}
+      />
 
       {isEditing && currentSrc && onRemoveImage ? (
         <button
