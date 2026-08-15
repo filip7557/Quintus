@@ -41,7 +41,21 @@ export default function ServiceDetailsModal({ service, open, onClose }) {
   useEffect(() => {
     if (!open) return;
 
-    setSelectedImageIndex(0);
+    const randomIndex = imageUrls.length
+      ? Math.floor(Math.random() * imageUrls.length)
+      : 0;
+
+    setSelectedImageIndex(randomIndex);
+    setActiveImage("");
+    setZoomLevel(1);
+    setPan({ x: 0, y: 0 });
+    setIsDragging(false);
+    setActivePointerId(null);
+
+  }, [open, imageUrls]);
+
+  useEffect(() => {
+    if (!open) return;
 
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
@@ -200,6 +214,33 @@ export default function ServiceDetailsModal({ service, open, onClose }) {
   );
   const keywords = service?.KeyWords ?? service?.keyWords ?? service?.keywords ?? [];
   const selectedImage = imageUrls[selectedImageIndex] ?? imageUrls[0] ?? null;
+  const activeImageIndex = Math.max(0, imageUrls.indexOf(activeImage));
+
+  const openImageAt = (targetIndex) => {
+    if (!imageUrls.length) return;
+
+    const normalizedIndex =
+      ((Number(targetIndex) % imageUrls.length) + imageUrls.length) % imageUrls.length;
+    const nextSrc = imageUrls[normalizedIndex];
+    if (!nextSrc) return;
+
+    setSelectedImageIndex(normalizedIndex);
+    setActiveImage(nextSrc);
+    setZoomLevel(1);
+    setPan({ x: 0, y: 0 });
+    setIsDragging(false);
+    setActivePointerId(null);
+  };
+
+  const goToPreviousImage = () => {
+    if (imageUrls.length <= 1) return;
+    openImageAt(activeImageIndex - 1);
+  };
+
+  const goToNextImage = () => {
+    if (imageUrls.length <= 1) return;
+    openImageAt(activeImageIndex + 1);
+  };
 
   return (
     <div
@@ -239,6 +280,27 @@ export default function ServiceDetailsModal({ service, open, onClose }) {
               >
                 ×
               </button>
+
+              {imageUrls.length > 1 ? (
+                <>
+                  <button
+                    type="button"
+                    className="service-lightbox-nav service-lightbox-nav-prev"
+                    onClick={goToPreviousImage}
+                    aria-label="Prethodna slika"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    type="button"
+                    className="service-lightbox-nav service-lightbox-nav-next"
+                    onClick={goToNextImage}
+                    aria-label="Sljedeća slika"
+                  >
+                    ›
+                  </button>
+                </>
+              ) : null}
 
               <div className="service-lightbox-controls">
                 <button
@@ -330,12 +392,7 @@ export default function ServiceDetailsModal({ service, open, onClose }) {
                   key={`${src}:${idx}`}
                   type="button"
                   className={`service-details-thumb${idx === selectedImageIndex ? " is-active" : ""}`}
-                  onClick={() => {
-                    setSelectedImageIndex(idx);
-                    setActiveImage(src);
-                    setZoomLevel(1);
-                    setPan({ x: 0, y: 0 });
-                  }}
+                  onClick={() => openImageAt(idx)}
                   aria-label={`Prikaži sliku ${idx + 1}`}
                 >
                   <Image
