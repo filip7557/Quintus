@@ -595,6 +595,19 @@ header {
   cursor: pointer;
 }
 
+.service-card-button {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.service-card-button:focus-visible {
+  outline: 2px solid rgba(0, 123, 255, 0.9);
+  outline-offset: 3px;
+}
+
 .service-title {
   width: 100%;
   margin: 8px 0 10px;
@@ -611,7 +624,7 @@ header {
   overflow: hidden;
 }
 
-.service-description {
+.services-container .service .service-description {
   width: 100%;
   margin: 10px 0 0;
   font-family: var(--font-body);
@@ -621,43 +634,13 @@ header {
   text-align: left;
   flex: 1 1 0;
   min-height: calc(1.55em * 6);
-  max-height: 180px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-right: 4px;
-  overscroll-behavior: contain;
-}
-
-@media (max-width: 768px) {
-  .service-description {
-    /* Allow page scroll handoff when inner card text reaches top/bottom on touch devices. */
-    overscroll-behavior-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-}
-
-.service-description::-webkit-scrollbar {
-  width: 8px;
-}
-
-.service-description::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 999px;
-}
-
-.service-description::-webkit-scrollbar-thumb {
-  background: rgba(0, 123, 255, 0.55);
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-}
-
-.service-description::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 123, 255, 0.78);
-}
-
-.service-description {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0, 123, 255, 0.55) rgba(255, 255, 255, 0.08);
+  max-height: calc(1.55em * 6);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
+  line-clamp: 6;
 }
 
 .service-keywords {
@@ -1013,6 +996,273 @@ header {
 
 .modal.service-modal {
   max-width: 680px;
+}
+
+.service-details-modal {
+  position: relative;
+  --service-modal-header-height: 56px;
+  max-width: min(880px, calc(100vw - 56px));
+  max-height: calc(100svh - (132px + var(--modal-top-offset)));
+  max-height: calc(100dvh - (132px + var(--modal-top-offset)));
+  min-height: 0;
+  width: min(880px, calc(100vw - 56px));
+  height: calc(100svh - (132px + var(--modal-top-offset)));
+  height: calc(100dvh - (132px + var(--modal-top-offset)));
+  padding: 18px 18px 16px;
+}
+
+.service-lightbox-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: rgba(3, 8, 18, 0.86);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  border-radius: 14px;
+}
+
+.service-lightbox-content {
+  position: relative;
+  width: min(96%, 980px);
+  max-height: calc(100% - 8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.service-lightbox-image {
+  max-width: 100%;
+  max-height: calc(100dvh - (64px + var(--modal-top-offset)));
+  object-fit: contain;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.45);
+  transform-origin: center center;
+  transition: transform 0.14s ease;
+  cursor: zoom-in;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  will-change: transform;
+}
+
+.service-lightbox-image.is-zoomed {
+  cursor: grab;
+  transition: none;
+}
+
+.service-lightbox-image.is-dragging {
+  cursor: grabbing;
+  transition: none;
+}
+
+.service-lightbox-controls {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 2;
+  padding: 6px;
+  border-radius: 999px;
+  background: rgba(8, 14, 28, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.service-lightbox-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(8, 14, 28, 0.72);
+  color: rgba(234, 242, 255, 0.96);
+  font-size: 28px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.service-lightbox-close:hover {
+  background: rgba(8, 14, 28, 0.9);
+}
+
+.service-lightbox-control-btn {
+  min-width: 42px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #eaf2ff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.service-lightbox-control-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.service-details-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(18, 24, 27, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  z-index: 2;
+  line-height: 1;
+}
+
+.service-details-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding-top: 8px;
+  gap: 16px;
+  overflow-y: auto;
+  max-height: none;
+  padding-right: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 123, 255, 0.6) rgba(255, 255, 255, 0.08);
+}
+
+.service-details-body::-webkit-scrollbar {
+  width: 10px;
+}
+
+.service-details-body::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+}
+
+.service-details-body::-webkit-scrollbar-thumb {
+  background: rgba(0, 123, 255, 0.6);
+  border-radius: 999px;
+  border: 2px solid rgba(17, 21, 24, 0.9);
+}
+
+.service-details-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 123, 255, 0.8);
+}
+
+.service-details-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  width: 100%;
+  gap: 12px;
+  min-height: var(--service-modal-header-height);
+  margin: 0;
+  padding: 4px 42px 6px 0;
+  background: linear-gradient(180deg, rgba(46, 51, 54, 0.98) 0%, rgba(46, 51, 54, 0.92) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.service-details-title {
+  margin: 0;
+  width: 100%;
+  display: block;
+  font-size: clamp(1.35rem, 2vw, 2rem);
+  color: rgba(234, 242, 255, 0.96);
+  text-align: left !important;
+  align-self: flex-start;
+}
+
+.service-details-featured-image {
+  position: relative;
+  width: 100%;
+  height: min(40vh, 350px);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(18, 24, 27, 0.4);
+}
+
+.service-details-featured-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.service-details-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.service-details-text {
+  min-height: auto;
+  max-height: none;
+  margin: 0;
+  flex: unset;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.service-details-keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.service-details-keyword {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  color: rgba(0, 123, 255, 0.95);
+  background: rgba(0, 123, 255, 0.12);
+  border: 1px solid rgba(0, 123, 255, 0.24);
+}
+
+.service-details-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(128px, 156px));
+  justify-content: start;
+  gap: 10px;
+  padding-top: 2px;
+}
+
+.service-details-thumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background: rgba(18, 24, 27, 0.4);
+  cursor: pointer;
+  padding: 0;
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.service-details-thumb:hover {
+  border-color: rgba(0, 123, 255, 0.55);
+  transform: translateY(-1px);
+}
+
+.service-details-thumb.is-active {
+  border-color: rgba(0, 123, 255, 0.9);
+  box-shadow: 0 0 0 1px rgba(0, 123, 255, 0.5);
 }
 
 .modal-header {
@@ -2040,5 +2290,19 @@ footer {
   .navbar {
     padding-left: calc(16px + env(safe-area-inset-left, 0px));
     padding-right: calc(16px + env(safe-area-inset-right, 0px));
+  }
+}
+
+@media (max-width: 640px) {
+  .modal-overlay.service-details-overlay {
+    place-items: center;
+  }
+
+  .service-details-modal {
+    max-width: calc(100vw - 20px);
+    width: calc(100vw - 20px);
+    max-height: calc(100svh - (52px + var(--modal-top-offset)));
+    max-height: calc(100dvh - (52px + var(--modal-top-offset)));
+    height: auto;
   }
 }
