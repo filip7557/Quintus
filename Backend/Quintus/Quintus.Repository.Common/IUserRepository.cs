@@ -1,5 +1,6 @@
 ﻿using Quintus.Model;
 using Quintus.Model.Entities;
+using Quintus.Common;
 
 namespace Quintus.Repository.Common
 {
@@ -24,6 +25,8 @@ namespace Quintus.Repository.Common
         Task<bool> SetPasswordHashAsync(Guid userId, string passwordHash);
 
         Task<bool> SetRoleAsync(Guid userId, Guid roleId);
+        Task<bool> SetColorAsync(Guid userId, string color);
         Task<List<User>> GetUsersByRoleNameAsync(string roleName);
+        Task<PagedResult<User>> GetUsersAsync(UserFilter filter);
     }
 }

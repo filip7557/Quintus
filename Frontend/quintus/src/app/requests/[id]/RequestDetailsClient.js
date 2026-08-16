@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import NavBar from "@/components/NavBar/NavBar";
 import { getRequestById } from "@/services/requestService";
 import styles from "./page.module.css";
@@ -139,7 +140,7 @@ export default function RequestDetailsClient({ requestId }) {
     setPan({ x: 0, y: 0 });
   };
 
-  const getPanLimits = () => {
+  const getPanLimits = useCallback(() => {
     const contentEl = lightboxContentRef.current;
     const imageEl = lightboxImageRef.current;
     if (!contentEl || !imageEl || zoomLevel <= 1) {
@@ -158,15 +159,15 @@ export default function RequestDetailsClient({ requestId }) {
       maxX: Math.max(0, (scaledW - contentW) / 2),
       maxY: Math.max(0, (scaledH - contentH) / 2),
     };
-  };
+  }, [zoomLevel]);
 
-  const clampPan = (x, y) => {
+  const clampPan = useCallback((x, y) => {
     const { maxX, maxY } = getPanLimits();
     return {
       x: Math.min(maxX, Math.max(-maxX, x)),
       y: Math.min(maxY, Math.max(-maxY, y)),
     };
-  };
+  }, [getPanLimits]);
 
   const handleImagePointerDown = (event) => {
     if (zoomLevel <= 1) return;
@@ -212,7 +213,7 @@ export default function RequestDetailsClient({ requestId }) {
       window.removeEventListener("pointerup", handlePointerUp);
       window.removeEventListener("pointercancel", handlePointerUp);
     };
-  }, [isDragging, zoomLevel, activePointerId]);
+  }, [isDragging, zoomLevel, activePointerId, clampPan]);
 
   useEffect(() => {
     if (!activeImage) return;
@@ -223,7 +224,7 @@ export default function RequestDetailsClient({ requestId }) {
     }
 
     setPan((prev) => clampPan(prev.x, prev.y));
-  }, [zoomLevel, activeImage]);
+  }, [zoomLevel, activeImage, clampPan]);
 
   useEffect(() => {
     if (!activeImage) return;
@@ -236,7 +237,7 @@ export default function RequestDetailsClient({ requestId }) {
     return () => {
       window.removeEventListener("resize", onResize);
     };
-  }, [activeImage, zoomLevel]);
+  }, [activeImage, zoomLevel, clampPan]);
 
   const title = useMemo(() => pickField(request, ["Title", "title"], "—"), [request]);
   const description = useMemo(
@@ -367,7 +368,15 @@ export default function RequestDetailsClient({ requestId }) {
                         }}
                         aria-label={`Prikaži sliku ${idx + 1}`}
                       >
-                        <img src={url} alt={`Prilog ${idx + 1}`} className={styles.imageThumb} />
+                        <Image
+                          src={url}
+                          alt={`Prilog ${idx + 1}`}
+                          className={styles.imageThumb}
+                          width={800}
+                          height={600}
+                          loader={({ src }) => src}
+                          unoptimized
+                        />
                       </button>
                     ))}
                   </div>
@@ -419,12 +428,16 @@ export default function RequestDetailsClient({ requestId }) {
                   +
                 </button>
               </div>
-              <img
+              <Image
                 src={activeImage}
                 alt="Uvećani prikaz priloga"
                 className={`${styles.lightboxImage} ${zoomLevel > 1 ? styles.lightboxImageZoomed : ""} ${
                   isDragging ? styles.lightboxImageDragging : ""
                 }`}
+                width={1600}
+                height={1200}
+                loader={({ src }) => src}
+                unoptimized
                 ref={lightboxImageRef}
                 onPointerDown={handleImagePointerDown}
                 style={{ transform: `translate3d(${pan.x}px, ${pan.y}px, 0) scale(${zoomLevel})` }}

@@ -21,3 +21,24 @@ export function isAdmin(user) {
   const role = getRoleName(user).toLowerCase();
   return role === "admin";
 }
+
+export function canUseSchedule(user) {
+  const role = getRoleName(user).toLowerCase();
+  return role === "admin" || role === "owner" || role === "worker";
+}
+
+export function getAuthorizedRedirect(path, user) {
+  const destination = typeof path === "string" && path.startsWith("/") && !path.startsWith("//")
+    ? path
+    : "/";
+
+  if (destination === "/schedule") {
+    return canUseSchedule(user) ? destination : "/";
+  }
+
+  if (destination === "/admin/users") {
+    return isAdminOrOwner(user) ? destination : "/";
+  }
+
+  return destination;
+}

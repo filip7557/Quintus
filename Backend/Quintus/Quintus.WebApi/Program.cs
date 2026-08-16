@@ -82,6 +82,8 @@ builder.Host
         // Register your own things directly with Autofac here.
         containerBuilder.RegisterType<UserRepository>().As<IUserRepository>();
         containerBuilder.RegisterType<UserService>().As<IUserService>();
+        containerBuilder.RegisterType<AppointmentRepository>().As<IAppointmentRepository>();
+        containerBuilder.RegisterType<AppointmentService>().As<IAppointmentService>();
 
         containerBuilder.RegisterType<EmailVerificationTokenRepository>().As<IEmailVerificationTokenRepository>();
         containerBuilder.RegisterType<EmailService>().As<IEmailService>();

@@ -5,7 +5,7 @@ import { getCurrentUser, logout, subscribeToAuthChanges } from "@/services/authS
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "./AccountNav.module.css";
-import { isAdmin, isAdminOrOwner } from "@/lib/authz";
+import { canUseSchedule, isAdmin, isAdminOrOwner } from "@/lib/authz";
 
 export default function AccountNav() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -13,6 +13,7 @@ export default function AccountNav() {
   const [offersOpen, setOffersOpen] = useState(false);
   const [admin, setAdmin] = useState(false);
   const [isAdminOrOwnerUser, setIsAdminOrOwnerUser] = useState(false);
+  const [canUseScheduleUser, setCanUseScheduleUser] = useState(false);
   const router = useRouter();
   const rootRef = useRef(null);
 
@@ -27,16 +28,19 @@ export default function AccountNav() {
               setIsLoggedIn(true);
               setAdmin(isAdmin(response.data));
               setIsAdminOrOwnerUser(isAdminOrOwner(response.data));
+              setCanUseScheduleUser(canUseSchedule(response.data));
             } else {
               setIsLoggedIn(false);
               setAdmin(false);
               setIsAdminOrOwnerUser(false);
+              setCanUseScheduleUser(false);
             }
           })
           .catch(() => {
             setIsLoggedIn(false);
             setAdmin(false);
             setIsAdminOrOwnerUser(false);
+            setCanUseScheduleUser(false);
           });
       } else {
         setIsLoggedIn(false);
@@ -88,9 +92,9 @@ export default function AccountNav() {
       setIsLoggedIn(false);
       setAdmin(false);
       setIsAdminOrOwnerUser(false);
+      setCanUseScheduleUser(false);
       setIsOpen(false);
-      router.refresh();
-      router.push("/");
+      router.replace("/");
     }
   };
 
@@ -149,6 +153,15 @@ export default function AccountNav() {
             >
               Zahtjevi
             </Link>
+            {canUseScheduleUser ? (
+              <Link
+                href="/schedule"
+                className={styles.dropdownItem}
+                onClick={handleItemClick}
+              >
+                Raspored
+              </Link>
+            ) : null}
             {isAdminOrOwnerUser ? (
               <div className={`${styles.subMenuWrapper} ${offersOpen ? styles.subMenuOpen : ""}`}>
                 <button
@@ -194,6 +207,15 @@ export default function AccountNav() {
                 onClick={handleItemClick}
               >
                 Vlasnici (Admin)
+              </Link>
+            ) : null}
+            {isAdminOrOwnerUser ? (
+              <Link
+                href="/admin/users"
+                className={styles.dropdownItem}
+                onClick={handleItemClick}
+              >
+                Korisnici
               </Link>
             ) : null}
             <button onClick={handleLogout} className={styles.dropdownItem}>

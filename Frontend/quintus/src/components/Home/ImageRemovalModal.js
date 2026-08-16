@@ -72,7 +72,7 @@ export default function ImageRemovalModal({
         </div>
 
         <div className="modal-body">
-          <p>Jeste li sigurni da želite obrisati ovu sliku iz usluge "{serviceName}"?</p>
+          <p>Jeste li sigurni da želite obrisati ovu sliku iz usluge &quot;{serviceName}&quot;?</p>
 
           {imageUrl ? (
             <div

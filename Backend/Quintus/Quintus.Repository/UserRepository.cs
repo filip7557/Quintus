@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Quintus.Common;
 using Quintus.Model;
 using Quintus.Model.Entities;
 using Quintus.Repository.Common;
@@ -113,6 +114,7 @@ namespace Quintus.Repository
                 existingUser.LastName = updatedUser.LastName;
                 existingUser.Email = updatedUser.Email;
                 existingUser.PhoneNumber = updatedUser.PhoneNumber;
+                existingUser.Color = updatedUser.Color;
                 existingUser.UpdatedAt = DateTime.UtcNow;
                 _context.Users.Update(existingUser);
 
@@ -189,12 +191,73 @@ namespace Quintus.Repository
             }
         }
 
+        public async Task<bool> SetColorAsync(Guid userId, string color)
+        {
+            try
+            {
+                var user = await _context.Users.FindAsync(userId);
+                if (user == null)
+                    return false;
+
+                user.Color = color;
+                user.UpdatedAt = DateTime.UtcNow;
+                return await _context.SaveChangesAsync() > 0;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception occurred while setting user color: " + e.Message);
+                return false;
+            }
+        }
+
         public Task<List<User>> GetUsersByRoleNameAsync(string roleName)
         {
             return _context.Users
                 .Include(u => u.Role)
                 .Where(u => u.Role != null && u.Role.Name == roleName)
                 .ToListAsync();
+        }
+
+        public async Task<PagedResult<User>> GetUsersAsync(UserFilter filter)
+        {
+            var query = _context.Users
+                .Include(u => u.Role)
+                .AsNoTracking()
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(filter.Search))
+            {
+                var search = filter.Search.Trim().ToLower();
+                query = query.Where(u =>
+                    u.FirstName.ToLower().Contains(search) ||
+                    u.LastName.ToLower().Contains(search) ||
+                    u.Email.ToLower().Contains(search));
+            }
+
+            if (!string.IsNullOrWhiteSpace(filter.Role))
+            {
+                var role = filter.Role.Trim().ToLower();
+                query = query.Where(u => u.Role != null && u.Role.Name.ToLower() == role);
+            }
+
+            var totalCount = await query.CountAsync();
+            var page = Math.Max(1, filter.Page);
+            var pageSize = Math.Clamp(filter.PageSize, 1, 100);
+            var users = await query
+                .OrderBy(u => u.LastName)
+                .ThenBy(u => u.FirstName)
+                .ThenBy(u => u.Email)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<User>
+            {
+                Items = users,
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize
+            };
         }
     }
 }

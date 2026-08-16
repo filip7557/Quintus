@@ -153,6 +153,9 @@ export async function resetPassword(token, newPassword) {
 export async function logout() {
   try {
     await api.post("/Auth/logout");
+  } catch (error) {
+    // An expired session is already logged out from the client's perspective.
+    return error?.response || null;
   } finally {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");

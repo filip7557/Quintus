@@ -1,5 +1,6 @@
 ﻿using Quintus.Model;
 using Quintus.Model.Entities;
+using Quintus.Common;
 using Quintus.Repository.Common;
 using Quintus.Service.Common;
 
@@ -40,7 +41,9 @@ namespace Quintus.Service
                 LastName = user.LastName,
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber,
-                Role = user.Role
+                Role = user.Role,
+                Id = user.Id,
+                Color = NormalizeColor(user.Color)
             };
         }
 
@@ -68,6 +71,44 @@ namespace Quintus.Service
             return await _userRepository.SetRoleAsync(userId, ownerRole.Id);
         }
 
+        public async Task<PagedResult<UserDTO>> GetUsersAsync(UserFilter filter)
+        {
+            var result = await _userRepository.GetUsersAsync(filter);
+            return new PagedResult<UserDTO>
+            {
+                Items = result.Items.Select(ToDto).ToList(),
+                TotalCount = result.TotalCount,
+                Page = result.Page,
+                PageSize = result.PageSize
+            };
+        }
+
+        public async Task<List<Role>> GetRolesAsync()
+        {
+            return (await _roleRepository.GetAllRolesAsync())
+                .OrderBy(role => role.Name)
+                .ToList();
+        }
+
+        public async Task<bool> AssignRoleAsync(Guid userId, Guid roleId, string currentRole)
+        {
+            var role = await _roleRepository.GetRoleByIdAsync(roleId);
+            if (role == null)
+                return false;
+
+            if (string.Equals(currentRole, "Owner", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(role.Name, "Worker", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(role.Name, "User", StringComparison.OrdinalIgnoreCase))
+                throw new UnauthorizedAccessException("Owneri mogu dodijeliti samo uloge Worker ili User.");
+
+            return await _userRepository.SetRoleAsync(userId, roleId);
+        }
+
+        public Task<bool> UpdateColorAsync(Guid userId, string color)
+        {
+            return _userRepository.SetColorAsync(userId, color);
+        }
+
         public async Task<List<UserDTO>> GetOwnersAsync()
         {
             var owners = await _userRepository.GetUsersByRoleNameAsync("Owner");
@@ -78,8 +119,31 @@ namespace Quintus.Service
                 LastName = u.LastName,
                 Email = u.Email,
                 PhoneNumber = u.PhoneNumber,
-                Role = u.Role
+                Role = u.Role,
+                Color = NormalizeColor(u.Color)
             }).ToList();
+        }
+
+        private static UserDTO ToDto(User user)
+        {
+            return new UserDTO
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                Role = user.Role,
+                Color = NormalizeColor(user.Color)
+            };
+        }
+
+        private static string NormalizeColor(string? color)
+        {
+            return !string.IsNullOrWhiteSpace(color) &&
+                System.Text.RegularExpressions.Regex.IsMatch(color, "^#[0-9A-Fa-f]{6}$")
+                ? color
+                : "#91120c";
         }
     }
 }

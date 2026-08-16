@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useLockBodyScroll from "@/hooks/useLockBodyScroll";
 
 function passthroughLoader({ src }) {
@@ -96,7 +96,7 @@ export default function ServiceDetailsModal({ service, open, onClose }) {
     setPan({ x: 0, y: 0 });
   };
 
-  const getPanLimits = () => {
+  const getPanLimits = useCallback(() => {
     const contentEl = lightboxContentRef.current;
     const imageEl = lightboxImageRef.current;
 
@@ -115,15 +115,15 @@ export default function ServiceDetailsModal({ service, open, onClose }) {
       maxX: Math.max(0, (scaledW - contentW) / 2),
       maxY: Math.max(0, (scaledH - contentH) / 2),
     };
-  };
+  }, [zoomLevel]);
 
-  const clampPan = (x, y) => {
+  const clampPan = useCallback((x, y) => {
     const { maxX, maxY } = getPanLimits();
     return {
       x: Math.min(maxX, Math.max(-maxX, x)),
       y: Math.min(maxY, Math.max(-maxY, y)),
     };
-  };
+  }, [getPanLimits]);
 
   const handleImagePointerDown = (event) => {
     if (zoomLevel <= 1) return;
@@ -169,7 +169,7 @@ export default function ServiceDetailsModal({ service, open, onClose }) {
       window.removeEventListener("pointerup", handlePointerUp);
       window.removeEventListener("pointercancel", handlePointerUp);
     };
-  }, [isDragging, zoomLevel, activePointerId]);
+  }, [isDragging, zoomLevel, activePointerId, clampPan]);
 
   useEffect(() => {
     if (!activeImage) return;
@@ -180,7 +180,7 @@ export default function ServiceDetailsModal({ service, open, onClose }) {
     }
 
     setPan((prev) => clampPan(prev.x, prev.y));
-  }, [zoomLevel, activeImage]);
+  }, [zoomLevel, activeImage, clampPan]);
 
   useEffect(() => {
     if (!activeImage) return;
@@ -193,7 +193,7 @@ export default function ServiceDetailsModal({ service, open, onClose }) {
     return () => {
       window.removeEventListener("resize", onResize);
     };
-  }, [activeImage, zoomLevel]);
+  }, [activeImage, zoomLevel, clampPan]);
 
   if (!open || !service) return null;
 
@@ -329,12 +329,16 @@ export default function ServiceDetailsModal({ service, open, onClose }) {
                 </button>
               </div>
 
-              <img
+              <Image
                 src={activeImage}
                 alt="Uvećani prikaz usluge"
                 className={`service-lightbox-image ${zoomLevel > 1 ? "is-zoomed" : ""} ${
                   isDragging ? "is-dragging" : ""
                 }`}
+                width={1600}
+                height={1200}
+                loader={passthroughLoader}
+                unoptimized
                 ref={lightboxImageRef}
                 onPointerDown={handleImagePointerDown}
                 style={{ transform: `translate3d(${pan.x}px, ${pan.y}px, 0) scale(${zoomLevel})` }}
