@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "Korisnici | Admin | Quintus",
+  title: "Korisnici | Quintus",
   description: "Upravljanje korisnicima i korisničkim ovlastima unutar Quintus sustava.",
   alternates: {
     canonical: "/admin/users",

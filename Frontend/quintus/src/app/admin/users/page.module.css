@@ -1,4 +1,4 @@
-.container { min-height: 100svh; padding: calc(108px + 20px) 20px 40px; background: #2e3336; color: #eef5ff; position: relative; overflow: hidden; }
+.container { min-height: 100svh; display:flex; align-items:center; justify-content:center; padding: calc(108px + 20px) 20px 40px; background: #2e3336; color: #eef5ff; position: relative; overflow: hidden; }
 .container::before { content: ""; position: absolute; inset: -20%; pointer-events: none; background: radial-gradient(650px circle at 15% 18%, rgba(110,168,254,.22), transparent 60%), radial-gradient(520px circle at 86% 24%, rgba(143,198,255,.14), transparent 58%), linear-gradient(180deg, #2e3336 0%, #23272a 100%); filter: blur(42px) saturate(120%); transform: scale(1.08); }
 .container > * { position: relative; z-index: 1; }
 .card { width: 100%; max-width: 1180px; margin: 0 auto; padding: 28px; border: 1px solid rgba(255,255,255,.16); border-radius: 14px; background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04)); box-shadow: 0 10px 30px rgba(6,10,22,.45), inset 0 1px 0 rgba(255,255,255,.03); backdrop-filter: blur(10px) saturate(120%); }
@@ -8,8 +8,43 @@
 .field input,.field select,.table select,.pagination select { box-sizing:border-box; height:44px; padding:0 12px; border:1px solid rgba(255,255,255,.1); border-radius:10px; background:rgba(18,24,27,.58); color:#eef5ff; font:inherit; outline:none; } .field input:focus,.field select:focus,.table select:focus,.pagination select:focus { border-color:rgba(138,180,255,.8); box-shadow:0 0 0 4px rgba(110,168,254,.08); }
 .primaryButton,.secondaryButton,.pagination button { height:44px; padding:0 15px; border-radius:10px; border:1px solid rgba(255,255,255,.16); cursor:pointer; font-weight:600; transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease; } .primaryButton { background:linear-gradient(90deg,#6ea8fe,#8fc6ff); color:#10161a; box-shadow:0 6px 16px rgba(110,168,254,.15); } .secondaryButton,.pagination button { background:rgba(18,24,27,.55); color:#eef5ff; } .primaryButton:hover:not(:disabled),.secondaryButton:hover:not(:disabled),.pagination button:hover:not(:disabled) { transform:translateY(-1px); }
 .primaryButton:disabled,.pagination button:disabled { opacity:.5; cursor:not-allowed; } .error { margin:12px 0; padding:10px; border:1px solid rgba(255,107,107,.3); border-radius:8px; color:#ff9b9b; }
-.tableWrap { overflow-x:auto; } .table { width:100%; border-collapse:collapse; min-width:760px; } .table th,.table td { height:70px; padding:13px 10px; border-bottom:1px solid rgba(255,255,255,.1); text-align:left; vertical-align:middle; } .table th { height:48px; color:rgba(238,245,255,.6); font-size:.78rem; font-weight:600; text-transform:uppercase; }
-.table select { height:42px; } .colorCell { display:flex; align-items:center; gap:8px; height:42px; } .colorCell input { flex:0 0 34px; width:34px; height:34px; padding:2px; border:1px solid rgba(255,255,255,.18); border-radius:7px; background:transparent; cursor:pointer; } .colorCell span { color:rgba(238,245,255,.65); font-size:.8rem; font-variant-numeric:tabular-nums; }
+.tableWrap { overflow-x:auto; } .table { width:100%; border-collapse:collapse; min-width:760px; } .table th,.table td { box-sizing:border-box; padding:14px 10px; border-bottom:1px solid rgba(255,255,255,.1); text-align:left; vertical-align:middle; } .table th { color:rgba(238,245,255,.6); font-size:.78rem; font-weight:600; text-transform:uppercase; }
+.table select { height:42px; box-sizing:border-box; padding-right:34px; appearance:none; -webkit-appearance:none; background-image:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01)),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9l6 6 6-6' stroke='%23bcd6f5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat:no-repeat,no-repeat; background-position:0 0,right 12px center; background-size:auto,12px; }
+.roleCell { position:relative; min-width:140px; }
+.roleCell select { width:100%; }
+.colorCell { display:inline-flex; align-items:center; gap:8px; } .colorCell input { flex:0 0 34px; width:34px; height:34px; padding:2px; border:1px solid rgba(255,255,255,.18); border-radius:7px; background:transparent; cursor:pointer; } .colorCell span { color:rgba(238,245,255,.65); font-size:.8rem; font-variant-numeric:tabular-nums; }
+.colorSwatchBtn { flex:0 0 34px; width:34px; height:34px; padding:0; border:1px solid rgba(255,255,255,.22); border-radius:7px; background:var(--swatch-color,#91120c); cursor:pointer; transition:transform .12s ease, box-shadow .12s ease; } .colorSwatchBtn:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.25); } .colorSwatchBtn:disabled { opacity:.55; cursor:not-allowed; }
+.colorPopover { position:fixed; z-index:2000; width:220px; display:grid; gap:10px; padding:14px; border:1px solid rgba(255,255,255,.16); border-radius:12px; background:#20282d; box-shadow:0 18px 40px rgba(0,0,0,.45); }
+.colorPopover input[type="color"] { width:100%; height:44px; padding:2px; border:1px solid rgba(255,255,255,.18); border-radius:8px; background:transparent; cursor:pointer; }
+.colorPopoverActions { display:flex; justify-content:flex-end; gap:8px; }
+.colorCancelBtn,.colorConfirmBtn { height:36px; padding:0 12px; border-radius:8px; border:1px solid rgba(255,255,255,.16); cursor:pointer; font-weight:600; font-size:.85rem; }
+.colorCancelBtn { background:rgba(18,24,27,.55); color:#eef5ff; }
+.colorConfirmBtn { background:linear-gradient(90deg,#6ea8fe,#8fc6ff); color:#10161a; }
+.colorConfirmBtn:disabled { opacity:.6; cursor:not-allowed; }
 .paginationBar { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:18px; } .paginationInfo { color:rgba(234,242,255,.8); font-size:.9rem; } .paginationControls { display:flex; align-items:center; gap:8px; } .pageSizeLabel { font-size:.8rem; color:rgba(234,242,255,.7); text-transform:uppercase; letter-spacing:.4px; } .pageSizeSelect { appearance:none; -webkit-appearance:none; background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01)); border:1px solid rgba(255,255,255,.07); color:#eaf2ff; padding:10px 38px 10px 12px; border-radius:10px; outline:none; font:inherit; line-height:1.2; min-height:42px; cursor:pointer; background-image:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01)),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9l6 6 6-6' stroke='%23bcd6f5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat:no-repeat,no-repeat; background-position:0 0,right 12px center; background-size:auto,12px; } .pageSizeSelect:focus { border-color:rgba(138,180,255,.8); box-shadow:0 6px 20px rgba(110,168,254,.12),0 0 0 4px rgba(110,168,254,.06); } .pageSizeSelect:hover:not(:disabled) { border-color:rgba(143,198,255,.5); } .pageSizeSelect:disabled { opacity:.55; cursor:not-allowed; } .pageSizeSelect option { background:#23272a; color:#eaf2ff; }
-.paginationControls .primaryBtn,.paginationControls .secondaryBtn { min-height:42px; padding:10px 14px; }
 @media (max-width:700px) { .container { padding:calc(108px + 16px) 12px 28px; } .card { padding:20px 16px; } .header,.paginationBar { align-items:stretch; flex-direction:column; } .paginationControls { flex-wrap:wrap; } }
+
+@media (max-width:600px) {
+  .container { padding:calc(108px + 12px) 8px 24px; }
+  .card { max-width:none; padding:0; border:none; border-radius:0; background:transparent; box-shadow:none; backdrop-filter:none; }
+  .filters { flex-direction:column; align-items:stretch; }
+  .field { min-width:0; }
+  .filters > .primaryButton,.filters > .secondaryButton { flex:1; }
+
+  .tableWrap { overflow:visible; }
+  .table { border-collapse:separate; border-spacing:0; min-width:0; }
+  .table thead { display:none; }
+  .table tbody { display:grid; gap:10px; }
+  .table tbody tr { display:block; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1); border-radius:12px; padding:10px 12px; }
+  .table td { display:flex; justify-content:space-between; align-items:center; gap:10px; height:auto; padding:8px 0; border-bottom:1px solid rgba(255,255,255,.06); }
+  .table td:last-child { border-bottom:none; }
+  .table td::before { content:attr(data-label); color:rgba(238,245,255,.55); font-size:.72rem; text-transform:uppercase; letter-spacing:.4px; font-weight:600; flex-shrink:0; }
+  .roleCell { min-width:0; } .roleCell select { width:auto; max-width:160px; }
+  .colorCell { justify-content:flex-end; }
+
+  .paginationBar { margin-top:14px; }
+  .paginationControls { width:100%; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .pageSizeLabel { grid-column:1 / -1; }
+  .pageSizeSelect { grid-column:1 / -1; width:100%; }
+  .paginationControls .secondaryButton,.paginationControls .primaryButton { width:100%; }
+}

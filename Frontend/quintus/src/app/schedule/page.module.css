@@ -2,9 +2,8 @@
 .header { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; margin-bottom:20px; } .title { margin:0; font-size:1.5rem; font-family:var(--font-headings); } .subtitle { margin:6px 0 0; color:rgba(238,245,255,.65); } .actions { display:flex; gap:8px; } .actions button,.createButton,.modalActions button { min-height:44px; padding:10px 14px; border:1px solid rgba(255,255,255,.16); border-radius:10px; background:rgba(18,24,27,.55); color:#eef5ff; cursor:pointer; font-weight:600; transition:transform .12s ease,box-shadow .12s ease; } .actions button:hover,.createButton:hover,.modalActions button:hover { transform:translateY(-1px); } .optional { color:rgba(238,245,255,.52); font-size:.78rem; font-weight:400; }
 .grid { display:grid; grid-template-columns:repeat(7,minmax(130px,1fr)); border:1px solid rgba(255,255,255,.12); overflow-x:auto; } .day { min-height:360px; border-right:1px solid rgba(255,255,255,.1); } .day:last-child { border-right:0; } .dayHeader { width:100%; display:flex; justify-content:space-between; gap:5px; padding:12px 9px; border:0; border-bottom:1px solid rgba(255,255,255,.1); background:#182025; color:#eef5ff; cursor:pointer; text-align:left; } .dayHeader span { color:rgba(238,245,255,.6); } .dayHeader.selected { background:#314455; } .dayBody { display:grid; gap:8px; padding:8px; }
 .appointment { display:grid; gap:3px; padding:10px; border:0; border-left:4px solid var(--appointment-color,#91120c); border-radius:8px; background:color-mix(in srgb,var(--appointment-color,#91120c) 28%,#182025); color:#fff; text-align:left; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,.16); } .appointment strong { font-size:.9rem; } .appointment small,.time { color:rgba(255,255,255,.75); font-size:.75rem; } .createButton { margin-top:16px; background:linear-gradient(90deg,#6ea8fe,#8fc6ff); color:#10161a; box-shadow:0 6px 16px rgba(110,168,254,.15); } .error,.notice { margin:12px 0; padding:10px; border-radius:8px; } .error { color:#ff9b9b; border:1px solid rgba(255,107,107,.3); } .notice { color:rgba(238,245,255,.7); }
-.overlay { position:fixed; inset:0; z-index:20; display:grid; place-items:center; padding:20px; background:rgba(4,7,9,.7); } .modal { width:min(600px,100%); display:grid; gap:14px; padding:22px; border:1px solid rgba(255,255,255,.16); border-radius:12px; background:#20282d; box-shadow:0 18px 50px rgba(0,0,0,.45); } .modalHeader { display:flex; justify-content:space-between; align-items:center; } .modalHeader h2 { margin:0; font-size:1.2rem; } .modalHeader button { border:0; background:transparent; color:#eef5ff; font-size:1.5rem; cursor:pointer; } .modal label { display:grid; gap:6px; color:rgba(238,245,255,.75); font-size:.85rem; } .modal input,.modal textarea { box-sizing:border-box; width:100%; padding:10px; border:1px solid rgba(255,255,255,.14); border-radius:7px; background:#182025; color:#eef5ff; font:inherit; } .formRow { display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:10px; } .modalActions { display:flex; justify-content:flex-end; gap:10px; } .modalActions button:last-child { background:#6ea8fe; color:#10161a; font-weight:600; }
+.overlay { position:fixed; inset:0; z-index:20; display:grid; place-items:center; padding:20px; background:rgba(4,7,9,.7); } .modal { width:min(600px,100%); display:grid; gap:14px; padding:22px; border:1px solid rgba(255,255,255,.16); border-radius:12px; background:#20282d; box-shadow:0 18px 50px rgba(0,0,0,.45); } .modalHeader { display:flex; justify-content:space-between; align-items:center; } .modalHeader h2 { margin:0; font-size:1.2rem; } .modalHeader button { border:0; background:transparent; color:#eef5ff; font-size:1.5rem; cursor:pointer; } .modal label { display:grid; gap:6px; color:rgba(238,245,255,.75); font-size:.85rem; } .modal input,.modal textarea { box-sizing:border-box; width:100%; padding:10px; border:1px solid rgba(255,255,255,.14); border-radius:7px; background:#182025; color:#eef5ff; font:inherit; } .modal input:disabled,.modal textarea:disabled { opacity:.75; cursor:default; } .formRow { display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:10px; } .modalActions { display:flex; justify-content:flex-end; gap:10px; } .modalActions button:last-child { background:#6ea8fe; color:#10161a; font-weight:600; }
 @media (max-width:760px) { .container { padding:calc(108px + 16px) 12px 28px; } .card { padding:20px 16px; } .header { flex-direction:column; } .actions { flex-wrap:wrap; } .grid { grid-template-columns:repeat(7,150px); } .formRow { grid-template-columns:1fr; } }
-
 .formRow { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .formRow > label > span:first-child { min-height: 1.35em; }
 .deleteButton { margin-right: auto; background: rgba(180, 55, 55, .18) !important; border-color: rgba(255, 120, 120, .35) !important; color: #ffb0b0 !important; }
@@ -23,4 +22,29 @@
 	.formRow { grid-template-columns: 1fr; }
 	.createButton { position: fixed; right: 18px; bottom: 18px; z-index: 15; width: 56px; height: 56px; margin: 0; padding: 0; border-radius: 50%; font-size: 0; box-shadow: 0 10px 24px rgba(0,0,0,.35); }
 	.createButton::before { content: "+"; font-size: 1.8rem; line-height: 1; }
+	.actions { width: 100%; }
+	.actions > button { flex: 1 1 auto; }
+	.viewToggle { flex: 1 1 100%; }
+	.viewToggle button { flex: 1; }
+
+	/* Week view becomes a stacked agenda instead of a 7-column horizontal scroll. */
+	.grid { grid-template-columns: 1fr; overflow-x: visible; }
+	.day { border-right: 0; border-bottom: 1px solid rgba(255,255,255,.1); min-height: 0; }
+	.day:last-child { border-bottom: 0; }
+	.dayHeader { background: transparent; }
+	.dayBody { padding: 8px 4px 12px; }
+
+	.monthGrid { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+	.monthGrid .day { min-height: 74px; border-bottom: 1px solid rgba(255,255,255,.08); }
+	.monthGrid .dayHeader { padding: 5px; background: transparent; }
+	.monthGrid .dayBody { gap: 4px; padding: 3px; }
+	.monthGrid .appointment { padding: 4px 5px; }
+	.monthGrid .appointment strong { font-size: .68rem; }
+	.monthGrid .appointment small { display: none; }
+	.monthGrid .time { font-size: .62rem; }
+}
+
+@media (max-width: 600px) {
+	.container { padding: calc(108px + 12px) 8px 24px; }
+	.card { max-width: none; padding: 12px 4px; border: none; border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; }
 }

@@ -79,8 +79,17 @@ namespace Quintus.WebAPI.Controllers
         [HttpPut("{userId:guid}/color")]
         public async Task<IActionResult> UpdateColor(Guid userId, [FromBody] ColorUpdateRequest request)
         {
-            var updated = await _userService.UpdateColorAsync(userId, request.Color);
-            return updated ? Ok() : NotFound("Korisnik nije pronađen.");
+            try
+            {
+                var currentRole = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+                var currentUserId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+                var updated = await _userService.UpdateColorAsync(userId, request.Color, currentUserId, currentRole);
+                return updated ? Ok() : NotFound("Korisnik nije pronađen.");
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, ex.Message);
+            }
         }
     }
 }

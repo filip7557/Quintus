@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import NavBar from "@/components/NavBar/NavBar";
 import { getCurrentUser } from "@/services/authService";
@@ -39,6 +40,8 @@ export default function UsersAdminPage() {
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState("");
   const [error, setError] = useState("");
+  const [colorEditor, setColorEditor] = useState(null); // { id, color }
+  const colorPopoverRef = useRef(null);
 
   const admin = isAdmin(currentUser);
   const canAccess = isAdminOrOwner(currentUser);
@@ -108,8 +111,18 @@ export default function UsersAdminPage() {
     setSavingId("");
   };
 
-  const saveColor = async (user, color) => {
+  const openColorEditor = (user, event) => {
     const id = valueOf(user, ["id", "Id"]);
+    const rect = event.currentTarget.getBoundingClientRect();
+    const left = Math.min(rect.left, window.innerWidth - 260);
+    setColorEditor({ id, color: normalizeColor(valueOf(user, ["color", "Color"], "")), anchor: { top: rect.bottom + 8, left: Math.max(8, left) } });
+  };
+
+  const cancelColorEditor = () => setColorEditor(null);
+
+  const confirmColorEditor = async () => {
+    if (!colorEditor) return;
+    const { id, color } = colorEditor;
     setSavingId(`${id}:color`);
     const response = await updateUserColor(id, color);
     if (!(response?.status >= 200 && response.status < 300)) {
@@ -118,7 +131,19 @@ export default function UsersAdminPage() {
       await load();
     }
     setSavingId("");
+    setColorEditor(null);
   };
+
+  useEffect(() => {
+    if (!colorEditor) return;
+    const handleClickOutside = (event) => {
+      if (colorPopoverRef.current && !colorPopoverRef.current.contains(event.target)) {
+        setColorEditor(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [colorEditor]);
 
   if (!authChecked) {
     return <><NavBar /><main className={styles.container}><div className={styles.card}>Učitavanje...</div></main></>;
@@ -155,10 +180,24 @@ export default function UsersAdminPage() {
                   ""
                 );
                 const color = normalizeColor(valueOf(user, ["color", "Color"], ""));
-                return <tr key={id}><td>{valueOf(user, ["firstName", "FirstName"])} {valueOf(user, ["lastName", "LastName"])}</td><td>{valueOf(user, ["email", "Email"])}</td><td>{valueOf(user, ["phoneNumber", "PhoneNumber"], "—")}</td><td><select value={currentRoleId} disabled={savingId === `${id}:role`} onChange={(event) => saveRole(user, event.target.value)}>{visibleRoles.map((role) => <option key={valueOf(role, ["id", "Id"])} value={valueOf(role, ["id", "Id"])}>{roleName(role)}</option>)}</select></td><td className={styles.colorCell}><input type="color" value={color} disabled={savingId === `${id}:color`} onChange={(event) => saveColor(user, event.target.value)} /><span>{color}</span></td></tr>;
+                const roleLocked = !admin && ["admin", "owner"].includes(String(currentRole).toLowerCase());
+                const roleOptions = roleLocked ? roles : visibleRoles;
+                const isSelf = String(id).toLowerCase() === String(valueOf(currentUser, ["id", "Id"], "")).toLowerCase();
+                const colorLocked = !admin && !isSelf && ["admin", "owner"].includes(String(currentRole).toLowerCase());
+                return <tr key={id}><td data-label="Korisnik">{valueOf(user, ["firstName", "FirstName"])} {valueOf(user, ["lastName", "LastName"])}</td><td data-label="Email">{valueOf(user, ["email", "Email"])}</td><td data-label="Telefon">{valueOf(user, ["phoneNumber", "PhoneNumber"], "—")}</td><td data-label="Uloga" className={styles.roleCell}><select value={currentRoleId} disabled={roleLocked || savingId === `${id}:role`} title={roleLocked ? "Samo Admin može mijenjati ovu ulogu." : undefined} onChange={(event) => saveRole(user, event.target.value)}>{roleOptions.map((role) => <option key={valueOf(role, ["id", "Id"])} value={valueOf(role, ["id", "Id"])}>{roleName(role)}</option>)}</select></td>{/* full role list only shown so a locked select still displays the correct current role */}<td data-label="Boja"><div className={styles.colorCell}><button type="button" className={styles.colorSwatchBtn} style={{ "--swatch-color": color }} onClick={(event) => { if (!colorLocked) openColorEditor(user, event); }} disabled={colorLocked || savingId === `${id}:color`} title={colorLocked ? "Owneri mogu mijenjati samo svoju boju ili boju Worker korisnika." : undefined} aria-label="Promijeni boju korisnika" /><span>{color}</span></div></td></tr>;
               })}
             </tbody></table>
           </div>
+          {colorEditor ? createPortal(
+            <div className={styles.colorPopover} style={{ top: colorEditor.anchor.top, left: colorEditor.anchor.left }} role="dialog" aria-label="Odabir boje" ref={colorPopoverRef}>
+              <input type="color" value={colorEditor.color} onChange={(event) => setColorEditor({ ...colorEditor, color: event.target.value })} />
+              <div className={styles.colorPopoverActions}>
+                <button type="button" className={styles.colorCancelBtn} onClick={cancelColorEditor}>Odustani</button>
+                <button type="button" className={styles.colorConfirmBtn} onClick={confirmColorEditor} disabled={savingId === `${colorEditor.id}:color`}>{savingId === `${colorEditor.id}:color` ? "Spremanje..." : "Potvrdi"}</button>
+              </div>
+            </div>,
+            document.body
+          ) : null}
           <div className={styles.paginationBar}>
             <div className={styles.paginationInfo}>Stranica {page} od {totalPages}</div>
             <div className={styles.paginationControls}>
@@ -169,8 +208,8 @@ export default function UsersAdminPage() {
                 <option value={20}>20</option>
                 <option value={50}>50</option>
               </select>
-              <button type="button" className={styles.secondaryBtn} onClick={() => load(page - 1)} disabled={loading || page <= 1}>Prethodna</button>
-              <button type="button" className={styles.primaryBtn} onClick={() => load(page + 1)} disabled={loading || page >= totalPages}>Sljedeća</button>
+              <button type="button" className={styles.secondaryButton} onClick={() => load(page - 1)} disabled={loading || page <= 1}>Prethodna</button>
+              <button type="button" className={styles.primaryButton} onClick={() => load(page + 1)} disabled={loading || page >= totalPages}>Sljedeća</button>
             </div>
           </div>
         </div>

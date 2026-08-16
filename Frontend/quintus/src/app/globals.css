@@ -2187,6 +2187,7 @@ footer {
     min-height: 100svh;
     height: auto;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: center;
     box-sizing: border-box;

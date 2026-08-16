@@ -96,17 +96,33 @@ namespace Quintus.Service
             if (role == null)
                 return false;
 
-            if (string.Equals(currentRole, "Owner", StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(role.Name, "Worker", StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(role.Name, "User", StringComparison.OrdinalIgnoreCase))
-                throw new UnauthorizedAccessException("Owneri mogu dodijeliti samo uloge Worker ili User.");
+            if (string.Equals(currentRole, "Owner", StringComparison.OrdinalIgnoreCase))
+            {
+                var targetUser = await _userRepository.GetUserByIdAsync(userId);
+                var targetRoleName = targetUser?.Role?.Name;
+                if (string.Equals(targetRoleName, "Admin", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(targetRoleName, "Owner", StringComparison.OrdinalIgnoreCase))
+                    throw new UnauthorizedAccessException("Owneri ne mogu mijenjati uloge Admin ili Owner korisnika.");
+
+                if (!string.Equals(role.Name, "Worker", StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(role.Name, "User", StringComparison.OrdinalIgnoreCase))
+                    throw new UnauthorizedAccessException("Owneri mogu dodijeliti samo uloge Worker ili User.");
+            }
 
             return await _userRepository.SetRoleAsync(userId, roleId);
         }
 
-        public Task<bool> UpdateColorAsync(Guid userId, string color)
+        public async Task<bool> UpdateColorAsync(Guid userId, string color, Guid currentUserId, string currentRole)
         {
-            return _userRepository.SetColorAsync(userId, color);
+            if (string.Equals(currentRole, "Owner", StringComparison.OrdinalIgnoreCase) && userId != currentUserId)
+            {
+                var targetUser = await _userRepository.GetUserByIdAsync(userId);
+                var targetRoleName = targetUser?.Role?.Name;
+                if (!string.Equals(targetRoleName, "Worker", StringComparison.OrdinalIgnoreCase))
+                    throw new UnauthorizedAccessException("Owneri mogu mijenjati samo svoju boju ili boju Worker korisnika.");
+            }
+
+            return await _userRepository.SetColorAsync(userId, color);
         }
 
         public async Task<List<UserDTO>> GetOwnersAsync()

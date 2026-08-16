@@ -16,7 +16,7 @@ namespace Quintus.Service.Common
         Task<PagedResult<UserDTO>> GetUsersAsync(UserFilter filter);
         Task<List<Role>> GetRolesAsync();
         Task<bool> AssignRoleAsync(Guid userId, Guid roleId, string currentRole);
-        Task<bool> UpdateColorAsync(Guid userId, string color);
+        Task<bool> UpdateColorAsync(Guid userId, string color, Guid currentUserId, string currentRole);
 
         Task<bool> PromoteToOwnerAsync(Guid userId);
         Task<List<UserDTO>> GetOwnersAsync();
