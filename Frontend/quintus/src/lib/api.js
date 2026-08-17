@@ -26,7 +26,6 @@ function addSubscriber(callback) {
 
 // Endpoints that should skip refresh
 const SKIP_REFRESH_ENDPOINTS = [
-  "/auth/getcurrentuser",
   "/auth/login",
   "/auth/register",
   "/auth/logout",

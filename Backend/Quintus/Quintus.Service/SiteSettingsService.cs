@@ -37,6 +37,18 @@ namespace Quintus.Service
             await _siteSettingsRepository.UpdateHeroBackgroundImageUrlAsync(image.Url);
         }
 
+        public async Task UpdateHeroBackgroundImageMobileAsync(Microsoft.AspNetCore.Http.IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                throw new ArgumentException("Datoteka je obavezna.");
+
+            var image = await _imageService.AddImageAsync(file);
+            if (image == null)
+                throw new InvalidOperationException("Prijenos slike nije uspio.");
+
+            await _siteSettingsRepository.UpdateHeroBackgroundImageMobileUrlAsync(image.Url);
+        }
+
         public async Task UpdateTitleAsync(string value)
         {
             await _siteSettingsRepository.UpdateTitleAsync(ValidateRequired(value, "Naslov"));

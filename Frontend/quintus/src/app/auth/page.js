@@ -3,6 +3,7 @@ import styles from "./page.module.css";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getCurrentUser } from "@/services/authService";
+import { getAuthorizedRedirect } from "@/lib/authz";
 
 import RegisterForm from "@/components/RegisterForm/RegisterForm";
 import LoginForm from "@/components/LoginForm/LoginForm";
@@ -36,12 +37,14 @@ function AuthInner() {
     const currentUser = async () => {
       try {
         const result = await getCurrentUser();
-        if (result?.data) router.back();
+        if (result?.data) {
+          router.replace(getAuthorizedRedirect(redirectTo, result.data));
+        }
       } catch (e) {}
     };
 
     currentUser();
-  }, [router]);
+  }, [redirectTo, router]);
 
   const showPostRegister = Boolean(registeredInfo);
 

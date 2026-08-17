@@ -159,42 +159,6 @@ function ProfilePageInner() {
                   <div className={styles.value}>{phone || "—"}</div>
                 </div>
               </div>
-
-              <div className={styles.requestsBlock}>
-                <div className={styles.requestsText}>
-                  <p className={styles.requestsTitle}>
-                    {isViewingOther ? "Zahtjevi korisnika" : "Moji zahtjevi"}
-                  </p>
-                  <p className={styles.requestsSubtitle}>
-                    { isViewingOther ? "Broj zahtjeva korisnika." : "Broj zahtjeva koje ste kreirali." }
-                  </p>
-                </div>
-                <div className={styles.requestsMeta}>
-                  <span className={styles.requestsCount} title="U izradi">
-                    {requestsCount}
-                  </span>
-                  {requestsCount === 0 ? (
-                    <span
-                      className={`${styles.button} ${styles.buttonSecondary} ${styles.buttonDisabled}`}
-                      aria-disabled="true"
-                      title="Nema zahtjeva"
-                    >
-                      Otvori
-                    </span>
-                  ) : (
-                    <Link
-                      href={
-                        isViewingOther
-                          ? `/requests?userId=${encodeURIComponent(requestedId)}`
-                          : "/requests"
-                      }
-                      className={`${styles.button} ${styles.buttonSecondary}`}
-                    >
-                      Otvori
-                    </Link>
-                  )}
-                </div>
-              </div>
             </>
           ) : (
             <div className={styles.notice}>Nema podataka o profilu.</div>
