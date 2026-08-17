@@ -65,6 +65,14 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // A 401 for a public visitor is not an expired session and must not force
+    // navigation to the login page.
+    const accessToken = localStorage.getItem("accessToken");
+    const refreshToken = localStorage.getItem("refreshToken");
+    if (!accessToken && !refreshToken) {
+      return Promise.reject(error);
+    }
+
     if (isRefreshing) {
       logRefreshEvent("Request queued while refresh is in progress", {
         requestPath,
@@ -89,7 +97,6 @@ api.interceptors.response.use(
     logRefreshEvent("Attempting token refresh", { requestPath });
 
     try {
-      const refreshToken = localStorage.getItem("refreshToken");
       if (!refreshToken) throw new Error("No refresh token available");
 
       const response = await axios.post(
