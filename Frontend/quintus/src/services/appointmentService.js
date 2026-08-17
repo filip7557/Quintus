@@ -8,6 +8,14 @@ export async function getAppointments(weekStart, weekEnd) {
   }
 }
 
+export async function getPendingAppointments() {
+  try {
+    return await api.get("/Appointment/pending");
+  } catch (error) {
+    return error.response;
+  }
+}
+
 export async function createAppointment(data) {
   try {
     return await api.post("/Appointment", data);

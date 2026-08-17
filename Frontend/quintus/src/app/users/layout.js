@@ -2,7 +2,7 @@ export const metadata = {
   title: "Korisnici | Quintus",
   description: "Upravljanje korisnicima i korisničkim ovlastima unutar Quintus sustava.",
   alternates: {
-    canonical: "/admin/users",
+    canonical: "/users",
   },
   robots: {
     index: false,
@@ -10,6 +10,6 @@ export const metadata = {
   },
 };
 
-export default function AdminUsersLayout({ children }) {
+export default function UsersLayout({ children }) {
   return children;
 }

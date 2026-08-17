@@ -6,6 +6,7 @@
         Task UpdateSiteSettingsAsync(Model.Entities.SiteSettings siteSettings);
 
         Task UpdateHeroBackgroundImageAsync(Microsoft.AspNetCore.Http.IFormFile file);
+        Task UpdateHeroBackgroundImageMobileAsync(Microsoft.AspNetCore.Http.IFormFile file);
         Task UpdateTitleAsync(string value);
         Task UpdateDescriptionAsync(string value);
         Task UpdateAboutUsAsync(string value);

@@ -23,6 +23,13 @@ namespace Quintus.Service
                 .ToList();
         }
 
+        public async Task<List<AppointmentResponse>> GetPendingAsync()
+        {
+            return (await _appointmentRepository.GetPendingAsync())
+                .Select(ToResponse)
+                .ToList();
+        }
+
             public async Task<AppointmentResponse?> GetByIdAsync(Guid appointmentId)
             {
                 var appointment = await _appointmentRepository.GetByIdAsync(appointmentId);
@@ -39,7 +46,7 @@ namespace Quintus.Service
             {
                 Id = Guid.NewGuid(),
                 Title = request.Title.Trim(),
-                StartAt = request.StartAt.ToUniversalTime(),
+                StartAt = request.StartAt?.ToUniversalTime(),
                 EndAt = request.EndAt?.ToUniversalTime(),
                 Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim(),
                 CreatedByUserId = currentUser.Id.Value
@@ -60,15 +67,21 @@ namespace Quintus.Service
             if (currentUser?.Id == null)
                 throw new UnauthorizedAccessException("Korisnik nije prijavljen.");
 
-            if (appointment.CreatedByUserId != currentUser.Id.Value)
+            var wasPending = appointment.StartAt == null;
+            if (!wasPending && appointment.CreatedByUserId != currentUser.Id.Value)
                 throw new UnauthorizedAccessException("Samo autor može uređivati termin.");
 
             appointment.Title = request.Title.Trim();
-            appointment.StartAt = request.StartAt.ToUniversalTime();
+            appointment.StartAt = request.StartAt?.ToUniversalTime();
             appointment.EndAt = request.EndAt?.ToUniversalTime();
             appointment.Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim();
+
+            if (wasPending && appointment.StartAt != null)
+                appointment.CreatedByUserId = currentUser.Id.Value;
+
             await _appointmentRepository.UpdateAsync(appointment);
-            return ToResponse(appointment);
+            var updatedAppointment = await _appointmentRepository.GetByIdAsync(appointmentId);
+            return updatedAppointment == null ? null : ToResponse(updatedAppointment);
         }
 
         public async Task<bool> DeleteAsync(Guid appointmentId)
@@ -82,7 +95,8 @@ namespace Quintus.Service
                 throw new UnauthorizedAccessException("Korisnik nije prijavljen.");
 
             var isAdmin = string.Equals(currentUser.Role?.Name, "Admin", StringComparison.OrdinalIgnoreCase);
-            if (!isAdmin && appointment.CreatedByUserId != currentUser.Id.Value)
+            var isPending = appointment.StartAt == null;
+            if (!isPending && !isAdmin && appointment.CreatedByUserId != currentUser.Id.Value)
                 throw new UnauthorizedAccessException("Samo autor ili Admin može obrisati termin.");
 
             return await _appointmentRepository.DeleteAsync(appointment);

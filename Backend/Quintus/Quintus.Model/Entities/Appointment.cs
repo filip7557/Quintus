@@ -4,7 +4,7 @@ namespace Quintus.Model.Entities
     {
         public Guid Id { get; set; }
         public required string Title { get; set; }
-        public DateTime StartAt { get; set; }
+        public DateTime? StartAt { get; set; }
         public DateTime? EndAt { get; set; }
         public string? Notes { get; set; }
         public Guid CreatedByUserId { get; set; }

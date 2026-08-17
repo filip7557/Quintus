@@ -16,8 +16,8 @@
 .colorSwatchBtn { flex:0 0 34px; width:34px; height:34px; padding:0; border:1px solid rgba(255,255,255,.22); border-radius:7px; background:var(--swatch-color,#91120c); cursor:pointer; transition:transform .12s ease, box-shadow .12s ease; } .colorSwatchBtn:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.25); } .colorSwatchBtn:disabled { opacity:.55; cursor:not-allowed; }
 .colorPopover { position:fixed; z-index:2000; width:220px; display:grid; gap:10px; padding:14px; border:1px solid rgba(255,255,255,.16); border-radius:12px; background:#20282d; box-shadow:0 18px 40px rgba(0,0,0,.45); }
 .colorPopover input[type="color"] { width:100%; height:44px; padding:2px; border:1px solid rgba(255,255,255,.18); border-radius:8px; background:transparent; cursor:pointer; }
-.colorPopoverActions { display:flex; justify-content:flex-end; gap:8px; }
-.colorCancelBtn,.colorConfirmBtn { height:36px; padding:0 12px; border-radius:8px; border:1px solid rgba(255,255,255,.16); cursor:pointer; font-weight:600; font-size:.85rem; }
+.colorPopoverActions { display:flex; gap:8px; }
+.colorCancelBtn,.colorConfirmBtn { flex:1; height:36px; padding:0 12px; border-radius:8px; border:1px solid rgba(255,255,255,.16); cursor:pointer; font-weight:600; font-size:.85rem; }
 .colorCancelBtn { background:rgba(18,24,27,.55); color:#eef5ff; }
 .colorConfirmBtn { background:linear-gradient(90deg,#6ea8fe,#8fc6ff); color:#10161a; }
 .colorConfirmBtn:disabled { opacity:.6; cursor:not-allowed; }

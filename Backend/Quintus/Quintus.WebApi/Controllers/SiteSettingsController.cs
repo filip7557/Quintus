@@ -44,6 +44,26 @@ namespace Quintus.WebAPI.Controllers
         }
 
         [Authorize(Roles = "Admin,Owner")]
+        [HttpPatch("heroBackgroundImageMobile")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateHeroBackgroundImageMobileAsync([FromForm] IFormFile file)
+        {
+            try
+            {
+                await _siteSettingsService.UpdateHeroBackgroundImageMobileAsync(file);
+                return Ok("Pozadinska slika za mobitel je uspješno ažurirana.");
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch
+            {
+                return StatusCode(500, "Došlo je do pogreške prilikom ažuriranja pozadinske slike za mobitel.");
+            }
+        }
+
+        [Authorize(Roles = "Admin,Owner")]
         [HttpPatch("title")]
         public Task<IActionResult> UpdateTitleAsync([FromBody] string value) =>
             UpdateAsync(() => _siteSettingsService.UpdateTitleAsync(value));

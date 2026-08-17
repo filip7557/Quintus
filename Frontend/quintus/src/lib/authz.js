@@ -36,7 +36,7 @@ export function getAuthorizedRedirect(path, user) {
     return canUseSchedule(user) ? destination : "/";
   }
 
-  if (destination === "/admin/users") {
+  if (destination === "/users") {
     return isAdminOrOwner(user) ? destination : "/";
   }
 

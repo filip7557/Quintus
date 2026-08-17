@@ -8,6 +8,7 @@ namespace Quintus.Repository.Common
         Task UpdateSiteSettingsAsync(SiteSettings siteSettings);
 
         Task<bool> UpdateHeroBackgroundImageUrlAsync(string value);
+        Task<bool> UpdateHeroBackgroundImageMobileUrlAsync(string value);
         Task<bool> UpdateTitleAsync(string value);
         Task<bool> UpdateDescriptionAsync(string value);
         Task<bool> UpdateAboutUsAsync(string value);

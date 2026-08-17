@@ -26,6 +26,12 @@ namespace Quintus.WebAPI.Controllers
             return Ok(await _appointmentService.GetByRangeAsync(weekStart, weekEnd));
         }
 
+        [HttpGet("pending")]
+        public async Task<IActionResult> GetPending()
+        {
+            return Ok(await _appointmentService.GetPendingAsync());
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] AppointmentRequest request)
         {

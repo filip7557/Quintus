@@ -42,7 +42,7 @@ namespace Quintus.Repository.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("StartAt")
+                    b.Property<DateTime?>("StartAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Title")
@@ -336,6 +336,10 @@ namespace Quintus.Repository.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("HeroBackgroundImageMobileUrl")
                         .IsRequired()
                         .HasColumnType("text");
 

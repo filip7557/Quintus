@@ -54,9 +54,10 @@ export async function getCurrentUser() {
 
   inFlightCurrentUserPromise = api
     .get("/Auth/getCurrentUser", {
-      // Treat "not logged in" as a normal outcome to avoid console noise.
-      validateStatus: (status) =>
-        (status >= 200 && status < 300) || status === 401 || status === 403,
+      // Treat 403 (forbidden) as a normal outcome to avoid console noise.
+      // 401 is intentionally NOT included here so the api.js response
+      // interceptor can catch it and attempt a token refresh.
+      validateStatus: (status) => (status >= 200 && status < 300) || status === 403,
     })
     .then((response) => {
       const ok = response?.status >= 200 && response?.status < 300;

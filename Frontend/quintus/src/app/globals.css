@@ -366,6 +366,20 @@ header {
   pointer-events: none;
 }
 
+.hero-bg--mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .hero-bg--desktop {
+    display: none;
+  }
+
+  .hero-bg--mobile {
+    display: block;
+  }
+}
+
 /* Desktop parallax-style fixed background */
 @media (hover: hover) and (pointer: fine) {
   .hero-bg {

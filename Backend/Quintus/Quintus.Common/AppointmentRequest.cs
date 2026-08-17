@@ -8,7 +8,7 @@ namespace Quintus.Common
         [StringLength(200, MinimumLength = 1)]
         public string Title { get; set; } = string.Empty;
 
-        public DateTime StartAt { get; set; }
+        public DateTime? StartAt { get; set; }
         public DateTime? EndAt { get; set; }
 
         [StringLength(2000)]
@@ -16,8 +16,11 @@ namespace Quintus.Common
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            if (EndAt.HasValue && StartAt >= EndAt.Value)
+            if (EndAt.HasValue && StartAt.HasValue && StartAt.Value >= EndAt.Value)
                 yield return new ValidationResult("Početak mora biti prije završetka.", [nameof(StartAt), nameof(EndAt)]);
+
+            if (!StartAt.HasValue && EndAt.HasValue)
+                yield return new ValidationResult("Završetak zahtijeva postavljen početak.", [nameof(StartAt), nameof(EndAt)]);
         }
     }
 }

@@ -69,12 +69,22 @@ async function patchSingleImage(routeCandidates, file, extraFieldNames = []) {
 export const patchHeroBackgroundImageUrl = (value) =>
   patchField("heroBackgroundImageUrl", value);
 
+export const patchHeroBackgroundImageMobileUrl = (value) =>
+  patchField("heroBackgroundImageMobileUrl", value);
+
 // Image uploads (IFormFile)
 export const patchHeroBackgroundImage = (file) =>
   patchSingleImage(
     ["heroBackgroundImage", "heroBackgroundImageUrl"],
     file,
     ["heroBackgroundImage", "HeroBackgroundImage", "heroBackgroundImageFile", "HeroBackgroundImageFile"]
+  );
+
+export const patchHeroBackgroundImageMobile = (file) =>
+  patchSingleImage(
+    ["heroBackgroundImageMobile", "heroBackgroundImageMobileUrl"],
+    file,
+    ["heroBackgroundImageMobile", "HeroBackgroundImageMobile", "heroBackgroundImageMobileFile", "HeroBackgroundImageMobileFile"]
   );
 
 export const patchTitle = (value) => patchField("title", value);

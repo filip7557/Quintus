@@ -25,7 +25,7 @@ function normalizeColor(value) {
   return /^#[0-9a-f]{6}$/i.test(color) ? color : "#91120c";
 }
 
-export default function UsersAdminPage() {
+export default function UsersPage() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
@@ -77,7 +77,7 @@ export default function UsersAdminPage() {
       const auth = await getCurrentUser();
       if (cancelled) return;
       if (!auth?.data) {
-        router.replace("/auth?from=/admin/users");
+        router.replace("/auth?from=/users");
         return;
       }
       setCurrentUser(auth?.data || null);
@@ -115,7 +115,8 @@ export default function UsersAdminPage() {
     const id = valueOf(user, ["id", "Id"]);
     const rect = event.currentTarget.getBoundingClientRect();
     const left = Math.min(rect.left, window.innerWidth - 260);
-    setColorEditor({ id, color: normalizeColor(valueOf(user, ["color", "Color"], "")), anchor: { top: rect.bottom + 8, left: Math.max(8, left) } });
+    // Popover height is ~150px; anchor its bottom to the button's top so it opens upward, above the button.
+    setColorEditor({ id, color: normalizeColor(valueOf(user, ["color", "Color"], "")), anchor: { bottom: window.innerHeight - rect.top + 8, left: Math.max(8, left) } });
   };
 
   const cancelColorEditor = () => setColorEditor(null);
@@ -189,12 +190,12 @@ export default function UsersAdminPage() {
             </tbody></table>
           </div>
           {colorEditor ? createPortal(
-            <div className={styles.colorPopover} style={{ top: colorEditor.anchor.top, left: colorEditor.anchor.left }} role="dialog" aria-label="Odabir boje" ref={colorPopoverRef}>
-              <input type="color" value={colorEditor.color} onChange={(event) => setColorEditor({ ...colorEditor, color: event.target.value })} />
+            <div className={styles.colorPopover} style={{ bottom: colorEditor.anchor.bottom, left: colorEditor.anchor.left }} role="dialog" aria-label="Odabir boje" ref={colorPopoverRef}>
               <div className={styles.colorPopoverActions}>
                 <button type="button" className={styles.colorCancelBtn} onClick={cancelColorEditor}>Odustani</button>
                 <button type="button" className={styles.colorConfirmBtn} onClick={confirmColorEditor} disabled={savingId === `${colorEditor.id}:color`}>{savingId === `${colorEditor.id}:color` ? "Spremanje..." : "Potvrdi"}</button>
               </div>
+              <input type="color" value={colorEditor.color} onChange={(event) => setColorEditor({ ...colorEditor, color: event.target.value })} />
             </div>,
             document.body
           ) : null}

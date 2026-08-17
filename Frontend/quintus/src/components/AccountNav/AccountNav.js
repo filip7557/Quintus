@@ -5,13 +5,12 @@ import { getCurrentUser, logout, subscribeToAuthChanges } from "@/services/authS
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "./AccountNav.module.css";
-import { canUseSchedule, isAdmin, isAdminOrOwner } from "@/lib/authz";
+import { canUseSchedule, isAdminOrOwner } from "@/lib/authz";
 
 export default function AccountNav() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [offersOpen, setOffersOpen] = useState(false);
-  const [admin, setAdmin] = useState(false);
   const [isAdminOrOwnerUser, setIsAdminOrOwnerUser] = useState(false);
   const [canUseScheduleUser, setCanUseScheduleUser] = useState(false);
   const router = useRouter();
@@ -26,25 +25,21 @@ export default function AccountNav() {
           .then((response) => {
             if (response?.data) {
               setIsLoggedIn(true);
-              setAdmin(isAdmin(response.data));
               setIsAdminOrOwnerUser(isAdminOrOwner(response.data));
               setCanUseScheduleUser(canUseSchedule(response.data));
             } else {
               setIsLoggedIn(false);
-              setAdmin(false);
               setIsAdminOrOwnerUser(false);
               setCanUseScheduleUser(false);
             }
           })
           .catch(() => {
             setIsLoggedIn(false);
-            setAdmin(false);
             setIsAdminOrOwnerUser(false);
             setCanUseScheduleUser(false);
           });
       } else {
         setIsLoggedIn(false);
-        setAdmin(false);
         setIsAdminOrOwnerUser(false);
       }
     };
@@ -90,7 +85,6 @@ export default function AccountNav() {
       await logout();
     } finally {
       setIsLoggedIn(false);
-      setAdmin(false);
       setIsAdminOrOwnerUser(false);
       setCanUseScheduleUser(false);
       setIsOpen(false);
@@ -200,18 +194,9 @@ export default function AccountNav() {
                 </div>
               </div>
             ) : null}
-            {admin ? (
-              <Link
-                href="/admin/owners"
-                className={styles.dropdownItem}
-                onClick={handleItemClick}
-              >
-                Vlasnici (Admin)
-              </Link>
-            ) : null}
             {isAdminOrOwnerUser ? (
               <Link
-                href="/admin/users"
+                href="/users"
                 className={styles.dropdownItem}
                 onClick={handleItemClick}
               >

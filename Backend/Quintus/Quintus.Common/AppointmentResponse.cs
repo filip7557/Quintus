@@ -4,7 +4,7 @@ namespace Quintus.Common
     {
         public Guid Id { get; set; }
         public string Title { get; set; } = string.Empty;
-        public DateTime StartAt { get; set; }
+        public DateTime? StartAt { get; set; }
         public DateTime? EndAt { get; set; }
         public string? Notes { get; set; }
         public Guid CreatedByUserId { get; set; }

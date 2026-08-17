@@ -18,9 +18,18 @@ namespace Quintus.Repository
         {
             return _context.Appointments
                 .Include(appointment => appointment.CreatedByUser)
-                .Where(appointment => appointment.StartAt < weekEnd &&
+                .Where(appointment => appointment.StartAt != null && appointment.StartAt < weekEnd &&
                     (appointment.EndAt == null || appointment.EndAt > weekStart))
                 .OrderBy(appointment => appointment.StartAt)
+                .ToListAsync();
+        }
+
+        public Task<List<Appointment>> GetPendingAsync()
+        {
+            return _context.Appointments
+                .Include(appointment => appointment.CreatedByUser)
+                .Where(appointment => appointment.StartAt == null)
+                .OrderBy(appointment => appointment.CreatedAt)
                 .ToListAsync();
         }
 
