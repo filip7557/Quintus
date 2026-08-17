@@ -9,6 +9,7 @@ import EditButton from "@/components/Common/EditButton";
 import {
   patchDescription,
   patchHeroBackgroundImage,
+  patchHeroBackgroundImageMobile,
   patchTitle,
 } from "@/services/siteSettingsClientService";
 import { useToast } from "@/components/Common/ToastProvider";
@@ -16,6 +17,7 @@ import { useToast } from "@/components/Common/ToastProvider";
 export default function HeroSettingsEditor({
   settingsId,
   heroBackgroundImageUrl,
+  heroBackgroundImageMobileUrl,
   title,
   description,
 }) {
@@ -26,6 +28,7 @@ export default function HeroSettingsEditor({
   const [open, setOpen] = useState(false);
   const [bgOnlyOpen, setBgOnlyOpen] = useState(false);
   const [bgFile, setBgFile] = useState(null);
+  const [bgMobileFile, setBgMobileFile] = useState(null);
   const [t, setT] = useState("");
   const [d, setD] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -36,23 +39,35 @@ export default function HeroSettingsEditor({
     return URL.createObjectURL(bgFile);
   }, [bgFile]);
 
+  const bgMobilePreviewUrl = useMemo(() => {
+    if (!bgMobileFile) return "";
+    return URL.createObjectURL(bgMobileFile);
+  }, [bgMobileFile]);
+
   useLockBodyScroll(open || bgOnlyOpen);
 
   useEffect(() => {
     if (!open && !bgOnlyOpen) return;
     setBgFile(null);
+    setBgMobileFile(null);
     if (open) {
       setT(title || "");
       setD(description || "");
     }
     setError("");
-  }, [open, bgOnlyOpen, heroBackgroundImageUrl, title, description]);
+  }, [open, bgOnlyOpen, heroBackgroundImageUrl, heroBackgroundImageMobileUrl, title, description]);
 
   useEffect(() => {
     return () => {
       if (bgPreviewUrl) URL.revokeObjectURL(bgPreviewUrl);
     };
   }, [bgPreviewUrl]);
+
+  useEffect(() => {
+    return () => {
+      if (bgMobilePreviewUrl) URL.revokeObjectURL(bgMobilePreviewUrl);
+    };
+  }, [bgMobilePreviewUrl]);
 
   if (!canManage) return null;
 
@@ -94,11 +109,19 @@ export default function HeroSettingsEditor({
     setError("");
     setSubmitting(true);
     try {
-      if (!bgFile) throw new Error("Molimo odaberite sliku.");
+      if (!bgFile && !bgMobileFile) throw new Error("Molimo odaberite barem jednu sliku.");
 
-      const resp = await patchHeroBackgroundImage(bgFile);
-      const ok = resp?.status === 200 || resp?.status === 204;
-      if (!ok) throw new Error(resp?.data?.message || "Greška pri spremanju postavki.");
+      if (bgFile) {
+        const resp = await patchHeroBackgroundImage(bgFile);
+        const ok = resp?.status === 200 || resp?.status === 204;
+        if (!ok) throw new Error(resp?.data?.message || "Greška pri spremanju postavki.");
+      }
+
+      if (bgMobileFile) {
+        const resp = await patchHeroBackgroundImageMobile(bgMobileFile);
+        const ok = resp?.status === 200 || resp?.status === 204;
+        if (!ok) throw new Error(resp?.data?.message || "Greška pri spremanju postavki.");
+      }
 
       setBgOnlyOpen(false);
       showToast({ type: "success", title: "Spremljeno", message: "Pozadina je ažurirana." });
@@ -228,11 +251,11 @@ export default function HeroSettingsEditor({
 
             <div className="modal-body">
               <div className="modal-help">
-                Odaberite sliku za pozadinu.
+                Odaberite sliku za pozadinu na širokim ekranima (desktop, laptop, tablet).
               </div>
 
-              <label className="modal-file" aria-label="Odaberi sliku">
-                Odaberi sliku
+              <label className="modal-file" aria-label="Odaberi sliku za širok ekran">
+                Odaberi sliku (širok ekran)
                 <input
                   type="file"
                   accept="image/*"
@@ -259,6 +282,46 @@ export default function HeroSettingsEditor({
                     <Image
                       src={heroBackgroundImageUrl}
                       alt="Trenutna pozadina"
+                      fill
+                      sizes="(max-width: 640px) 100vw, 420px"
+                      style={{ objectFit: "cover" }}
+                    />
+                  </div>
+                </div>
+              ) : null}
+
+              <div className="modal-help" style={{ marginTop: 20 }}>
+                Odaberite sliku za pozadinu na visokim ekranima (mobiteli). Ako nije postavljena, koristi se slika za širok ekran.
+              </div>
+
+              <label className="modal-file" aria-label="Odaberi sliku za visok ekran">
+                Odaberi sliku (mobitel)
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setBgMobileFile(e.target.files?.[0] ?? null)}
+                  disabled={submitting}
+                />
+              </label>
+
+              {bgMobilePreviewUrl ? (
+                <div className="image-preview-grid" style={{ marginTop: 12 }}>
+                  <div className="image-preview-item">
+                    <Image
+                      src={bgMobilePreviewUrl}
+                      alt="Preview"
+                      fill
+                      unoptimized
+                      style={{ objectFit: "cover" }}
+                    />
+                  </div>
+                </div>
+              ) : heroBackgroundImageMobileUrl ? (
+                <div className="image-preview-grid" style={{ marginTop: 12 }}>
+                  <div className="image-preview-item">
+                    <Image
+                      src={heroBackgroundImageMobileUrl}
+                      alt="Trenutna pozadina za mobitel"
                       fill
                       sizes="(max-width: 640px) 100vw, 420px"
                       style={{ objectFit: "cover" }}

@@ -28,7 +28,8 @@ namespace Quintus.Service
                 LastName = user.LastName,
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber,
-                Role = user.Role
+                Role = user.Role,
+                Color = user.Color
             };
         }
     }

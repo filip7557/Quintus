@@ -156,6 +156,7 @@ namespace Quintus.Service
                 PasswordHash = hashedPassword,
                 PhoneNumber = user.PhoneNumber,
                 Role = await _roleService.GetDefaultRoleAsync(),
+                Color = user.Color,
                 EmailVerified = false
             };
 

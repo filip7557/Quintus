@@ -4,7 +4,8 @@ import { useState } from "react";
 import styles from "./LoginForm.module.css";
 import Link from "next/link";
 
-import { login, resendVerification } from "@/services/authService";
+import { getCurrentUser, login, resendVerification } from "@/services/authService";
+import { getAuthorizedRedirect } from "@/lib/authz";
 
 function getApiMessage(payload) {
   if (!payload) return "";
@@ -29,7 +30,7 @@ function isEmailNotVerifiedMessage(message) {
   );
 }
 
-export default function LoginForm({ setIsRegister, router }) {
+export default function LoginForm({ setIsRegister, router, redirectTo = "/" }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -107,10 +108,10 @@ export default function LoginForm({ setIsRegister, router }) {
     setLoading(true);
     try {
       login(email, password)
-        .then((res) => {
+        .then(async (res) => {
           if (res?.status === 200) {
-            // successful login - navigate away
-            router.push("/");
+            const currentUser = await getCurrentUser();
+            router.replace(getAuthorizedRedirect(redirectTo, currentUser?.data));
           } else {
             const message =
               getApiMessage(res?.data) ||

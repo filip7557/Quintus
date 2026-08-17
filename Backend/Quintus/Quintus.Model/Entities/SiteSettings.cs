@@ -4,6 +4,7 @@
     {
         public Guid Id { get; set; } = Guid.NewGuid();
         public string HeroBackgroundImageUrl { get; set; } = "https://www.instalacije-quintus.hr/images/hero.webp";
+        public string HeroBackgroundImageMobileUrl { get; set; } = string.Empty;
         public string Title { get; set; } = "Stručne instalaterske usluge koje nadmašuju očekivanja, bez komplikacija.";
         public string Description { get; set; } = "Primjenjujemo najnovije tehnologije u klimatizaciji, grijanju i vodoinstalacijama za maksimalnu učinkovitost i sigurnost vašeg doma ili poslovnog prostora po pristupačnim cijenama.";
         public List<Service> Services { get; set; } = new();

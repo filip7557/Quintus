@@ -17,6 +17,9 @@ Aplikacija primarno služi kao **digitalna vizitka i prezentacija usluga**, ali 
 - 💼 **Izrada ponuda (Novo!):** Kreiranje detaljnih troškovnika i službenih ponuda direktno iz pristiglog zahtjeva.  
 - 📄 **Generiranje PDF-a:** Automatsko pretvaranje ponuda u profesionalni PDF format spreman za slanje klijentu ili ispis.
 - 📧 **Automatska dostava:** Slanje kreiranih PDF ponuda klijentu putem e-maila direktno iz sustava.
+- 👥 **Upravljanje korisnicima (Novo!):** Pregled svih registriranih korisnika uz pretragu, filtriranje po ulozi i straniciranje. Admin može dodijeliti bilo koju ulogu, dok Owner može dodijeliti samo uloge Worker i User. Admin i Owner mogu postaviti i boju kojom se korisnik prikazuje u rasporedu.
+- 📅 **Raspored (Novo!):** Tjedni i mjesečni prikaz termina dostupan Adminima, Ownerima i Workerima. Novi termini se boje prema boji korisnika koji ih je kreirao, a svaki korisnik može uređivati samo svoje termine (Admin dodatno može brisati bilo koji termin).
+- ⏳ **Termini na čekanju (Novo!):** Termin se može kreirati i bez datuma i vremena te ostaje na čekanju dok ga netko od Admina, Ownera ili Workera ne dovrši unosom datuma i vremena. Nakon dovršetka, termin postaje vlasništvo korisnika koji ga je dovršio.
 
 ---
 

@@ -31,15 +31,13 @@ RUN dotnet publish -c Release -o /app/out
 # ============================
 # Runtime stage
 # ============================
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 
 COPY --from=build /app/out .
-COPY --from=build /src/Quintus ./Quintus
 COPY --from=build /src/entrypoint.sh /app/entrypoint.sh
 
 RUN chmod +x /app/entrypoint.sh
-RUN dotnet tool install --global dotnet-ef --version 8.*
 
 ENV ASPNETCORE_URLS="http://+:8080"
 EXPOSE 8080

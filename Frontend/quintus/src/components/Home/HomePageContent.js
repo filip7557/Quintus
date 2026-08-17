@@ -152,6 +152,11 @@ export default function HomePageContent({ initialSettings }) {
       "HeroBackgroundImageUrl",
       "heroBackgroundImageUrl"
     );
+    const heroBackgroundImageMobileUrl = pick(
+      settings,
+      "HeroBackgroundImageMobileUrl",
+      "heroBackgroundImageMobileUrl"
+    );
     const heroTitle = pick(settings, "Title", "title");
     const heroDescription = pick(settings, "Description", "description");
 
@@ -171,6 +176,7 @@ export default function HomePageContent({ initialSettings }) {
     return {
       settingsId,
       heroBackgroundImageUrl,
+      heroBackgroundImageMobileUrl,
       heroTitle,
       heroDescription,
       services,
@@ -197,6 +203,7 @@ export default function HomePageContent({ initialSettings }) {
           title={viewModel.heroTitle}
           description={viewModel.heroDescription}
           backgroundImageUrl={viewModel.heroBackgroundImageUrl}
+          backgroundImageMobileUrl={viewModel.heroBackgroundImageMobileUrl}
         />
         <ServicesSection services={viewModel.services} />
         <AboutSection

@@ -35,6 +35,7 @@ namespace Quintus.Repository
                 .ForEachAsync(s =>
                 {
                     s.HeroBackgroundImageUrl = siteSettings.HeroBackgroundImageUrl;
+                    s.HeroBackgroundImageMobileUrl = siteSettings.HeroBackgroundImageMobileUrl;
                     s.BrojObrtnice = siteSettings.BrojObrtnice;
                     s.Oib = siteSettings.Oib;
                     s.PhoneNumber = siteSettings.PhoneNumber;
@@ -52,6 +53,9 @@ namespace Quintus.Repository
 
         public Task<bool> UpdateHeroBackgroundImageUrlAsync(string value) =>
             UpdateIfChangedAsync(s => s.HeroBackgroundImageUrl, (s, v) => s.HeroBackgroundImageUrl = v, value);
+
+        public Task<bool> UpdateHeroBackgroundImageMobileUrlAsync(string value) =>
+            UpdateIfChangedAsync(s => s.HeroBackgroundImageMobileUrl, (s, v) => s.HeroBackgroundImageMobileUrl = v, value);
 
         public Task<bool> UpdateTitleAsync(string value) =>
             UpdateIfChangedAsync(s => s.Title, (s, v) => s.Title = v, value);

@@ -28,5 +28,8 @@ namespace Quintus.Model
         public string? PhoneNumber { get; set; }
 
         public Role? Role { get; set; }
+
+        [StringLength(32, MinimumLength = 7)]
+        public string Color { get; set; } = "#91120c";
     }
 }

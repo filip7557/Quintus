@@ -24,6 +24,43 @@ namespace Quintus.Repository.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Quintus.Model.Entities.Appointment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("EndAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("StartAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("StartAt");
+
+                    b.ToTable("Appointments");
+                });
+
             modelBuilder.Entity("Quintus.Model.Entities.EmailVerificationToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -230,6 +267,11 @@ namespace Quintus.Repository.Migrations
                         },
                         new
                         {
+                            Id = new Guid("c2e4f5a6-7b8c-4d9e-9f1a-2b3c4d5e6f7a"),
+                            Name = "Worker"
+                        },
+                        new
+                        {
                             Id = new Guid("ff3b9357-15f5-4d67-a173-eb3402b6dfda"),
                             Name = "User"
                         });
@@ -297,6 +339,10 @@ namespace Quintus.Repository.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("HeroBackgroundImageMobileUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("HeroBackgroundImageUrl")
                         .IsRequired()
                         .HasColumnType("text");
@@ -354,6 +400,10 @@ namespace Quintus.Repository.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -424,6 +474,17 @@ namespace Quintus.Repository.Migrations
                     b.HasIndex("OfferId");
 
                     b.ToTable("Item");
+                });
+
+            modelBuilder.Entity("Quintus.Model.Entities.Appointment", b =>
+                {
+                    b.HasOne("Quintus.Model.Entities.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CreatedByUser");
                 });
 
             modelBuilder.Entity("Quintus.Model.Entities.EmailVerificationToken", b =>

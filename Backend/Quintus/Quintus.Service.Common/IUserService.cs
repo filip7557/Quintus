@@ -1,5 +1,6 @@
 ﻿using Quintus.Model;
 using Quintus.Model.Entities;
+using Quintus.Common;
 
 namespace Quintus.Service.Common
 {
@@ -12,6 +13,10 @@ namespace Quintus.Service.Common
         Task<User?> GetUserByRefreshTokenAsync(string refreshToken);
         Task<bool> RegisterUserAsync(User user);
         Task<bool> UpdateUserAsync(Guid userId, UserDTO updatedUser);
+        Task<PagedResult<UserDTO>> GetUsersAsync(UserFilter filter);
+        Task<List<Role>> GetRolesAsync();
+        Task<bool> AssignRoleAsync(Guid userId, Guid roleId, string currentRole);
+        Task<bool> UpdateColorAsync(Guid userId, string color, Guid currentUserId, string currentRole);
 
         Task<bool> PromoteToOwnerAsync(Guid userId);
         Task<List<UserDTO>> GetOwnersAsync();
