@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import NavBar from "@/components/NavBar/NavBar";
 import { getCurrentUser } from "@/services/authService";
@@ -64,7 +64,9 @@ export default function SchedulePage() {
   const [error, setError] = useState("");
   const [isMobile, setIsMobile] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const [showPending, setShowPending] = useState(true);
+  const [showPending, setShowPending] = useState(false);
+  const [showCreateMenu, setShowCreateMenu] = useState(false);
+  const createMenuRef = useRef(null);
 
   const weekDays = useMemo(() => days.map((label, index) => {
     const date = new Date(week);
@@ -129,6 +131,22 @@ export default function SchedulePage() {
     media.addEventListener("change", update);
     return () => media.removeEventListener("change", update);
   }, []);
+
+  useEffect(() => {
+    if (!showCreateMenu) return undefined;
+    const closeOnOutsideClick = (event) => {
+      if (!createMenuRef.current?.contains(event.target)) setShowCreateMenu(false);
+    };
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setShowCreateMenu(false);
+    };
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [showCreateMenu]);
 
   useEffect(() => {
     if (currentUser && canUseSchedule(currentUser)) load();
@@ -229,7 +247,7 @@ export default function SchedulePage() {
           {error ? <div className={styles.error}>{error}</div> : null}
           {pendingAppointments.length > 0 ? <div className={styles.pendingSection}><div className={styles.pendingHeader} onClick={() => { if (!isMobile) setShowPending((value) => !value); }}><h2 className={styles.pendingTitle}>Termini na čekanju ({pendingAppointments.length})</h2><button type="button" className={styles.pendingToggle} aria-expanded={showPending} onClick={(event) => { event.stopPropagation(); setShowPending((value) => !value); }}>{showPending ? "Sakrij" : "Prikaži"}</button></div>{showPending ? <div className={styles.pendingList}>{pendingAppointments.map((appointment) => <button type="button" key={appointment.id} className={styles.pendingItem} style={{ "--pending-color": appointment.createdByColor }} onClick={() => openEdit(appointment)}><strong>{appointment.title}</strong>{appointment.notes ? <span className={styles.pendingNotes}>{appointment.notes}</span> : null}<small>Dodao/la: {appointment.createdByName}</small></button>)}</div> : null}</div> : null}
           {loading ? <div className={styles.notice}>Učitavanje...</div> : <div key={viewMode} className={`${styles.grid} ${styles.calendarView} ${viewMode === "month" ? styles.monthGrid : ""}`}>{calendarDays.map((day) => <div className={`${styles.day} ${viewMode === "month" && day.date.getMonth() !== week.getMonth() ? styles.outsideMonth : ""}`} key={day.key}><button type="button" className={`${styles.dayHeader} ${selectedDate === day.key ? styles.selected : ""}`} onClick={() => openCreateForDay(day.key)}><strong>{viewMode === "month" ? day.date.getDate() : day.label}</strong><span>{viewMode === "month" ? day.label : displayDate(day.date)}</span></button><div className={styles.dayBody} onClick={() => { if (!isMobile) openCreateForDay(day.key); }}>{appointments.filter((appointment) => { const start = dateTimeValue(appointment.startAt); return start && dateKey(start) === day.key; }).map((appointment) => { const editable = String(appointment.createdByUserId).toLowerCase() === String(currentUser?.id ?? currentUser?.Id).toLowerCase(); return <button type="button" key={appointment.id} className={styles.appointment} style={{ "--appointment-color": appointment.createdByColor }} onClick={(event) => { event.stopPropagation(); openEdit(appointment); }} title={editable ? "Uredi termin" : "Termin drugog korisnika"}><span className={styles.time}>{localTime(appointment.startAt)}{appointment.endAt ? `–${localTime(appointment.endAt)}` : ""}</span><strong>{appointment.title}</strong><small>{appointment.createdByName}</small></button>; })}</div></div>)}</div>}
-          <div className={styles.createActions}><button type="button" className={styles.createButton} onClick={() => openCreate()}>Novi termin</button><button type="button" className={styles.secondaryCreateButton} onClick={openCreatePending}>Novi termin na čekanju</button></div>
+          <div className={styles.createActions}><div className={styles.mobileCreateMenu} ref={createMenuRef}><div className={`${styles.mobileCreateOptions} ${showCreateMenu ? styles.mobileCreateOptionsOpen : ""}`} role="menu" aria-hidden={!showCreateMenu}><button type="button" className={`${styles.createButton} ${styles.mobileCreateOption}`} tabIndex={showCreateMenu ? 0 : -1} onClick={() => { setShowCreateMenu(false); openCreate(); }}>Novi termin</button><button type="button" className={`${styles.secondaryCreateButton} ${styles.mobileCreateOption}`} tabIndex={showCreateMenu ? 0 : -1} onClick={() => { setShowCreateMenu(false); openCreatePending(); }}>Novi termin na čekanju</button></div><button type="button" className={`${styles.mobileCreateTrigger} ${showCreateMenu ? styles.mobileCreateTriggerOpen : ""}`} aria-label={showCreateMenu ? "Zatvori izbornik za dodavanje termina" : "Dodaj termin"} aria-expanded={showCreateMenu} onClick={() => setShowCreateMenu((value) => !value)}><span className={styles.mobileCreateTriggerIcon} aria-hidden="true" /></button></div><button type="button" className={styles.createButton} onClick={() => openCreate()}>Novi termin</button><button type="button" className={styles.secondaryCreateButton} onClick={openCreatePending}>Novi termin na čekanju</button></div>
         </div>
       </main>
       {form ? <div className={styles.overlay}><form className={styles.modal} onSubmit={form.readOnly ? (event) => event.preventDefault() : submit}><div className={styles.modalHeader}><h2>{!form.id ? "Novi termin" : form.readOnly ? `Termin – ${form.createdByName}` : form.isPending ? "Dovrši termin (na čekanju)" : "Uredi termin"}</h2><button type="button" onClick={() => { setForm(null); setConfirmingDelete(false); }} aria-label="Zatvori">×</button></div><label>Naslov<input required maxLength="200" value={form.title} readOnly={form.readOnly} disabled={form.readOnly} onChange={(event) => setForm({ ...form, title: event.target.value })} /></label>{!form.id && form.isPending ? null : <div className={styles.formRow}><label><span>Datum</span><input type="date" lang="hr-HR" value={form.date} readOnly={form.readOnly} disabled={form.readOnly} onChange={(event) => setForm({ ...form, date: event.target.value })} /></label><label><span>Početak</span><input type="time" lang="hr-HR" step="60" value={form.startTime} readOnly={form.readOnly} disabled={form.readOnly} onChange={(event) => setForm({ ...form, startTime: event.target.value })} /></label><label><span>Završetak <span className={styles.optional}>(opcionalno)</span></span><input type="time" lang="hr-HR" step="60" value={form.endTime} readOnly={form.readOnly} disabled={form.readOnly} onChange={(event) => setForm({ ...form, endTime: event.target.value })} /></label></div>}<label>Bilješke<textarea maxLength="2000" rows="4" value={form.notes} readOnly={form.readOnly} disabled={form.readOnly} onChange={(event) => setForm({ ...form, notes: event.target.value })} /></label><div className={styles.modalActions}>{form.canDelete ? <button type="button" className={styles.deleteButton} onClick={() => setConfirmingDelete(true)} disabled={saving}>Obriši</button> : null}<button type="button" onClick={() => { setForm(null); setConfirmingDelete(false); }}>{form.readOnly ? "Zatvori" : "Odustani"}</button>{form.readOnly ? null : <button type="submit" disabled={saving}>{saving ? "Spremanje..." : "Spremi"}</button>}</div></form></div> : null}
