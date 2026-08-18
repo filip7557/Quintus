@@ -183,13 +183,19 @@ export default function SchedulePage() {
 
   const submit = async (event) => {
     event.preventDefault();
-    setSaving(true);
     setError("");
     const hasStart = Boolean(form.date && form.startTime);
+    const startDate = hasStart ? new Date(`${form.date}T${form.startTime}`) : null;
+    const endDate = hasStart && form.endTime ? new Date(`${form.date}T${form.endTime}`) : null;
+    if ((startDate && Number.isNaN(startDate.getTime())) || (endDate && Number.isNaN(endDate.getTime()))) {
+      setError("Neispravan datum ili vrijeme termina.");
+      return;
+    }
+    setSaving(true);
     const payload = {
       title: form.title,
-      startAt: hasStart ? new Date(`${form.date}T${form.startTime}`).toISOString() : null,
-      endAt: hasStart && form.endTime ? new Date(`${form.date}T${form.endTime}`).toISOString() : null,
+      startAt: startDate ? startDate.toISOString() : null,
+      endAt: endDate ? endDate.toISOString() : null,
       notes: form.notes,
     };
     const response = form.id ? await updateAppointment(form.id, payload) : await createAppointment(payload);
