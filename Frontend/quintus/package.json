@@ -20,5 +20,14 @@
     "baseline-browser-mapping": "^2.9.14",
     "eslint": "^9",
     "eslint-config-next": "15.5.4"
-  }
+  },
+  "browserslist": [
+    "defaults",
+    "not dead",
+    "iOS >= 12",
+    "Safari >= 12",
+    "Android >= 6",
+    "Chrome >= 60",
+    "Firefox ESR"
+  ]
 }
