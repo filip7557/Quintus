@@ -19,7 +19,10 @@ namespace Quintus.Repository
             return _context.Appointments
                 .Include(appointment => appointment.CreatedByUser)
                 .Where(appointment => appointment.StartAt != null && appointment.StartAt < weekEnd &&
-                    (appointment.EndAt == null || appointment.EndAt > weekStart))
+                    (
+                        (appointment.RepeatUntil == null && (appointment.EndAt == null || appointment.EndAt > weekStart)) ||
+                        (appointment.RepeatUntil != null && appointment.RepeatUntil.Value.Date.AddDays(1) > weekStart)
+                    ))
                 .OrderBy(appointment => appointment.StartAt)
                 .ToListAsync();
         }

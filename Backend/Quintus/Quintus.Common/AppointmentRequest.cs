@@ -10,6 +10,7 @@ namespace Quintus.Common
 
         public DateTime? StartAt { get; set; }
         public DateTime? EndAt { get; set; }
+        public DateTime? RepeatUntil { get; set; }
 
         [StringLength(2000)]
         public string? Notes { get; set; }
@@ -21,6 +22,12 @@ namespace Quintus.Common
 
             if (!StartAt.HasValue && EndAt.HasValue)
                 yield return new ValidationResult("Završetak zahtijeva postavljen početak.", [nameof(StartAt), nameof(EndAt)]);
+
+            if (RepeatUntil.HasValue && !StartAt.HasValue)
+                yield return new ValidationResult("Ponavljanje zahtijeva postavljen početak.", [nameof(StartAt), nameof(RepeatUntil)]);
+
+            if (RepeatUntil.HasValue && StartAt.HasValue && RepeatUntil.Value.Date < StartAt.Value.Date)
+                yield return new ValidationResult("Datum ponavljanja mora biti nakon početka.", [nameof(StartAt), nameof(RepeatUntil)]);
         }
     }
 }
