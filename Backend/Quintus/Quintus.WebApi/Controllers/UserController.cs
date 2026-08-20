@@ -60,6 +60,13 @@ namespace Quintus.WebAPI.Controllers
         }
 
         [Authorize(Roles = "Admin,Owner")]
+        [HttpGet("appointment-owners")]
+        public async Task<IActionResult> GetAppointmentOwners()
+        {
+            return Ok(await _userService.GetAppointmentOwnersAsync());
+        }
+
+        [Authorize(Roles = "Admin,Owner")]
         [HttpPut("{userId:guid}/role")]
         public async Task<IActionResult> AssignRole(Guid userId, [FromBody] RoleAssignmentRequest request)
         {

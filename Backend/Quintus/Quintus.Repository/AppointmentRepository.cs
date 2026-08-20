@@ -53,6 +53,7 @@ namespace Quintus.Repository
         public async Task<bool> UpdateAsync(Appointment appointment)
         {
             appointment.UpdatedAt = DateTime.UtcNow;
+            _context.Appointments.Update(appointment);
             return await _context.SaveChangesAsync() > 0;
         }
 

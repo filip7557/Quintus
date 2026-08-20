@@ -140,6 +140,17 @@ namespace Quintus.Service
             }).ToList();
         }
 
+        public async Task<List<UserDTO>> GetAppointmentOwnersAsync()
+        {
+            var owners = await _userRepository.GetUsersByRoleNameAsync("Owner");
+            var workers = await _userRepository.GetUsersByRoleNameAsync("Worker");
+            return owners.Concat(workers)
+                .OrderBy(user => user.LastName)
+                .ThenBy(user => user.FirstName)
+                .Select(ToDto)
+                .ToList();
+        }
+
         private static UserDTO ToDto(User user)
         {
             return new UserDTO

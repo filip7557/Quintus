@@ -20,5 +20,6 @@ namespace Quintus.Service.Common
 
         Task<bool> PromoteToOwnerAsync(Guid userId);
         Task<List<UserDTO>> GetOwnersAsync();
+        Task<List<UserDTO>> GetAppointmentOwnersAsync();
     }
 }
