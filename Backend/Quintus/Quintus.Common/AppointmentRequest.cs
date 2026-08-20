@@ -20,9 +20,6 @@ namespace Quintus.Common
             if (EndAt.HasValue && StartAt.HasValue && StartAt.Value >= EndAt.Value)
                 yield return new ValidationResult("Početak mora biti prije završetka.", [nameof(StartAt), nameof(EndAt)]);
 
-            if (!StartAt.HasValue && EndAt.HasValue)
-                yield return new ValidationResult("Završetak zahtijeva postavljen početak.", [nameof(StartAt), nameof(EndAt)]);
-
             if (RepeatUntil.HasValue && !StartAt.HasValue)
                 yield return new ValidationResult("Ponavljanje zahtijeva postavljen početak.", [nameof(StartAt), nameof(RepeatUntil)]);
 

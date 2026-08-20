@@ -16,6 +16,14 @@ export async function getRoles() {
   }
 }
 
+export async function getAppointmentOwners() {
+  try {
+    return await api.get("/User/appointment-owners");
+  } catch (error) {
+    return error.response;
+  }
+}
+
 export async function assignUserRole(userId, roleId) {
   try {
     return await api.put(`/User/${encodeURIComponent(userId)}/role`, { roleId });
