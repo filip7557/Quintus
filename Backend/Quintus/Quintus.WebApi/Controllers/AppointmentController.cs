@@ -58,6 +58,25 @@ namespace Quintus.WebAPI.Controllers
             {
                 return StatusCode(StatusCodes.Status403Forbidden, ex.Message);
             }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize(Roles = "Admin,Owner")]
+        [HttpPut("{appointmentId:guid}/owner")]
+        public async Task<IActionResult> TransferOwnership(Guid appointmentId, [FromBody] AppointmentOwnerUpdateRequest request)
+        {
+            try
+            {
+                var updated = await _appointmentService.TransferOwnershipAsync(appointmentId, request.OwnerUserId);
+                return updated ? NoContent() : NotFound();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpDelete("{appointmentId:guid}")]

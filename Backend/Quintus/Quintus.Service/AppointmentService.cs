@@ -9,11 +9,13 @@ namespace Quintus.Service
     {
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly IAuthService _authService;
+        private readonly IUserRepository _userRepository;
 
-        public AppointmentService(IAppointmentRepository appointmentRepository, IAuthService authService)
+        public AppointmentService(IAppointmentRepository appointmentRepository, IAuthService authService, IUserRepository userRepository)
         {
             _appointmentRepository = appointmentRepository;
             _authService = authService;
+            _userRepository = userRepository;
         }
 
         public async Task<List<AppointmentResponse>> GetByRangeAsync(DateTime weekStart, DateTime weekEnd)
@@ -78,12 +80,29 @@ namespace Quintus.Service
             appointment.RepeatUntil = request.RepeatUntil?.ToUniversalTime();
             appointment.Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim();
 
-            if (wasPending && appointment.StartAt != null)
-                appointment.CreatedByUserId = currentUser.Id.Value;
+            var updated = await _appointmentRepository.UpdateAsync(appointment);
+            if (!updated)
+                return null;
 
-            await _appointmentRepository.UpdateAsync(appointment);
             var updatedAppointment = await _appointmentRepository.GetByIdAsync(appointmentId);
             return updatedAppointment == null ? null : ToResponse(updatedAppointment);
+        }
+
+        public async Task<bool> TransferOwnershipAsync(Guid appointmentId, Guid ownerUserId)
+        {
+            var appointment = await _appointmentRepository.GetByIdAsync(appointmentId);
+            if (appointment == null)
+                return false;
+
+            var newOwner = await _userRepository.GetUserByIdAsync(ownerUserId);
+            var roleName = newOwner?.Role?.Name;
+            if (!string.Equals(roleName, "Owner", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(roleName, "Worker", StringComparison.OrdinalIgnoreCase))
+                throw new ArgumentException("Vlasnik termina mora biti Owner ili Worker korisnik.");
+
+            appointment.CreatedByUserId = ownerUserId;
+            await _appointmentRepository.UpdateAsync(appointment);
+            return true;
         }
 
         public async Task<bool> DeleteAsync(Guid appointmentId)

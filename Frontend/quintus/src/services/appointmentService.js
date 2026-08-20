@@ -32,6 +32,14 @@ export async function updateAppointment(id, data) {
   }
 }
 
+export async function transferAppointmentOwner(id, ownerUserId) {
+  try {
+    return await api.put(`/Appointment/${encodeURIComponent(id)}/owner`, { ownerUserId });
+  } catch (error) {
+    return error.response;
+  }
+}
+
 export async function deleteAppointment(id) {
   try {
     return await api.delete(`/Appointment/${encodeURIComponent(id)}`);
