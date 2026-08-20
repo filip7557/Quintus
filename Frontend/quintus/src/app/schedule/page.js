@@ -42,11 +42,22 @@ function normalize(item) {
     title: item?.title ?? item?.Title ?? "",
     startAt: item?.startAt ?? item?.StartAt,
     endAt: item?.endAt ?? item?.EndAt,
+    repeatUntil: item?.repeatUntil ?? item?.RepeatUntil,
     notes: item?.notes ?? item?.Notes ?? "",
     createdByUserId: item?.createdByUserId ?? item?.CreatedByUserId,
     createdByName: item?.createdByName ?? item?.CreatedByName ?? "",
     createdByColor: item?.createdByColor ?? item?.CreatedByColor ?? "#91120c",
   };
+}
+
+function occursOnDay(appointment, dayKey) {
+  const start = dateTimeValue(appointment.startAt);
+  if (!start) return false;
+  const startKey = dateKey(start);
+  if (startKey === dayKey) return true;
+  const until = dateTimeValue(appointment.repeatUntil);
+  if (!until) return false;
+  return dayKey > startKey && dayKey <= dateKey(until);
 }
 
 export default function SchedulePage() {
@@ -163,11 +174,11 @@ export default function SchedulePage() {
   };
 
   const openCreate = (date = selectedDate || dateKey(new Date())) => {
-    setForm({ id: "", title: "", date, startTime: "08:00", endTime: "", notes: "", canDelete: false, isPending: false });
+    setForm({ id: "", title: "", date, startTime: "08:00", endTime: "", repeatEndDate: "", notes: "", canDelete: false, isPending: false });
   };
 
   const openCreatePending = () => {
-    setForm({ id: "", title: "", date: "", startTime: "", endTime: "", notes: "", canDelete: false, isPending: true });
+    setForm({ id: "", title: "", date: "", startTime: "", endTime: "", repeatEndDate: "", notes: "", canDelete: false, isPending: true });
   };
 
   const openCreateForDay = (date) => {
@@ -182,7 +193,8 @@ export default function SchedulePage() {
     const isOwner = String(appointment.createdByUserId).toLowerCase() === String(currentUser?.id ?? currentUser?.Id).toLowerCase();
     const editable = isPending || isOwner;
     const canDelete = isPending || isOwner || isAdmin(currentUser);
-    setForm({ id: appointment.id, title: appointment.title, date: start ? dateKey(start) : "", startTime: start ? start.toTimeString().slice(0, 5) : "", endTime: end ? end.toTimeString().slice(0, 5) : "", notes: appointment.notes || "", canDelete, readOnly: !editable, isPending, createdByName: appointment.createdByName });
+    const repeatUntil = dateTimeValue(appointment.repeatUntil);
+    setForm({ id: appointment.id, title: appointment.title, date: start ? dateKey(start) : "", startTime: start ? start.toTimeString().slice(0, 5) : "", endTime: end ? end.toTimeString().slice(0, 5) : "", repeatEndDate: repeatUntil ? dateKey(repeatUntil) : "", notes: appointment.notes || "", canDelete, readOnly: !editable, isPending, createdByName: appointment.createdByName });
   };
 
   const remove = async () => {
@@ -206,8 +218,13 @@ export default function SchedulePage() {
     const hasStart = Boolean(form.date && form.startTime);
     const startDate = hasStart ? new Date(`${form.date}T${form.startTime}`) : null;
     const endDate = hasStart && form.endTime ? new Date(`${form.date}T${form.endTime}`) : null;
-    if ((startDate && Number.isNaN(startDate.getTime())) || (endDate && Number.isNaN(endDate.getTime()))) {
+    const repeatUntilDate = hasStart && form.repeatEndDate ? new Date(`${form.repeatEndDate}T00:00`) : null;
+    if ((startDate && Number.isNaN(startDate.getTime())) || (endDate && Number.isNaN(endDate.getTime())) || (repeatUntilDate && Number.isNaN(repeatUntilDate.getTime()))) {
       setError("Neispravan datum ili vrijeme termina.");
+      return;
+    }
+    if (repeatUntilDate && startDate && repeatUntilDate < new Date(`${form.date}T00:00`)) {
+      setError("Datum ponavljanja mora biti nakon početka.");
       return;
     }
     setSaving(true);
@@ -215,6 +232,7 @@ export default function SchedulePage() {
       title: form.title,
       startAt: startDate ? startDate.toISOString() : null,
       endAt: endDate ? endDate.toISOString() : null,
+      repeatUntil: repeatUntilDate ? repeatUntilDate.toISOString() : null,
       notes: form.notes,
     };
     const response = form.id ? await updateAppointment(form.id, payload) : await createAppointment(payload);
@@ -246,11 +264,11 @@ export default function SchedulePage() {
           </div>
           {error ? <div className={styles.error}>{error}</div> : null}
           {pendingAppointments.length > 0 ? <div className={styles.pendingSection}><div className={styles.pendingHeader} onClick={() => { if (!isMobile) setShowPending((value) => !value); }}><h2 className={styles.pendingTitle}>Termini na čekanju ({pendingAppointments.length})</h2><button type="button" className={styles.pendingToggle} aria-expanded={showPending} onClick={(event) => { event.stopPropagation(); setShowPending((value) => !value); }}>{showPending ? "Sakrij" : "Prikaži"}</button></div>{showPending ? <div className={styles.pendingList}>{pendingAppointments.map((appointment) => <button type="button" key={appointment.id} className={styles.pendingItem} style={{ "--pending-color": appointment.createdByColor }} onClick={() => openEdit(appointment)}><strong>{appointment.title}</strong>{appointment.notes ? <span className={styles.pendingNotes}>{appointment.notes}</span> : null}<small>Dodao/la: {appointment.createdByName}</small></button>)}</div> : null}</div> : null}
-          {loading ? <div className={styles.notice}>Učitavanje...</div> : <div key={viewMode} className={`${styles.grid} ${styles.calendarView} ${viewMode === "month" ? styles.monthGrid : ""}`}>{calendarDays.map((day) => <div className={`${styles.day} ${viewMode === "month" && day.date.getMonth() !== week.getMonth() ? styles.outsideMonth : ""}`} key={day.key}><button type="button" className={`${styles.dayHeader} ${selectedDate === day.key ? styles.selected : ""}`} onClick={() => openCreateForDay(day.key)}><strong>{viewMode === "month" ? day.date.getDate() : day.label}</strong><span>{viewMode === "month" ? day.label : displayDate(day.date)}</span></button><div className={styles.dayBody} onClick={() => { if (!isMobile) openCreateForDay(day.key); }}>{appointments.filter((appointment) => { const start = dateTimeValue(appointment.startAt); return start && dateKey(start) === day.key; }).map((appointment) => { const editable = String(appointment.createdByUserId).toLowerCase() === String(currentUser?.id ?? currentUser?.Id).toLowerCase(); return <button type="button" key={appointment.id} className={styles.appointment} style={{ "--appointment-color": appointment.createdByColor }} onClick={(event) => { event.stopPropagation(); openEdit(appointment); }} title={editable ? "Uredi termin" : "Termin drugog korisnika"}><span className={styles.time}>{localTime(appointment.startAt)}{appointment.endAt ? `–${localTime(appointment.endAt)}` : ""}</span><strong>{appointment.title}</strong><small>{appointment.createdByName}</small></button>; })}</div></div>)}</div>}
+          {loading ? <div className={styles.notice}>Učitavanje...</div> : <div key={viewMode} className={`${styles.grid} ${styles.calendarView} ${viewMode === "month" ? styles.monthGrid : ""}`}>{calendarDays.map((day) => <div className={`${styles.day} ${viewMode === "month" && day.date.getMonth() !== week.getMonth() ? styles.outsideMonth : ""}`} key={day.key}><button type="button" className={`${styles.dayHeader} ${selectedDate === day.key ? styles.selected : ""}`} onClick={() => openCreateForDay(day.key)}><strong>{viewMode === "month" ? day.date.getDate() : day.label}</strong><span>{viewMode === "month" ? day.label : displayDate(day.date)}</span></button><div className={styles.dayBody} onClick={() => { if (!isMobile) openCreateForDay(day.key); }}>{appointments.filter((appointment) => occursOnDay(appointment, day.key)).map((appointment) => { const editable = String(appointment.createdByUserId).toLowerCase() === String(currentUser?.id ?? currentUser?.Id).toLowerCase(); return <button type="button" key={appointment.id} className={styles.appointment} style={{ "--appointment-color": appointment.createdByColor }} onClick={(event) => { event.stopPropagation(); openEdit(appointment); }} title={editable ? "Uredi termin" : "Termin drugog korisnika"}><span className={styles.time}>{localTime(appointment.startAt)}{appointment.endAt ? `–${localTime(appointment.endAt)}` : ""}</span><strong>{appointment.title}</strong><small>{appointment.createdByName}</small></button>; })}</div></div>)}</div>}
           <div className={styles.createActions}><div className={styles.mobileCreateMenu} ref={createMenuRef}><div className={`${styles.mobileCreateOptions} ${showCreateMenu ? styles.mobileCreateOptionsOpen : ""}`} role="menu" aria-hidden={!showCreateMenu}><button type="button" className={`${styles.createButton} ${styles.mobileCreateOption}`} tabIndex={showCreateMenu ? 0 : -1} onClick={() => { setShowCreateMenu(false); openCreate(); }}>Novi termin</button><button type="button" className={`${styles.secondaryCreateButton} ${styles.mobileCreateOption}`} tabIndex={showCreateMenu ? 0 : -1} onClick={() => { setShowCreateMenu(false); openCreatePending(); }}>Novi termin na čekanju</button></div><button type="button" className={`${styles.mobileCreateTrigger} ${showCreateMenu ? styles.mobileCreateTriggerOpen : ""}`} aria-label={showCreateMenu ? "Zatvori izbornik za dodavanje termina" : "Dodaj termin"} aria-expanded={showCreateMenu} onClick={() => setShowCreateMenu((value) => !value)}><span className={styles.mobileCreateTriggerIcon} aria-hidden="true" /></button></div><button type="button" className={styles.createButton} onClick={() => openCreate()}>Novi termin</button><button type="button" className={styles.secondaryCreateButton} onClick={openCreatePending}>Novi termin na čekanju</button></div>
         </div>
       </main>
-      {form ? <div className={styles.overlay}><form className={styles.modal} onSubmit={form.readOnly ? (event) => event.preventDefault() : submit}><div className={styles.modalHeader}><h2>{!form.id ? "Novi termin" : form.readOnly ? `Termin – ${form.createdByName}` : form.isPending ? "Dovrši termin (na čekanju)" : "Uredi termin"}</h2><button type="button" onClick={() => { setForm(null); setConfirmingDelete(false); }} aria-label="Zatvori">×</button></div><label>Naslov<input required maxLength="200" value={form.title} readOnly={form.readOnly} disabled={form.readOnly} onChange={(event) => setForm({ ...form, title: event.target.value })} /></label>{!form.id && form.isPending ? null : <div className={styles.formRow}><label><span>Datum</span><input type="date" lang="hr-HR" value={form.date} readOnly={form.readOnly} disabled={form.readOnly} onChange={(event) => setForm({ ...form, date: event.target.value })} /></label><label><span>Početak</span><input type="time" lang="hr-HR" step="60" value={form.startTime} readOnly={form.readOnly} disabled={form.readOnly} onChange={(event) => setForm({ ...form, startTime: event.target.value })} /></label><label><span>Završetak <span className={styles.optional}>(opcionalno)</span></span><input type="time" lang="hr-HR" step="60" value={form.endTime} readOnly={form.readOnly} disabled={form.readOnly} onChange={(event) => setForm({ ...form, endTime: event.target.value })} /></label></div>}<label>Bilješke<textarea maxLength="2000" rows="4" value={form.notes} readOnly={form.readOnly} disabled={form.readOnly} onChange={(event) => setForm({ ...form, notes: event.target.value })} /></label><div className={styles.modalActions}>{form.canDelete ? <button type="button" className={styles.deleteButton} onClick={() => setConfirmingDelete(true)} disabled={saving}>Obriši</button> : null}<button type="button" onClick={() => { setForm(null); setConfirmingDelete(false); }}>{form.readOnly ? "Zatvori" : "Odustani"}</button>{form.readOnly ? null : <button type="submit" disabled={saving}>{saving ? "Spremanje..." : "Spremi"}</button>}</div></form></div> : null}
+      {form ? <div className={styles.overlay}><form className={styles.modal} onSubmit={form.readOnly ? (event) => event.preventDefault() : submit}><div className={styles.modalHeader}><h2>{!form.id ? "Novi termin" : form.readOnly ? `Termin – ${form.createdByName}` : form.isPending ? "Dovrši termin (na čekanju)" : "Uredi termin"}</h2><button type="button" onClick={() => { setForm(null); setConfirmingDelete(false); }} aria-label="Zatvori">×</button></div><label>Naslov<input required maxLength="200" value={form.title} readOnly={form.readOnly} disabled={form.readOnly} onChange={(event) => setForm({ ...form, title: event.target.value })} /></label>{!form.id && form.isPending ? null : <><div className={styles.formRow}><label><span>Datum početka</span><input type="date" lang="hr-HR" value={form.date} readOnly={form.readOnly} disabled={form.readOnly} onChange={(event) => setForm({ ...form, date: event.target.value })} /></label><label><span>Vrijeme početka</span><input type="time" lang="hr-HR" step="60" value={form.startTime} readOnly={form.readOnly} disabled={form.readOnly} onChange={(event) => setForm({ ...form, startTime: event.target.value })} /></label></div><div className={styles.formRow}><label><span>Datum završetka <span className={styles.optional}>(opcionalno)</span></span><input type="date" lang="hr-HR" min={form.date} value={form.repeatEndDate} readOnly={form.readOnly} disabled={form.readOnly} onChange={(event) => setForm({ ...form, repeatEndDate: event.target.value })} /></label><label><span>Vrijeme završetka <span className={styles.optional}>(opcionalno)</span></span><input type="time" lang="hr-HR" step="60" value={form.endTime} readOnly={form.readOnly} disabled={form.readOnly} onChange={(event) => setForm({ ...form, endTime: event.target.value })} /></label></div></>}<label>Bilješke<textarea maxLength="2000" rows="4" value={form.notes} readOnly={form.readOnly} disabled={form.readOnly} onChange={(event) => setForm({ ...form, notes: event.target.value })} /></label><div className={styles.modalActions}>{form.canDelete ? <button type="button" className={styles.deleteButton} onClick={() => setConfirmingDelete(true)} disabled={saving}>Obriši</button> : null}<button type="button" onClick={() => { setForm(null); setConfirmingDelete(false); }}>{form.readOnly ? "Zatvori" : "Odustani"}</button>{form.readOnly ? null : <button type="submit" disabled={saving}>{saving ? "Spremanje..." : "Spremi"}</button>}</div></form></div> : null}
       {confirmingDelete ? <div className="modal-overlay" role="presentation" onClick={(event) => { if (event.target === event.currentTarget && !saving) setConfirmingDelete(false); }}><div className="modal" role="alertdialog" aria-modal="true" aria-label="Potvrda brisanja termina" style={{ maxWidth: "420px" }}><div className="modal-header"><h3>Obrisati termin?</h3><button type="button" className="modal-close" onClick={() => setConfirmingDelete(false)} aria-label="Zatvori" disabled={saving}>×</button></div><div className="modal-body"><p>Ova radnja se ne može poništiti.</p></div><div className="modal-actions"><button type="button" className="modal-secondary" onClick={() => setConfirmingDelete(false)} disabled={saving}>Odustani</button><button type="button" className="modal-danger" onClick={remove} disabled={saving}>{saving ? "Brisanje..." : "Obriši"}</button></div></div></div> : null}
     </>
   );

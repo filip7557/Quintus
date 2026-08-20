@@ -6,6 +6,7 @@ namespace Quintus.Common
         public string Title { get; set; } = string.Empty;
         public DateTime? StartAt { get; set; }
         public DateTime? EndAt { get; set; }
+        public DateTime? RepeatUntil { get; set; }
         public string? Notes { get; set; }
         public Guid CreatedByUserId { get; set; }
         public string CreatedByName { get; set; } = string.Empty;

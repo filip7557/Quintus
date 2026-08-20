@@ -48,6 +48,7 @@ namespace Quintus.Service
                 Title = request.Title.Trim(),
                 StartAt = request.StartAt?.ToUniversalTime(),
                 EndAt = request.EndAt?.ToUniversalTime(),
+                RepeatUntil = request.RepeatUntil?.ToUniversalTime(),
                 Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim(),
                 CreatedByUserId = currentUser.Id.Value
             };
@@ -74,6 +75,7 @@ namespace Quintus.Service
             appointment.Title = request.Title.Trim();
             appointment.StartAt = request.StartAt?.ToUniversalTime();
             appointment.EndAt = request.EndAt?.ToUniversalTime();
+            appointment.RepeatUntil = request.RepeatUntil?.ToUniversalTime();
             appointment.Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim();
 
             if (wasPending && appointment.StartAt != null)
@@ -112,6 +114,7 @@ namespace Quintus.Service
                 Title = appointment.Title,
                 StartAt = appointment.StartAt,
                 EndAt = appointment.EndAt,
+                RepeatUntil = appointment.RepeatUntil,
                 Notes = appointment.Notes,
                 CreatedByUserId = appointment.CreatedByUserId,
                 CreatedByName = creator == null

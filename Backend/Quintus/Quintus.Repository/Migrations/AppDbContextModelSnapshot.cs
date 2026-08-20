@@ -42,6 +42,9 @@ namespace Quintus.Repository.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("text");
 
+                    b.Property<DateTime?>("RepeatUntil")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime?>("StartAt")
                         .HasColumnType("timestamp with time zone");
 
