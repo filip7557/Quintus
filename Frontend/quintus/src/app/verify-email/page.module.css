@@ -13,7 +13,7 @@
 .container::before {
   content: "";
   position: absolute;
-  inset: -20%;
+  inset: 0 -20%;
   background:
     radial-gradient(
       650px circle at 18% 22%,
@@ -32,7 +32,7 @@
     ),
     linear-gradient(180deg, #2e3336 0%, #23272a 100%);
   filter: blur(42px) saturate(125%);
-  transform: scale(1.08);
+  transform: scaleX(1.08);
   opacity: 0.95;
   pointer-events: none;
 }

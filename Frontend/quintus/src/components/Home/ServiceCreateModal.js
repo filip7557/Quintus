@@ -239,7 +239,7 @@ export default function ServiceCreateModal({
 
   return (
     <div
-      className="modal-overlay"
+      className="modal-overlay service-modal-overlay"
       role="presentation"
       onClick={(e) => {
         if (submitting || deleting) return;

@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import NavBar from "@/components/NavBar/NavBar";
 import { getCurrentUser } from "@/services/authService";
-import { assignUserRole, getRoles, getUsers, updateUserColor } from "@/services/userAdminService";
+import { assignUserRole, getRoles, getUsers, hardDeleteUser, restoreUser, softDeleteUser, updateUserColor } from "@/services/userAdminService";
 import { getRoleName, isAdmin, isAdminOrOwner } from "@/lib/authz";
 import styles from "./page.module.css";
 
@@ -42,6 +42,9 @@ export default function UsersPage() {
   const [error, setError] = useState("");
   const [colorEditor, setColorEditor] = useState(null); // { id, color }
   const colorPopoverRef = useRef(null);
+  const [showDeleted, setShowDeleted] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null); // { id, name, mode: "soft" | "hard" | "restore" }
+  const [deleting, setDeleting] = useState(false);
 
   const admin = isAdmin(currentUser);
   const canAccess = isAdminOrOwner(currentUser);
@@ -49,10 +52,10 @@ export default function UsersPage() {
     ? roles
     : roles.filter((role) => ["worker", "user"].includes(roleName(role).toLowerCase()));
 
-  const load = async (nextPage = page, nextPageSize = pageSize) => {
+  const load = async (nextPage = page, nextPageSize = pageSize, nextShowDeleted = showDeleted) => {
     setLoading(true);
     setError("");
-    const response = await getUsers({ search: search.trim() || undefined, role: roleFilter || undefined, page: nextPage, pageSize: nextPageSize });
+    const response = await getUsers({ search: search.trim() || undefined, role: roleFilter || undefined, page: nextPage, pageSize: nextPageSize, showDeleted: admin && nextShowDeleted });
     if (response?.status >= 200 && response.status < 300) {
       const payload = response.data || {};
       const items = Array.isArray(payload) ? payload : payload.items || payload.Items || [];
@@ -146,6 +149,33 @@ export default function UsersPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [colorEditor]);
 
+  const closeDeleteModal = () => {
+    if (deleting) return;
+    setDeleteTarget(null);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const { id, mode } = deleteTarget;
+    setDeleting(true);
+    setError("");
+    const action = mode === "hard" ? hardDeleteUser : mode === "restore" ? restoreUser : softDeleteUser;
+    const response = await action(id);
+    if (!(response?.status >= 200 && response.status < 300)) {
+      setError(response?.data?.message || response?.data || "Greška pri obradi zahtjeva.");
+    } else {
+      await load();
+      setDeleteTarget(null);
+    }
+    setDeleting(false);
+  };
+
+  const toggleShowDeleted = (checked) => {
+    setShowDeleted(checked);
+    load(1, pageSize, checked);
+  };
+
+
   if (!authChecked) {
     return <><NavBar /><main className={styles.container}><div className={styles.card}>Učitavanje...</div></main></>;
   }
@@ -168,11 +198,17 @@ export default function UsersPage() {
             <label className={styles.field}><span>Uloga</span><select value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)}><option value="">Sve uloge</option>{roles.map((role) => <option key={valueOf(role, ["id", "Id"])} value={roleName(role)}>{roleName(role)}</option>)}</select></label>
             <button className={styles.primaryButton} type="submit" disabled={loading}>Primijeni</button>
             <button className={styles.secondaryButton} type="button" onClick={() => { setSearch(""); setRoleFilter(""); load(1, pageSize); }}>Reset</button>
+            {admin ? (
+              <label className={styles.toggleField}>
+                <input type="checkbox" checked={showDeleted} onChange={(event) => toggleShowDeleted(event.target.checked)} />
+                <span>Prikaži obrisane korisnike</span>
+              </label>
+            ) : null}
           </form>
           {error ? <div className={styles.error}>{error}</div> : null}
           <div className={styles.tableWrap}>
-            <table className={styles.table}><thead><tr><th>Korisnik</th><th>Email</th><th>Telefon</th><th>Uloga</th><th>Boja</th></tr></thead><tbody>
-              {loading ? <tr><td colSpan="5">Učitavanje...</td></tr> : users.length === 0 ? <tr><td colSpan="5">Nema korisnika za odabrane filtere.</td></tr> : users.map((user) => {
+            <table className={styles.table}><thead><tr><th>Korisnik</th><th>Email</th><th>Telefon</th><th>Uloga</th><th>Boja</th>{admin ? <th>Akcije</th> : null}</tr></thead><tbody>
+              {loading ? <tr><td colSpan={admin ? 6 : 5}>Učitavanje...</td></tr> : users.length === 0 ? <tr><td colSpan={admin ? 6 : 5}>Nema korisnika za odabrane filtere.</td></tr> : users.map((user) => {
                 const id = valueOf(user, ["id", "Id"]);
                 const currentRole = valueOf(user.role || user.Role, ["name", "Name"], valueOf(user, ["role", "Role"], ""));
                 const currentRoleId = valueOf(
@@ -185,7 +221,20 @@ export default function UsersPage() {
                 const roleOptions = roleLocked ? roles : visibleRoles;
                 const isSelf = String(id).toLowerCase() === String(valueOf(currentUser, ["id", "Id"], "")).toLowerCase();
                 const colorLocked = !admin && !isSelf && ["admin", "owner"].includes(String(currentRole).toLowerCase());
-                return <tr key={id}><td data-label="Korisnik">{valueOf(user, ["firstName", "FirstName"])} {valueOf(user, ["lastName", "LastName"])}</td><td data-label="Email">{valueOf(user, ["email", "Email"])}</td><td data-label="Telefon">{valueOf(user, ["phoneNumber", "PhoneNumber"], "—")}</td><td data-label="Uloga" className={styles.roleCell}><select value={currentRoleId} disabled={roleLocked || savingId === `${id}:role`} title={roleLocked ? "Samo Admin može mijenjati ovu ulogu." : undefined} onChange={(event) => saveRole(user, event.target.value)}>{roleOptions.map((role) => <option key={valueOf(role, ["id", "Id"])} value={valueOf(role, ["id", "Id"])}>{roleName(role)}</option>)}</select></td>{/* full role list only shown so a locked select still displays the correct current role */}<td data-label="Boja"><div className={styles.colorCell}><button type="button" className={styles.colorSwatchBtn} style={{ "--swatch-color": color }} onClick={(event) => { if (!colorLocked) openColorEditor(user, event); }} disabled={colorLocked || savingId === `${id}:color`} title={colorLocked ? "Owneri mogu mijenjati samo svoju boju ili boju Worker korisnika." : undefined} aria-label="Promijeni boju korisnika" /><span>{color}</span></div></td></tr>;
+                const userName = `${valueOf(user, ["firstName", "FirstName"])} ${valueOf(user, ["lastName", "LastName"])}`.trim();
+                const deleteDisabled = isSelf || String(currentRole).toLowerCase() === "admin";
+                return <tr key={id}><td data-label="Korisnik">{valueOf(user, ["firstName", "FirstName"])} {valueOf(user, ["lastName", "LastName"])}</td><td data-label="Email">{valueOf(user, ["email", "Email"])}</td><td data-label="Telefon">{valueOf(user, ["phoneNumber", "PhoneNumber"], "—")}</td><td data-label="Uloga" className={styles.roleCell}><select value={currentRoleId} disabled={roleLocked || savingId === `${id}:role`} title={roleLocked ? "Samo Admin može mijenjati ovu ulogu." : undefined} onChange={(event) => saveRole(user, event.target.value)}>{roleOptions.map((role) => <option key={valueOf(role, ["id", "Id"])} value={valueOf(role, ["id", "Id"])}>{roleName(role)}</option>)}</select></td>{/* full role list only shown so a locked select still displays the correct current role */}<td data-label="Boja"><div className={styles.colorCell}><button type="button" className={styles.colorSwatchBtn} style={{ "--swatch-color": color }} onClick={(event) => { if (!colorLocked) openColorEditor(user, event); }} disabled={colorLocked || savingId === `${id}:color`} title={colorLocked ? "Owneri mogu mijenjati samo svoju boju ili boju Worker korisnika." : undefined} aria-label="Promijeni boju korisnika" /><span>{color}</span></div></td>{admin ? (
+                  <td data-label="Akcije">
+                    {showDeleted ? (
+                      <button type="button" className={styles.secondaryButton} onClick={() => setDeleteTarget({ id, name: userName, mode: "restore" })}>Vrati</button>
+                    ) : (
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button type="button" className={styles.secondaryButton} disabled={deleteDisabled} title={deleteDisabled ? "Ne možete obrisati ovog korisnika." : undefined} onClick={() => setDeleteTarget({ id, name: userName, mode: "soft" })}>Obriši</button>
+                        <button type="button" className="modal-danger" disabled={deleteDisabled} title={deleteDisabled ? "Ne možete obrisati ovog korisnika." : undefined} onClick={() => setDeleteTarget({ id, name: userName, mode: "hard" })}>Obriši trajno</button>
+                      </div>
+                    )}
+                  </td>
+                ) : null}</tr>;
               })}
             </tbody></table>
           </div>
@@ -198,6 +247,34 @@ export default function UsersPage() {
               <input type="color" value={colorEditor.color} onChange={(event) => setColorEditor({ ...colorEditor, color: event.target.value })} />
             </div>,
             document.body
+          ) : null}
+          {deleteTarget ? (
+            <div className="modal-overlay" role="presentation" onClick={(event) => { if (event.target === event.currentTarget) closeDeleteModal(); }}>
+              <div className="modal" role="alertdialog" aria-modal="true" aria-label="Potvrda radnje" style={{ maxWidth: "420px" }}>
+                <div className="modal-header">
+                  <h3>
+                    {deleteTarget.mode === "hard" ? "Trajno obrisati korisnika?" : deleteTarget.mode === "restore" ? "Vratiti korisnika?" : "Obrisati korisnika?"}
+                  </h3>
+                  <button type="button" className="modal-close" onClick={closeDeleteModal} aria-label="Zatvori" disabled={deleting}>×</button>
+                </div>
+                <div className="modal-body">
+                  <p>{deleteTarget.name}</p>
+                  {deleteTarget.mode === "hard" ? (
+                    <p>Ova radnja se ne može poništiti. Svi termini i zahtjevi ovog korisnika bit će trajno obrisani.</p>
+                  ) : deleteTarget.mode === "restore" ? (
+                    <p>Korisnik će ponovno postati vidljiv i moći će se prijaviti.</p>
+                  ) : (
+                    <p>Korisnik će biti sakriven i neće se moći prijaviti, ali podaci ostaju sačuvani. Radnju je moguće poništiti.</p>
+                  )}
+                </div>
+                <div className="modal-actions">
+                  <button type="button" className="modal-secondary" onClick={closeDeleteModal} disabled={deleting}>Odustani</button>
+                  <button type="button" className={deleteTarget.mode === "hard" ? "modal-danger" : "modal-primary"} onClick={confirmDelete} disabled={deleting}>
+                    {deleting ? "Obrada..." : deleteTarget.mode === "hard" ? "Obriši trajno" : deleteTarget.mode === "restore" ? "Vrati" : "Obriši"}
+                  </button>
+                </div>
+              </div>
+            </div>
           ) : null}
           <div className={styles.paginationBar}>
             <div className={styles.paginationInfo}>Stranica {page} od {totalPages}</div>

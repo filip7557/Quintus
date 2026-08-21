@@ -27,6 +27,9 @@ namespace Quintus.Repository
                     return false;
                 }
 
+                // Appointments use Restrict on delete, so they must be removed explicitly; Requests/Images cascade at the DB level.
+                var appointments = await _context.Appointments.Where(a => a.CreatedByUserId == userId).ToListAsync();
+                _context.Appointments.RemoveRange(appointments);
                 _context.Users.Remove(existingUser);
                 return await _context.SaveChangesAsync() > 0;
             }
@@ -37,11 +40,51 @@ namespace Quintus.Repository
             }
         }
 
+        public async Task<bool> SoftDeleteUserAsync(Guid userId)
+        {
+            try
+            {
+                var existingUser = await _context.Users.FindAsync(userId);
+                if (existingUser == null)
+                    return false;
+
+                existingUser.IsDeleted = true;
+                existingUser.DeletedAt = DateTime.UtcNow;
+                existingUser.UpdatedAt = DateTime.UtcNow;
+                return await _context.SaveChangesAsync() > 0;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception occurred while soft deleting user: " + e.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> RestoreUserAsync(Guid userId)
+        {
+            try
+            {
+                var existingUser = await _context.Users.FindAsync(userId);
+                if (existingUser == null)
+                    return false;
+
+                existingUser.IsDeleted = false;
+                existingUser.DeletedAt = null;
+                existingUser.UpdatedAt = DateTime.UtcNow;
+                return await _context.SaveChangesAsync() > 0;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception occurred while restoring user: " + e.Message);
+                return false;
+            }
+        }
+
         public async Task<User?> GetUserByEmailAndPasswordAsync(string email, string password)
         {
             try
             {
-                return await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(r => r.Email == email && r.PasswordHash == password);
+                return await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(r => r.Email == email && r.PasswordHash == password && !r.IsDeleted);
             }
             catch (Exception e)
             {
@@ -54,7 +97,7 @@ namespace Quintus.Repository
         {
             try
             {
-                var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(r => r.Email == email);
+                var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(r => r.Email == email && !r.IsDeleted);
                 return user;
             }
             catch (Exception e)
@@ -68,7 +111,7 @@ namespace Quintus.Repository
         {
             try
             {
-                return await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(r => r.Id == userId);
+                return await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(r => r.Id == userId && !r.IsDeleted);
             }
             catch (Exception e)
             {
@@ -82,7 +125,20 @@ namespace Quintus.Repository
             return await _context.Users
                 .Include(u => u.RefreshTokens)
                 .Include(u => u.Role)
-                .SingleOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == refreshToken));
+                .SingleOrDefaultAsync(u => u.RefreshTokens.Any(t => t.Token == refreshToken) && !u.IsDeleted);
+        }
+
+        public async Task<User?> GetUserByIdIncludingDeletedAsync(Guid userId)
+        {
+            try
+            {
+                return await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(r => r.Id == userId);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception occurred while retrieving user by ID (including deleted): " + e.Message);
+                return null;
+            }
         }
 
         public async Task<bool> RegisterUserAsync(User user)
@@ -214,7 +270,7 @@ namespace Quintus.Repository
         {
             return _context.Users
                 .Include(u => u.Role)
-                .Where(u => u.Role != null && u.Role.Name == roleName)
+                .Where(u => u.Role != null && u.Role.Name == roleName && !u.IsDeleted)
                 .ToListAsync();
         }
 
@@ -223,6 +279,7 @@ namespace Quintus.Repository
             var query = _context.Users
                 .Include(u => u.Role)
                 .AsNoTracking()
+                .Where(u => u.IsDeleted == filter.ShowDeleted)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(filter.Search))

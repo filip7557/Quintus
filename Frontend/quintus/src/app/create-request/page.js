@@ -116,7 +116,7 @@ export default function CreateRequestPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 maxLength={500}
-                rows={6}
+                rows={5}
                 required
               />
               <span className={styles.charCount}>

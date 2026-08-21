@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import NavBar from "@/components/NavBar/NavBar";
+import useLockBodyScroll from "@/hooks/useLockBodyScroll";
 import { getCurrentUser } from "@/services/authService";
 import {
   createAppointment,
@@ -97,6 +98,8 @@ export default function SchedulePage() {
   const [loadingOwnerTransfer, setLoadingOwnerTransfer] = useState(false);
   const [savingOwnerTransfer, setSavingOwnerTransfer] = useState(false);
   const createMenuRef = useRef(null);
+
+  useLockBodyScroll(Boolean(form || confirmingDelete || ownerTransfer));
 
   const weekDays = useMemo(
     () =>

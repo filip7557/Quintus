@@ -17,9 +17,31 @@ namespace Quintus.Service
             _roleRepository = roleRepository;
         }
 
-        public async Task<bool> DeleteUserAsync(Guid userId)
+        public async Task<bool> DeleteUserAsync(Guid userId, Guid currentUserId)
         {
+            await EnsureCanDeleteAsync(userId, currentUserId);
             return await _userRepository.DeleteUserAsync(userId);
+        }
+
+        public async Task<bool> SoftDeleteUserAsync(Guid userId, Guid currentUserId)
+        {
+            await EnsureCanDeleteAsync(userId, currentUserId);
+            return await _userRepository.SoftDeleteUserAsync(userId);
+        }
+
+        public async Task<bool> RestoreUserAsync(Guid userId)
+        {
+            return await _userRepository.RestoreUserAsync(userId);
+        }
+
+        private async Task EnsureCanDeleteAsync(Guid targetUserId, Guid currentUserId)
+        {
+            if (targetUserId == currentUserId)
+                throw new UnauthorizedAccessException("Ne možete obrisati vlastiti račun.");
+
+            var targetUser = await _userRepository.GetUserByIdIncludingDeletedAsync(targetUserId);
+            if (string.Equals(targetUser?.Role?.Name, "Admin", StringComparison.OrdinalIgnoreCase))
+                throw new UnauthorizedAccessException("Ne možete obrisati drugog Admin korisnika.");
         }
 
         public async Task<User?> GetUserByEmailAndPasswordAsync(string email, string password)
