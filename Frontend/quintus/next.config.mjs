@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     output: 'standalone',
+    experimental: {
+        inlineCss: true,
+    },
     turbopack: {
         root: process.cwd(),
     },
