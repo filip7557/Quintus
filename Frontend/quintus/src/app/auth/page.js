@@ -12,17 +12,17 @@ function AuthInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isRegister, setIsRegister] = useState(false);
-  const redirectTo = searchParams.get("from") || "/";
+  const redirectTo = searchParams?.get("from") || "/";
 
   const [registeredInfo, setRegisteredInfo] = useState(null);
 
   const registeredEmail = useMemo(() => {
-    const value = searchParams.get("email");
+    const value = searchParams?.get("email");
     return value ? String(value).trim() : "";
   }, [searchParams]);
 
   const showRegisteredNotice = useMemo(() => {
-    const flag = String(searchParams.get("registered") || "").toLowerCase();
+    const flag = String(searchParams?.get("registered") || "").toLowerCase();
     return flag === "1" || flag === "true" || flag === "yes";
   }, [searchParams]);
 

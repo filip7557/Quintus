@@ -71,8 +71,12 @@ namespace Quintus.Service
                 throw new UnauthorizedAccessException("Korisnik nije prijavljen.");
 
             var wasPending = appointment.StartAt == null;
-            if (!wasPending && appointment.CreatedByUserId != currentUser.Id.Value)
+            var isAdminOrOwner = string.Equals(currentUser.Role?.Name, "Admin", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(currentUser.Role?.Name, "Owner", StringComparison.OrdinalIgnoreCase);
+            if (!wasPending && !isAdminOrOwner && appointment.CreatedByUserId != currentUser.Id.Value)
                 throw new UnauthorizedAccessException("Samo autor može uređivati termin.");
+            if (wasPending && !request.StartAt.HasValue)
+                throw new ArgumentException("Za dovršetak termina potrebno je unijeti datum i vrijeme početka.");
 
             appointment.Title = request.Title.Trim();
             appointment.StartAt = request.StartAt?.ToUniversalTime();

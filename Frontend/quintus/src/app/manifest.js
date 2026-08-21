@@ -3,12 +3,12 @@ export default function manifest() {
     name: "Quintus",
     short_name: "Quintus",
     description:
-      "Klimatizacija, grijanje i vodoinstalacije – stručne usluge po pristupačnim cijenama.",
+      "Klimatizacija, grijanje i vodoinstalacije – Pouzdana usluga, kvalitetna izvedba i dugoročna rješenja prilagođena vašim potrebama.",
     start_url: "/",
     scope: "/",
     display: "standalone",
-    background_color: "#ffffff",
-    theme_color: "#101010",
+    background_color: "#333a3d",
+    theme_color: "#007bff",
     icons: [
       {
         src: "/favicon.ico",

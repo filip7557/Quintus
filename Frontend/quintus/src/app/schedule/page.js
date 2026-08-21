@@ -216,6 +216,7 @@ export default function SchedulePage() {
   };
 
   const openCreate = (date = selectedDate || dateKey(new Date())) => {
+    setError("");
     setForm({
       id: "",
       title: "",
@@ -230,6 +231,7 @@ export default function SchedulePage() {
   };
 
   const openCreatePending = () => {
+    setError("");
     setForm({
       id: "",
       title: "",
@@ -249,21 +251,23 @@ export default function SchedulePage() {
   };
 
   const openEdit = (appointment) => {
+    setError("");
     const start = dateTimeValue(appointment.startAt);
     const end = dateTimeValue(appointment.endAt);
+    const repeatUntil = dateTimeValue(appointment.repeatUntil);
     const isPending = !appointment.startAt;
     const isOwner =
       String(appointment.createdByUserId).toLowerCase() ===
       String(currentUser?.id ?? currentUser?.Id).toLowerCase();
-    const editable = isPending || isOwner;
+    const editable = isPending || isOwner || isAdminOrOwner(currentUser);
     const canDelete = isPending || isOwner || isAdmin(currentUser);
     setForm({
       id: appointment.id,
       title: appointment.title,
       date: start ? dateKey(start) : "",
-      startTime: start ? start.toTimeString().slice(0, 5) : "",
+      startTime: start ? start.toTimeString().slice(0, 5) : isPending ? "08:00" : "",
       endTime: end ? end.toTimeString().slice(0, 5) : "",
-      repeatEndDate: end ? dateKey(end) : "",
+      repeatEndDate: end ? dateKey(end) : repeatUntil ? dateKey(repeatUntil) : "",
       notes: appointment.notes || "",
       canDelete,
       readOnly: !editable,
@@ -285,6 +289,7 @@ export default function SchedulePage() {
       setForm(null);
       await load();
     } else {
+      setConfirmingDelete(false);
       setError(response?.data?.message || "Greška pri brisanju termina.");
     }
     setSaving(false);
@@ -341,6 +346,7 @@ export default function SchedulePage() {
       setForm(null);
       await load();
     } else {
+      setOwnerTransfer(null);
       setError(
         response?.data?.message || "Greška pri promjeni vlasnika termina.",
       );
@@ -352,14 +358,20 @@ export default function SchedulePage() {
     event.preventDefault();
     setError("");
     const hasStart = Boolean(form.date && form.startTime);
-    const hasEnd = Boolean(form.repeatEndDate && form.endTime);
+    const hasEndDate = Boolean(form.repeatEndDate);
+    const hasEndTime = Boolean(form.endTime);
+    const hasEnd = hasEndDate && hasEndTime;
     if (
       (!hasStart && (!form.isPending || form.date || form.startTime))
     ) {
-      setError("Za početak termina unesite datum i vrijeme početka.");
+      setError("Za spremanje termina unesite datum i vrijeme početka.");
       return;
     }
-    if (form.endTime && !form.repeatEndDate) {
+    if (form.id && form.isPending && !hasStart) {
+      setError("Za spremanje termina unesite datum i vrijeme početka.");
+      return;
+    }
+    if (hasEndTime && !hasEndDate) {
       setError("Za vrijeme završetka unesite datum završetka.");
       return;
     }
@@ -380,12 +392,27 @@ export default function SchedulePage() {
       setError("Završetak mora biti nakon početka.");
       return;
     }
+    const repeatUntil = hasEndDate && !hasEndTime
+      ? new Date(`${form.repeatEndDate}T12:00:00`)
+      : null;
+    if (repeatUntil && Number.isNaN(repeatUntil.getTime())) {
+      setError("Neispravan datum završetka termina.");
+      return;
+    }
+    if (
+      repeatUntil &&
+      startDate &&
+      dateKey(repeatUntil) < dateKey(startDate)
+    ) {
+      setError("Datum završetka mora biti na dan početka ili nakon njega.");
+      return;
+    }
     setSaving(true);
     const payload = {
       title: form.title,
       startAt: startDate ? startDate.toISOString() : null,
       endAt: endDate ? endDate.toISOString() : null,
-      repeatUntil: null,
+      repeatUntil: repeatUntil ? repeatUntil.toISOString() : null,
       notes: form.notes,
     };
     const response = form.id
@@ -694,12 +721,18 @@ export default function SchedulePage() {
                 onClick={() => {
                   setForm(null);
                   setConfirmingDelete(false);
+                  setError("");
                 }}
                 aria-label="Zatvori"
               >
                 ×
               </button>
             </div>
+            {error ? (
+              <div className={styles.error} role="alert">
+                {error}
+              </div>
+            ) : null}
             <label>
               Naslov
               <input
@@ -821,6 +854,7 @@ export default function SchedulePage() {
                 onClick={() => {
                   setForm(null);
                   setConfirmingDelete(false);
+                  setError("");
                 }}
               >
                 {form.readOnly ? "Zatvori" : "Odustani"}
