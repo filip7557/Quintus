@@ -22,10 +22,10 @@ export const viewport = {
 export const metadata = {
   metadataBase: getMetadataBase(),
   applicationName: "Quintus",
-  title: "Quintus | Stručne instalaterske usluge",
+  title: "Quintus | Obrt za vodu, plin, grijanje i klimatizaciju - Našice",
   description:
-    "Klimatizacija, grijanje i vodoinstalacije – stručne usluge po pristupačnim cijenama.",
-  manifest: "/site.webmanifest",
+    "Klimatizacija, grijanje i vodoinstalacije – Pouzdana usluga, kvalitetna izvedba i dugoročna rješenja prilagođena vašim potrebama.",
+  manifest: "/manifest.webmanifest",
   alternates: {
     canonical: "https://www.instalacije-quintus.hr",
     languages: {
@@ -33,11 +33,11 @@ export const metadata = {
     },
   },
   openGraph: {
-    title: "Quintus | Stručne instalaterske usluge",
+    title: "Quintus | Obrt za vodu, plin, grijanje i klimatizaciju - Našice",
     description:
-      "Klimatizacija, grijanje i vodoinstalacije – stručne usluge po pristupačnim cijenama.",
+      "Klimatizacija, grijanje i vodoinstalacije – Pouzdana usluga, kvalitetna izvedba i dugoročna rješenja prilagođena vašim potrebama.",
     url: "/",
-    siteName: "Quintus | Stručne instalaterske usluge",
+    siteName: "Quintus | Obrt za vodu, plin, grijanje i klimatizaciju - Našice",
     locale: "hr_HR",
     type: "website",
     images: [
@@ -51,9 +51,9 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Quintus | Stručne instalaterske usluge",
+    title: "Quintus | Obrt za vodu, plin, grijanje i klimatizaciju - Našice",
     description:
-      "Klimatizacija, grijanje i vodoinstalacije – stručne usluge po pristupačnim cijenama.",
+      "Klimatizacija, grijanje i vodoinstalacije – Pouzdana usluga, kvalitetna izvedba i dugoročna rješenja prilagođena vašim potrebama.",
     images: [
       "https://www.instalacije-quintus.hr/_next/image?url=https%3A%2F%2Fres.cloudinary.com%2Fdzhmn7c4d%2Fimage%2Fupload%2Fv1780157613%2Fquintus_images%2Fzv34ptnsgknm1jookolw.png&w=640&q=75",
     ],
