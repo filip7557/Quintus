@@ -12,6 +12,8 @@ namespace Quintus.Repository.Common
 
         Task<User?> GetUserByIdAsync(Guid userId);
 
+        Task<User?> GetUserByIdIncludingDeletedAsync(Guid userId);
+
         Task<User?> GetUserByRefreshTokenAsync(string refreshToken);
 
         Task<User?> GetUserByEmailAndPasswordAsync(string email, string password);
@@ -19,6 +21,10 @@ namespace Quintus.Repository.Common
         Task<bool> UpdateUserAsync(Guid userId, UserDTO updatedUser);
 
         Task<bool> DeleteUserAsync(Guid userId);
+
+        Task<bool> SoftDeleteUserAsync(Guid userId);
+
+        Task<bool> RestoreUserAsync(Guid userId);
 
         Task<bool> SetEmailVerifiedAsync(Guid userId);
 

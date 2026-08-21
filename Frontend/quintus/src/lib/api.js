@@ -99,9 +99,10 @@ api.interceptors.response.use(
     try {
       if (!refreshToken) throw new Error("No refresh token available");
 
+      // Backend binds RefreshInfo.Token, so the payload key must be "token".
       const response = await axios.post(
         `${api.defaults.baseURL}/Auth/refresh`,
-        { refreshToken }
+        { token: refreshToken }
       );
 
       const newAccessToken = response?.data?.accessToken || response?.data?.AccessToken;

@@ -98,5 +98,45 @@ namespace Quintus.WebAPI.Controllers
                 return StatusCode(StatusCodes.Status403Forbidden, ex.Message);
             }
         }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{userId:guid}/soft-delete")]
+        public async Task<IActionResult> SoftDeleteUser(Guid userId)
+        {
+            try
+            {
+                var currentUserId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+                var deleted = await _userService.SoftDeleteUserAsync(userId, currentUserId);
+                return deleted ? Ok() : NotFound("Korisnik nije pronađen.");
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, ex.Message);
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{userId:guid}/restore")]
+        public async Task<IActionResult> RestoreUser(Guid userId)
+        {
+            var restored = await _userService.RestoreUserAsync(userId);
+            return restored ? Ok() : NotFound("Korisnik nije pronađen.");
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{userId:guid}")]
+        public async Task<IActionResult> DeleteUser(Guid userId)
+        {
+            try
+            {
+                var currentUserId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+                var deleted = await _userService.DeleteUserAsync(userId, currentUserId);
+                return deleted ? Ok() : NotFound("Korisnik nije pronađen.");
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, ex.Message);
+            }
+        }
     }
 }
