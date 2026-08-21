@@ -6,7 +6,9 @@ namespace Quintus.Service.Common
 {
     public interface IUserService
     {
-        Task<bool> DeleteUserAsync(Guid userId);
+        Task<bool> DeleteUserAsync(Guid userId, Guid currentUserId);
+        Task<bool> SoftDeleteUserAsync(Guid userId, Guid currentUserId);
+        Task<bool> RestoreUserAsync(Guid userId);
         Task<User?> GetUserByEmailAndPasswordAsync(string email, string password);
         Task<User?> GetUserByEmailAsync(string email);
         Task<UserDTO?> GetUserByIdAsync(Guid userId);

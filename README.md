@@ -26,7 +26,7 @@ Aplikacija primarno služi kao **digitalna vizitka i prezentacija usluga**, ali 
 ## 🖥️ Tehnologije
 
 ### ⚙️ Backend
-- **C# .NET 9.0** – Robusno, moderno i brzo poslužiteljsko okruženje.
+- **C# .NET 10.0** – Robusno, moderno i brzo poslužiteljsko okruženje.
 - **Entity Framework Core** – Napredni ORM za efikasnu komunikaciju s bazom.
 - **PostgreSQL** – Pouzdana i skalabilna relacijska baza podataka.
 - **REST API** – Strukturirana i sigurna komunikacija s frontendom.

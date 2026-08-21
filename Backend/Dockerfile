@@ -1,7 +1,7 @@
 # ============================
 # Build stage
 # ============================
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copy the solution and project files first (for caching)
@@ -31,8 +31,12 @@ RUN dotnet publish -c Release -o /app/out
 # ============================
 # Runtime stage
 # ============================
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
+
+# Npgsql depends on libgssapi_krb5.so.2 for Kerberos/GSSAPI support, not present in the base image
+RUN apt-get update && apt-get install -y --no-install-recommends libgssapi-krb5-2 \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /app/out .
 COPY --from=build /src/entrypoint.sh /app/entrypoint.sh
