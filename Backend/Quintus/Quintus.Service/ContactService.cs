@@ -1,5 +1,3 @@
-using System.Text;
-using Microsoft.Extensions.Configuration;
 using Quintus.Common;
 using Quintus.Service.Common;
 
@@ -8,12 +6,12 @@ namespace Quintus.Service
     public class ContactService : IContactService
     {
         private readonly IEmailService _emailService;
-        private readonly IConfiguration _config;
+        private readonly ISiteSettingsService _siteSettingsService;
 
-        public ContactService(IEmailService emailService, IConfiguration config)
+        public ContactService(IEmailService emailService, ISiteSettingsService siteSettingsService)
         {
             _emailService = emailService;
-            _config = config;
+            _siteSettingsService = siteSettingsService;
         }
 
         public async Task SendContactAsync(ContactFormRequest request)
@@ -32,26 +30,16 @@ namespace Quintus.Service
             if (string.IsNullOrWhiteSpace(message))
                 throw new ArgumentException("Poruka je obavezna.");
 
-            var to = _config["App:ContactEmail"];
+            var siteSettings = await _siteSettingsService.GetSiteSettingsAsync();
+            var to = siteSettings?.ContactEmail?.Trim();
             if (string.IsNullOrWhiteSpace(to))
-                throw new InvalidOperationException("Nedostaje konfiguracija App:ContactEmail.");
+                throw new InvalidOperationException("Nedostaje konfiguracija kontakt e-mail adrese u postavkama stranice.");
 
             var mailto = $"mailto:{email}";
-
             var subject = $"Kontakt (web): {fullName}";
 
-            var intro = "Zaprimljena je nova poruka putem kontakt obrasca.";
-            var body = new StringBuilder();
-            body.AppendLine(intro);
-            body.AppendLine();
-            body.AppendLine($"Ime i prezime: {fullName}");
-            body.AppendLine($"E-mail: {email}");
-            body.AppendLine();
-            body.AppendLine("Poruka:");
-            body.AppendLine(message);
-
             var html = EmailTemplates.Build(
-                title: "Nova poruka s kontakt obrasca",
+                title: "Quintus - Nova poruka s kontakt obrasca",
                 intro: $"Zaprimljena je nova poruka putem kontakt obrasca.\n\nIme i prezime: {fullName}\nE-mail: {email}\n\nPoruka:\n{message}",
                 ctaText: "Odgovori",
                 ctaUrl: mailto,
