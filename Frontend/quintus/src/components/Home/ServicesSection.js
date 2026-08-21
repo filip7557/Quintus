@@ -22,11 +22,20 @@ export default function ServicesSection({ services }) {
   const [editing, setEditing] = useState(null);
   const [editingWithImageRemoval, setEditingWithImageRemoval] = useState(null);
   const [removingImageUrl, setRemovingImageUrl] = useState(null);
+  const [rotationStep, setRotationStep] = useState(0);
 
   useEffect(() => {
     // Copy array to avoid accidental mutations and make debugging simpler.
     setLocalServices(Array.isArray(services) ? [...services] : services);
   }, [services]);
+
+  useEffect(() => {
+    const rotationTimer = window.setInterval(() => {
+      setRotationStep((step) => step + 1);
+    }, 4500);
+
+    return () => window.clearInterval(rotationTimer);
+  }, []);
 
   const servicesToRender = useMemo(
     () => (Array.isArray(localServices) ? localServices : []),
@@ -98,6 +107,7 @@ export default function ServicesSection({ services }) {
             description={service.Description ?? service.description}
             imageUrls={service.ImageUrls ?? service.imageUrls}
             keywords={service.KeyWords ?? service.keyWords ?? service.keywords}
+            rotationStep={rotationStep}
             canEdit={canManage}
             onEdit={() => {
               setEditing(service);

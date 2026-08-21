@@ -7,6 +7,7 @@ export default function ServiceCard({
   imageUrls = [],
   keywords = [],
   rotateIntervalMs = 4500,
+  rotationStep = 0,
   canEdit = false,
   onEdit,
   isEditing = false,
@@ -52,6 +53,7 @@ export default function ServiceCard({
         imageUrls={imageUrls}
         alt={title}
         intervalMs={rotateIntervalMs}
+        rotationStep={rotationStep}
         isEditing={isEditing}
         onRemoveImage={onRemoveImage}
       />
