@@ -9,6 +9,7 @@ import HeroSection from "@/components/Home/HeroSection";
 import ServicesSection from "@/components/Home/ServicesSection";
 import AboutSection from "@/components/Home/AboutSection";
 import ContactSection from "@/components/Home/ContactSection";
+import LogoMarquee from "@/components/Home/LogoMarquee";
 import SiteFooter from "@/components/Home/SiteFooter";
 import ScrollToTop from "@/components/Home/ScrollToTop";
 
@@ -217,6 +218,7 @@ export default function HomePageContent({ initialSettings }) {
           contactEmail={viewModel.contactEmail}
           phoneNumber={viewModel.phoneNumber}
         />
+        <LogoMarquee />
       </main>
 
       <SiteFooter

@@ -24,7 +24,20 @@ export const metadata = {
   applicationName: "Quintus",
   title: "Quintus | Obrt za vodu, plin, grijanje i klimatizaciju - Našice",
   description:
-    "Klimatizacija, grijanje i vodoinstalacije – Pouzdana usluga, kvalitetna izvedba i dugoročna rješenja prilagođena vašim potrebama.",
+    "Ovlašteni monteri klima uređaja za montažu, servis i održavanje u Našicama i Slavoniji. Quintus pruža i usluge grijanja, vode i plina.",
+  keywords: [
+    "ovlašteni monteri klima uređaja",
+    "ovlašteni monter klime",
+    "montaža klima uređaja",
+    "ugradnja klima uređaja",
+    "servis klima uređaja",
+    "održavanje klima uređaja",
+    "klimatizacija Našice",
+    "klimatizacija Slavonija",
+    "instalacije grijanja",
+    "vodoinstalacije",
+    "plinske instalacije",
+  ],
   manifest: "/manifest.webmanifest",
   alternates: {
     canonical: "https://www.instalacije-quintus.hr",
@@ -35,7 +48,7 @@ export const metadata = {
   openGraph: {
     title: "Quintus | Obrt za vodu, plin, grijanje i klimatizaciju - Našice",
     description:
-      "Klimatizacija, grijanje i vodoinstalacije – Pouzdana usluga, kvalitetna izvedba i dugoročna rješenja prilagođena vašim potrebama.",
+      "Ovlašteni monteri klima uređaja za montažu, servis i održavanje u Našicama i Slavoniji. Quintus pruža i usluge grijanja, vode i plina.",
     url: "/",
     siteName: "Quintus | Obrt za vodu, plin, grijanje i klimatizaciju - Našice",
     locale: "hr_HR",
@@ -53,7 +66,7 @@ export const metadata = {
     card: "summary_large_image",
     title: "Quintus | Obrt za vodu, plin, grijanje i klimatizaciju - Našice",
     description:
-      "Klimatizacija, grijanje i vodoinstalacije – Pouzdana usluga, kvalitetna izvedba i dugoročna rješenja prilagođena vašim potrebama.",
+      "Ovlašteni monteri klima uređaja za montažu, servis i održavanje u Našicama i Slavoniji. Quintus pruža i usluge grijanja, vode i plina.",
     images: [
       "https://www.instalacije-quintus.hr/_next/image?url=https%3A%2F%2Fres.cloudinary.com%2Fdzhmn7c4d%2Fimage%2Fupload%2Fv1780157613%2Fquintus_images%2Fzv34ptnsgknm1jookolw.png&w=640&q=75",
     ],
