@@ -1,4 +1,5 @@
 import HomePageContent from "@/components/Home/HomePageContent";
+import LocalBusinessJsonLd from "@/components/Seo/LocalBusinessJsonLd";
 
 import { getSiteSettings } from "@/services/siteSettingsService";
 
@@ -16,5 +17,10 @@ export default async function HomePage() {
         ? PRODUCTION_INTERNAL_API_BASE_URL
         : undefined,
   });
-  return <HomePageContent initialSettings={settings} />;
+  return (
+    <>
+      <LocalBusinessJsonLd settings={settings} />
+      <HomePageContent initialSettings={settings} />
+    </>
+  );
 }
