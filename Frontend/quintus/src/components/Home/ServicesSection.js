@@ -6,10 +6,10 @@ import { useRouter } from "next/navigation";
 import ServiceCard from "@/components/Home/ServiceCard";
 import ServiceCreateModal from "@/components/Home/ServiceCreateModal";
 import ImageRemovalModal from "@/components/Home/ImageRemovalModal";
-import ServiceDetailsModal from "@/components/Home/ServiceDetailsModal";
 import useCanManageSite from "@/hooks/useCanManageSite";
 import { useToast } from "@/components/Common/ToastProvider";
 import { createService, deleteService, patchService } from "@/services/serviceService";
+import { slugify } from "@/lib/slugify";
 
 export default function ServicesSection({ services }) {
   const router = useRouter();
@@ -18,7 +18,6 @@ export default function ServicesSection({ services }) {
   const { canManage } = useCanManageSite();
   const [modalOpen, setModalOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  const [selectedService, setSelectedService] = useState(null);
   const [editing, setEditing] = useState(null);
   const [editingWithImageRemoval, setEditingWithImageRemoval] = useState(null);
   const [removingImageUrl, setRemovingImageUrl] = useState(null);
@@ -103,6 +102,7 @@ export default function ServicesSection({ services }) {
           <ServiceCard
             key={`${getServiceId(service) ?? "no-id"}:${service.Title ?? service.title ?? "no-title"}:${idx}`}
             serviceId={getServiceId(service)}
+            slug={slugify(service.Title ?? service.title)}
             title={service.Title ?? service.title}
             description={service.Description ?? service.description}
             imageUrls={service.ImageUrls ?? service.imageUrls}
@@ -119,7 +119,6 @@ export default function ServicesSection({ services }) {
               setEditingWithImageRemoval(service);
               setRemovingImageUrl(imageUrl);
             }}
-            onOpen={() => setSelectedService(service)}
           />
         ))}
       </div>
@@ -138,12 +137,6 @@ export default function ServicesSection({ services }) {
           </button>
         </div>
       ) : null}
-
-      <ServiceDetailsModal
-        open={!!selectedService}
-        service={selectedService}
-        onClose={() => setSelectedService(null)}
-      />
 
       {removingImageUrl && editingWithImageRemoval ? (
         <ImageRemovalModal

@@ -1,7 +1,9 @@
+import Link from "next/link";
 import RotatingServiceImage from "@/components/Home/RotatingServiceImage";
 
 export default function ServiceCard({
   serviceId,
+  slug,
   title,
   description,
   imageUrls = [],
@@ -12,22 +14,13 @@ export default function ServiceCard({
   onEdit,
   isEditing = false,
   onRemoveImage,
-  onOpen,
 }) {
   const keywordText = Array.isArray(keywords) ? keywords.join(" - ") : "";
 
   return (
-    <div
+    <Link
+      href={slug ? `/usluge/${slug}` : "#"}
       className="service service-card service-card-button"
-      onClick={onOpen}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          onOpen?.();
-        }
-      }}
-      role="button"
-      tabIndex={0}
       aria-label={`Pogledaj detalje za ${title}`}
     >
       {canEdit ? (
@@ -59,6 +52,6 @@ export default function ServiceCard({
       />
       <p className="service-description">{description}</p>
       {keywordText ? <p className="service-keywords">{keywordText}</p> : null}
-    </div>
+    </Link>
   );
 }

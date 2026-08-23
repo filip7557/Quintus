@@ -1,18 +1,6 @@
-const fallbackSiteUrl = "https://www.instalacije-quintus.hr";
-
-function getSiteUrl() {
-  const configuredUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL;
-
-  if (!configuredUrl) {
-    return fallbackSiteUrl;
-  }
-
-  try {
-    return new URL(configuredUrl).origin;
-  } catch {
-    return fallbackSiteUrl;
-  }
-}
+import { getSiteUrl } from "@/lib/siteUrl";
+import { slugify } from "@/lib/slugify";
+import { getSiteSettings } from "@/services/siteSettingsService";
 
 const siteUrl = getSiteUrl();
 
@@ -24,8 +12,37 @@ const routes = [
   { url: "/politika-privatnosti", changeFrequency: "yearly", priority: 0.6 },
 ];
 
-export default function sitemap() {
-  return routes.map((route) => ({
+function getServiceTitle(service) {
+  return service?.Title ?? service?.title ?? "";
+}
+
+async function buildServiceRoutes() {
+  const settings = await getSiteSettings();
+  const services = Array.isArray(settings?.Services ?? settings?.services)
+    ? (settings.Services ?? settings.services)
+    : [];
+
+  const seenSlugs = new Set();
+  const serviceRoutes = [];
+
+  for (const service of services) {
+    const slug = slugify(getServiceTitle(service));
+    if (!slug || seenSlugs.has(slug)) continue;
+    seenSlugs.add(slug);
+    serviceRoutes.push({
+      url: `/usluge/${slug}`,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    });
+  }
+
+  return serviceRoutes;
+}
+
+export default async function sitemap() {
+  const serviceRoutes = await buildServiceRoutes();
+
+  return [...routes, ...serviceRoutes].map((route) => ({
     url: `${siteUrl}${route.url}`,
     lastModified: new Date(),
     changeFrequency: route.changeFrequency,
