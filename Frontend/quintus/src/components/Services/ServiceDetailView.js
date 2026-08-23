@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import useLockBodyScroll from "@/hooks/useLockBodyScroll";
+import NavBar from "@/components/NavBar/NavBar";
 
 function passthroughLoader({ src }) {
   return src;
@@ -21,7 +22,7 @@ function pickFirstNonEmpty(values, fallback = "") {
   return fallback;
 }
 
-export default function ServiceDetailsModal({ service, open, onClose }) {
+export default function ServiceDetailView({ service }) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [activeImage, setActiveImage] = useState("");
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -36,44 +37,26 @@ export default function ServiceDetailsModal({ service, open, onClose }) {
     [service]
   );
 
-  useLockBodyScroll(open);
-
   useEffect(() => {
-    if (!open) return;
-
     const randomIndex = imageUrls.length
       ? Math.floor(Math.random() * imageUrls.length)
       : 0;
-
     setSelectedImageIndex(randomIndex);
-    setActiveImage("");
-    setZoomLevel(1);
-    setPan({ x: 0, y: 0 });
-    setIsDragging(false);
-    setActivePointerId(null);
-
-  }, [open, imageUrls]);
+  }, [imageUrls]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!activeImage) return;
 
     const handleKeyDown = (event) => {
       if (event.key === "Escape") {
-        if (activeImage) {
-          setActiveImage("");
-          setZoomLevel(1);
-          setPan({ x: 0, y: 0 });
-          setIsDragging(false);
-          setActivePointerId(null);
-          return;
-        }
-        onClose?.();
+        closeLightbox();
       }
     };
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [open, onClose, activeImage]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeImage]);
 
   const closeLightbox = () => {
     setActiveImage("");
@@ -195,8 +178,6 @@ export default function ServiceDetailsModal({ service, open, onClose }) {
     };
   }, [activeImage, zoomLevel, clampPan]);
 
-  if (!open || !service) return null;
-
   const title = pickFirstNonEmpty(
     [
       service?.Title,
@@ -243,177 +224,164 @@ export default function ServiceDetailsModal({ service, open, onClose }) {
   };
 
   return (
-    <div
-      className="modal-overlay service-details-overlay"
-      role="presentation"
-      onClick={(event) => {
-        if (event.target === event.currentTarget) {
-          onClose?.();
-        }
-      }}
-    >
-      <div
-        className="modal service-details-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="service-details-title"
-      >
-        {activeImage ? (
-          <div
-            className="service-lightbox-overlay"
-            onClick={closeLightbox}
-            role="presentation"
-          >
-            <div
-              className="service-lightbox-content"
-              ref={lightboxContentRef}
-              onClick={(event) => event.stopPropagation()}
-              role="dialog"
-              aria-modal="true"
-              aria-label="Prikaz slike usluge"
-            >
-              <button
-                type="button"
-                className="service-lightbox-close"
+    <>
+      <NavBar />
+      <main className="service-page">
+        <div className="service-page-shell">
+          <Link href="/#services" className="service-page-back">
+            ‹ Natrag na usluge
+          </Link>
+
+          <article className="service-page-card">
+            {activeImage ? (
+              <div
+                className="service-lightbox-overlay"
                 onClick={closeLightbox}
-                aria-label="Zatvori prikaz slike"
+                role="presentation"
               >
-                ×
-              </button>
-
-              {imageUrls.length > 1 ? (
-                <>
+                <div
+                  className="service-lightbox-content"
+                  ref={lightboxContentRef}
+                  onClick={(event) => event.stopPropagation()}
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label="Prikaz slike usluge"
+                >
                   <button
                     type="button"
-                    className="service-lightbox-nav service-lightbox-nav-prev"
-                    onClick={goToPreviousImage}
-                    aria-label="Prethodna slika"
+                    className="service-lightbox-close"
+                    onClick={closeLightbox}
+                    aria-label="Zatvori prikaz slike"
                   >
-                    ‹
+                    ×
                   </button>
-                  <button
-                    type="button"
-                    className="service-lightbox-nav service-lightbox-nav-next"
-                    onClick={goToNextImage}
-                    aria-label="Sljedeća slika"
-                  >
-                    ›
-                  </button>
-                </>
-              ) : null}
 
-              <div className="service-lightbox-controls">
-                <button
-                  type="button"
-                  className="service-lightbox-control-btn"
-                  onClick={zoomOut}
-                  aria-label="Umanji"
-                >
-                  -
-                </button>
-                <button
-                  type="button"
-                  className="service-lightbox-control-btn"
-                  onClick={resetZoom}
-                  aria-label="Resetiraj zum"
-                >
-                  {Math.round(zoomLevel * 100)}%
-                </button>
-                <button
-                  type="button"
-                  className="service-lightbox-control-btn"
-                  onClick={zoomIn}
-                  aria-label="Uvećaj"
-                >
-                  +
-                </button>
-              </div>
+                  {imageUrls.length > 1 ? (
+                    <>
+                      <button
+                        type="button"
+                        className="service-lightbox-nav service-lightbox-nav-prev"
+                        onClick={goToPreviousImage}
+                        aria-label="Prethodna slika"
+                      >
+                        ‹
+                      </button>
+                      <button
+                        type="button"
+                        className="service-lightbox-nav service-lightbox-nav-next"
+                        onClick={goToNextImage}
+                        aria-label="Sljedeća slika"
+                      >
+                        ›
+                      </button>
+                    </>
+                  ) : null}
 
-              <Image
-                src={activeImage}
-                alt="Uvećani prikaz usluge"
-                className={`service-lightbox-image ${zoomLevel > 1 ? "is-zoomed" : ""} ${
-                  isDragging ? "is-dragging" : ""
-                }`}
-                width={1600}
-                height={1200}
-                loader={passthroughLoader}
-                unoptimized
-                ref={lightboxImageRef}
-                onPointerDown={handleImagePointerDown}
-                style={{ transform: `translate3d(${pan.x}px, ${pan.y}px, 0) scale(${zoomLevel})` }}
-              />
-            </div>
-          </div>
-        ) : null}
+                  <div className="service-lightbox-controls">
+                    <button
+                      type="button"
+                      className="service-lightbox-control-btn"
+                      onClick={zoomOut}
+                      aria-label="Umanji"
+                    >
+                      -
+                    </button>
+                    <button
+                      type="button"
+                      className="service-lightbox-control-btn"
+                      onClick={resetZoom}
+                      aria-label="Resetiraj zum"
+                    >
+                      {Math.round(zoomLevel * 100)}%
+                    </button>
+                    <button
+                      type="button"
+                      className="service-lightbox-control-btn"
+                      onClick={zoomIn}
+                      aria-label="Uvećaj"
+                    >
+                      +
+                    </button>
+                  </div>
 
-        <button
-          type="button"
-          className="modal-close service-details-close"
-          onClick={onClose}
-          aria-label="Zatvori detalje usluge"
-        >
-          ×
-        </button>
-
-        <h3 id="service-details-title" className="service-details-title">
-            {title}
-        </h3>
-
-        <div className="modal-body service-details-body">
-          {selectedImage ? (
-            <div className="service-details-featured-image">
-              <Image
-                src={selectedImage}
-                alt={title}
-                fill
-                sizes="(max-width: 768px) 92vw, 760px"
-                style={{ objectFit: "cover" }}
-                loader={passthroughLoader}
-                unoptimized
-              />
-            </div>
-          ) : null}
-
-          <div className="service-details-content">
-            <p className="service-description service-details-text">{description}</p>
-
-            {Array.isArray(keywords) && keywords.length ? (
-              <div className="service-details-keywords" aria-label="Ključne riječi usluge">
-                {keywords.map((keyword, index) => (
-                  <span key={`${keyword}:${index}`} className="service-details-keyword">
-                    {keyword}
-                  </span>
-                ))}
+                  <Image
+                    src={activeImage}
+                    alt="Uvećani prikaz usluge"
+                    className={`service-lightbox-image ${zoomLevel > 1 ? "is-zoomed" : ""} ${
+                      isDragging ? "is-dragging" : ""
+                    }`}
+                    width={1600}
+                    height={1200}
+                    loader={passthroughLoader}
+                    unoptimized
+                    ref={lightboxImageRef}
+                    onPointerDown={handleImagePointerDown}
+                    style={{ transform: `translate3d(${pan.x}px, ${pan.y}px, 0) scale(${zoomLevel})` }}
+                  />
+                </div>
               </div>
             ) : null}
-          </div>
 
-          {imageUrls.length ? (
-            <div className="service-details-gallery" aria-label="Galerija slika usluge">
-              {imageUrls.map((src, idx) => (
-                <button
-                  key={`${src}:${idx}`}
-                  type="button"
-                  className={`service-details-thumb${idx === selectedImageIndex ? " is-active" : ""}`}
-                  onClick={() => openImageAt(idx)}
-                  aria-label={`Prikaži sliku ${idx + 1}`}
-                >
+            <h1 className="service-details-title service-page-title">{title}</h1>
+
+            <div className="service-page-body">
+              {selectedImage ? (
+                <div className="service-details-featured-image service-page-featured-image">
                   <Image
-                    src={src}
-                    alt={`${title} ${idx + 1}`}
+                    src={selectedImage}
+                    alt={title}
                     fill
-                    sizes="156px"
+                    sizes="(max-width: 768px) 92vw, 760px"
                     style={{ objectFit: "cover" }}
                     loader={passthroughLoader}
                     unoptimized
+                    priority
+                    loading="eager"
                   />
-                </button>
-              ))}
+                </div>
+              ) : null}
+
+              <div className="service-details-content">
+                <p className="service-description service-details-text">{description}</p>
+
+                {Array.isArray(keywords) && keywords.length ? (
+                  <div className="service-details-keywords" aria-label="Ključne riječi usluge">
+                    {keywords.map((keyword, index) => (
+                      <span key={`${keyword}:${index}`} className="service-details-keyword">
+                        {keyword}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+
+              {imageUrls.length ? (
+                <div className="service-details-gallery" aria-label="Galerija slika usluge">
+                  {imageUrls.map((src, idx) => (
+                    <button
+                      key={`${src}:${idx}`}
+                      type="button"
+                      className={`service-details-thumb${idx === selectedImageIndex ? " is-active" : ""}`}
+                      onClick={() => openImageAt(idx)}
+                      aria-label={`Prikaži sliku ${idx + 1}`}
+                    >
+                      <Image
+                        src={src}
+                        alt={`${title} ${idx + 1}`}
+                        fill
+                        sizes="156px"
+                        style={{ objectFit: "cover" }}
+                        loader={passthroughLoader}
+                        unoptimized
+                      />
+                    </button>
+                  ))}
+                </div>
+              ) : null}
             </div>
-          ) : null}
+          </article>
         </div>
-      </div>
-    </div>
+      </main>
+    </>
   );
 }

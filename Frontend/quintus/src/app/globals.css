@@ -636,6 +636,7 @@ header {
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: inherit;
   text-align: left;
+  text-decoration: none;
   cursor: pointer;
 }
 
@@ -1048,15 +1049,14 @@ header {
 }
 
 .service-lightbox-overlay {
-  position: absolute;
+  position: fixed;
   inset: 0;
-  z-index: 5;
+  z-index: 2100;
   background: rgba(3, 8, 18, 0.86);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 14px;
-  border-radius: 14px;
 }
 
 .service-lightbox-content {
@@ -1339,6 +1339,80 @@ header {
   border-color: rgba(0, 123, 255, 0.55);
   transform: translateY(-1px);
   box-shadow: 0 0 0 1px rgba(0, 123, 255, 0.28);
+}
+
+/* Standalone SSR service detail page (/usluge/[slug]) */
+.service-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #2e3336 0%, #23272a 100%);
+  padding: 132px 20px 80px;
+}
+
+.service-page-shell {
+  max-width: min(var(--container-width), 880px);
+  margin: 0 auto;
+}
+
+.service-page-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 18px;
+  color: #8fc6ff;
+  font-size: 0.95rem;
+}
+
+.service-page-card {
+  position: relative;
+  background: #2e3336;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  box-shadow: rgba(0, 0, 0, 0.5) 0px 20px 50px;
+  padding: 24px;
+}
+
+.service-page-title {
+  margin: 0 0 16px;
+}
+
+.service-page-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.service-page-featured-image {
+  height: clamp(220px, 42vh, 420px);
+}
+
+.not-found-card {
+  text-align: center;
+  align-items: center;
+  gap: 12px;
+  padding: 56px 24px;
+}
+
+.not-found-code {
+  margin: 0;
+  color: #8fc6ff;
+  font-size: 3.5rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.not-found-home-link {
+  display: inline-flex;
+  margin-top: 12px;
+  padding: 10px 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 123, 255, 0.4);
+  background: rgba(0, 123, 255, 0.12);
+  color: #eaf2ff;
+  font-weight: 600;
+}
+
+.not-found-home-link:hover {
+  background: rgba(0, 123, 255, 0.22);
 }
 
 .modal-header {
@@ -2257,6 +2331,24 @@ footer {
     background-color: #333a3d;
     background-image: none;
     padding-top: 88px;
+  }
+
+  .service-page {
+    padding-top: 104px;
+    padding-left: var(--container-padding);
+    padding-right: var(--container-padding);
+  }
+
+  .service-page-card:not(.not-found-card) {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  .service-page-featured-image {
+    height: clamp(180px, 34vh, 280px);
   }
 
   /* Services section */
