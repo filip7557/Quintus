@@ -120,9 +120,10 @@ namespace Quintus.Service
                 throw new UnauthorizedAccessException("Korisnik nije prijavljen.");
 
             var isAdmin = string.Equals(currentUser.Role?.Name, "Admin", StringComparison.OrdinalIgnoreCase);
+            var isAdminOrOwner = isAdmin || string.Equals(currentUser.Role?.Name, "Owner", StringComparison.OrdinalIgnoreCase);
             var isPending = appointment.StartAt == null;
-            if (!isPending && !isAdmin && appointment.CreatedByUserId != currentUser.Id.Value)
-                throw new UnauthorizedAccessException("Samo autor ili Admin može obrisati termin.");
+            if (!isPending && !isAdminOrOwner && appointment.CreatedByUserId != currentUser.Id.Value)
+                throw new UnauthorizedAccessException("Samo autor, Owner ili Admin može obrisati termin.");
 
             return await _appointmentRepository.DeleteAsync(appointment);
         }
