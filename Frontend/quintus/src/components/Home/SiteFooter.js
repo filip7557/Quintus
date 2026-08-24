@@ -6,6 +6,7 @@ export default function SiteFooter({
   oib,
   brojObrtnice,
   iban,
+  onSettingsChanged,
 }) {
   const currentYear = new Date().getFullYear();
   const placeholder = "Nije postavljeno";
@@ -50,6 +51,7 @@ export default function SiteFooter({
         oib={oib}
         brojObrtnice={brojObrtnice}
         iban={iban}
+        onSettingsChanged={onSettingsChanged}
       />
     </footer>
   );
