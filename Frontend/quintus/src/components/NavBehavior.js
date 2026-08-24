@@ -61,6 +61,17 @@ export default function NavBehavior() {
         if (!navMain) return;
         const active = navMain.querySelector(".nav-link.active");
         if (!active) {
+          const path = window.location.pathname || "";
+          if (path.startsWith("/usluge")) {
+            const servicesLink = linkFor("services");
+            if (servicesLink) {
+              navLinks.forEach((l) => l.classList.remove("active"));
+              servicesLink.classList.add("active");
+              setIndicatorToEl(servicesLink);
+              return;
+            }
+          }
+
           const isHomePath = window.location.pathname === "/";
           if (!isHomePath) {
             const accountTrigger = navMain.querySelector("button[aria-haspopup='menu']");
