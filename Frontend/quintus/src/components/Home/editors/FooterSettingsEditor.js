@@ -12,7 +12,7 @@ import {
 } from "@/services/siteSettingsClientService";
 import { useToast } from "@/components/Common/ToastProvider";
 
-export default function FooterSettingsEditor({ settingsId, oib, brojObrtnice, iban }) {
+export default function FooterSettingsEditor({ settingsId, oib, brojObrtnice, iban, onSettingsChanged }) {
   const router = useRouter();
   const { canManage } = useCanManageSite();
   const { showToast } = useToast();
@@ -65,6 +65,7 @@ export default function FooterSettingsEditor({ settingsId, oib, brojObrtnice, ib
 
       setOpen(false);
       showToast({ type: "success", title: "Spremljeno", message: "Footer je ažuriran." });
+      await onSettingsChanged?.();
       router.refresh();
     } catch (err) {
       const msg = err?.message || "Greška pri spremanju postavki.";

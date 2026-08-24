@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import Animations from "@/components/Animations";
 import NavBar from "@/components/NavBar/NavBar";
@@ -110,32 +110,43 @@ export default function HomePageContent({ initialSettings }) {
   const [settings, setSettings] = useState(initialSettings ?? null);
   const hasData = hasUsableSettings(settings);
 
+  const fetchSettingsFromApi = useCallback(async () => {
+    const bases = getClientBaseCandidates();
+    const routes = ["/SiteSettings", "/siteSettings"];
+
+    for (const base of bases) {
+      for (const route of routes) {
+        const url = `${base}${route}`;
+        try {
+          const response = await fetch(url, { cache: "no-store" });
+          if (!response.ok) continue;
+          const payload = await response.json();
+          const parsed = unwrapSettingsPayload(payload);
+          return parsed && hasUsableSettings(parsed) ? parsed : null;
+        } catch {
+          // Try next candidate.
+        }
+      }
+    }
+
+    return null;
+  }, []);
+
+  // Lets editors update the live page in place after a save, without a full reload.
+  const reloadSettings = useCallback(async () => {
+    const parsed = await fetchSettingsFromApi();
+    if (parsed) setSettings(parsed);
+    return parsed;
+  }, [fetchSettingsFromApi]);
+
   useEffect(() => {
     if (hasData) return;
 
     let cancelled = false;
 
     const run = async () => {
-      const bases = getClientBaseCandidates();
-      const routes = ["/SiteSettings", "/siteSettings"];
-
-      for (const base of bases) {
-        for (const route of routes) {
-          const url = `${base}${route}`;
-          try {
-            const response = await fetch(url, { cache: "no-store" });
-            if (!response.ok) continue;
-            const payload = await response.json();
-            const parsed = unwrapSettingsPayload(payload);
-            if (!cancelled) {
-              setSettings(parsed && hasUsableSettings(parsed) ? parsed : null);
-            }
-            return;
-          } catch {
-            // Try next candidate.
-          }
-        }
-      }
+      const parsed = await fetchSettingsFromApi();
+      if (!cancelled) setSettings(parsed);
     };
 
     run();
@@ -143,7 +154,7 @@ export default function HomePageContent({ initialSettings }) {
     return () => {
       cancelled = true;
     };
-  }, [hasData]);
+  }, [hasData, fetchSettingsFromApi]);
 
   const viewModel = useMemo(() => {
     const settingsId = pick(settings, "Id", "id");
@@ -205,18 +216,24 @@ export default function HomePageContent({ initialSettings }) {
           description={viewModel.heroDescription}
           backgroundImageUrl={viewModel.heroBackgroundImageUrl}
           backgroundImageMobileUrl={viewModel.heroBackgroundImageMobileUrl}
+          onSettingsChanged={reloadSettings}
         />
-        <ServicesSection services={viewModel.services} />
+        <ServicesSection
+          services={viewModel.services}
+          onSettingsChanged={reloadSettings}
+        />
         <AboutSection
           settingsId={viewModel.settingsId}
           aboutUs={viewModel.aboutUs}
           aboutUsImageUrl={viewModel.aboutUsImageUrl}
+          onSettingsChanged={reloadSettings}
         />
         <ContactSection
           settingsId={viewModel.settingsId}
           address={viewModel.address}
           contactEmail={viewModel.contactEmail}
           phoneNumber={viewModel.phoneNumber}
+          onSettingsChanged={reloadSettings}
         />
         <LogoMarquee />
       </main>
@@ -226,6 +243,7 @@ export default function HomePageContent({ initialSettings }) {
         oib={viewModel.oib}
         brojObrtnice={viewModel.brojObrtnice}
         iban={viewModel.iban}
+        onSettingsChanged={reloadSettings}
       />
       <ScrollToTop />
     </>

@@ -11,7 +11,7 @@ import { useToast } from "@/components/Common/ToastProvider";
 import { createService, deleteService, patchService } from "@/services/serviceService";
 import { slugify } from "@/lib/slugify";
 
-export default function ServicesSection({ services }) {
+export default function ServicesSection({ services, onSettingsChanged }) {
   const router = useRouter();
   const { showToast } = useToast();
   const [localServices, setLocalServices] = useState(services);
@@ -179,6 +179,7 @@ export default function ServicesSection({ services }) {
             });
             setRemovingImageUrl(null);
             setEditingWithImageRemoval(null);
+            await onSettingsChanged?.();
             router.refresh();
           }}
           onCancel={() => {
@@ -204,6 +205,7 @@ export default function ServicesSection({ services }) {
 
           if (response?.status === 200 || response?.status === 201) {
             // Homepage data is sourced from /SiteSettings.
+            await onSettingsChanged?.();
             router.refresh();
           }
 
@@ -224,6 +226,7 @@ export default function ServicesSection({ services }) {
         onDelete={async (id) => {
           const response = await deleteService(id);
           if (response?.status === 200 || response?.status === 204) {
+            await onSettingsChanged?.();
             router.refresh();
           }
           return response;
@@ -256,6 +259,7 @@ export default function ServicesSection({ services }) {
             };
           });
 
+          await onSettingsChanged?.();
           router.refresh();
         }}
         initial={
@@ -288,6 +292,7 @@ export default function ServicesSection({ services }) {
 
           if (response?.status === 200 || response?.status === 204) {
             // Homepage data is sourced from /SiteSettings.
+            await onSettingsChanged?.();
             router.refresh();
           }
 
