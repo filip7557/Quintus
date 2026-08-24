@@ -17,6 +17,7 @@ export default function ContactSettingsEditor({
   address,
   phoneNumber,
   contactEmail,
+  onSettingsChanged,
 }) {
   const router = useRouter();
   const { canManage } = useCanManageSite();
@@ -70,6 +71,7 @@ export default function ContactSettingsEditor({
 
       setOpen(false);
       showToast({ type: "success", title: "Spremljeno", message: "Kontakt je ažuriran." });
+      await onSettingsChanged?.();
       router.refresh();
     } catch (err) {
       const msg = err?.message || "Greška pri spremanju postavki.";

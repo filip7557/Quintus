@@ -16,6 +16,14 @@ export async function getPendingAppointments() {
   }
 }
 
+export async function getAppointmentById(id) {
+  try {
+    return await api.get(`/Appointment/${encodeURIComponent(id)}`);
+  } catch (error) {
+    return error.response;
+  }
+}
+
 export async function createAppointment(data) {
   try {
     return await api.post("/Appointment", data);

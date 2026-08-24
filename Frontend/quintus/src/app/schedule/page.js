@@ -8,13 +8,14 @@ import { getCurrentUser } from "@/services/authService";
 import {
   createAppointment,
   deleteAppointment,
+  getAppointmentById,
   getAppointments,
   getPendingAppointments,
   transferAppointmentOwner,
   updateAppointment,
 } from "@/services/appointmentService";
 import { getAppointmentOwners } from "@/services/userAdminService";
-import { canUseSchedule, isAdmin, isAdminOrOwner } from "@/lib/authz";
+import { canUseSchedule, isAdminOrOwner } from "@/lib/authz";
 import styles from "./page.module.css";
 
 const days = ["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"];
@@ -125,6 +126,25 @@ export default function SchedulePage() {
   const visibleStart = calendarDays[0].date;
   const visibleEnd = new Date(calendarDays[calendarDays.length - 1].date);
   visibleEnd.setDate(visibleEnd.getDate() + 1);
+
+  // Patches the edited appointment into local state instead of refetching the whole range.
+  const applyAppointmentUpdate = (rawAppointment) => {
+    const saved = normalize(rawAppointment);
+    const isPending = !saved.startAt;
+    setAppointments((prev) => {
+      const filtered = prev.filter((item) => item.id !== saved.id);
+      return isPending ? filtered : [...filtered, saved];
+    });
+    setPendingAppointments((prev) => {
+      const filtered = prev.filter((item) => item.id !== saved.id);
+      return isPending ? [...filtered, saved] : filtered;
+    });
+  };
+
+  const removeAppointmentFromState = (id) => {
+    setAppointments((prev) => prev.filter((item) => item.id !== id));
+    setPendingAppointments((prev) => prev.filter((item) => item.id !== id));
+  };
 
   const load = async () => {
     setLoading(true);
@@ -263,7 +283,7 @@ export default function SchedulePage() {
       String(appointment.createdByUserId).toLowerCase() ===
       String(currentUser?.id ?? currentUser?.Id).toLowerCase();
     const editable = isPending || isOwner || isAdminOrOwner(currentUser);
-    const canDelete = isPending || isOwner || isAdmin(currentUser);
+    const canDelete = isPending || isOwner || isAdminOrOwner(currentUser);
     setForm({
       id: appointment.id,
       title: appointment.title,
@@ -289,11 +309,32 @@ export default function SchedulePage() {
       (response?.status >= 200 && response.status < 300)
     ) {
       setConfirmingDelete(false);
+      removeAppointmentFromState(form.id);
       setForm(null);
-      await load();
     } else {
       setConfirmingDelete(false);
       setError(response?.data?.message || "Greška pri brisanju termina.");
+    }
+    setSaving(false);
+  };
+
+  const resetToPending = async () => {
+    if (!form?.id) return;
+    setSaving(true);
+    setError("");
+    const payload = {
+      title: form.title,
+      startAt: null,
+      endAt: null,
+      repeatUntil: null,
+      notes: form.notes,
+    };
+    const response = await updateAppointment(form.id, payload);
+    if (response?.status >= 200 && response.status < 300) {
+      applyAppointmentUpdate(response.data);
+      setForm(null);
+    } else {
+      setError(response?.data?.message || "Greška pri resetiranju termina.");
     }
     setSaving(false);
   };
@@ -345,9 +386,12 @@ export default function SchedulePage() {
       ownerTransfer.ownerUserId,
     );
     if (response?.status >= 200 && response.status < 300) {
+      const updated = await getAppointmentById(ownerTransfer.appointmentId);
+      if (updated?.status >= 200 && updated.status < 300) {
+        applyAppointmentUpdate(updated.data);
+      }
       setOwnerTransfer(null);
       setForm(null);
-      await load();
     } else {
       setOwnerTransfer(null);
       setError(
@@ -423,6 +467,7 @@ export default function SchedulePage() {
       : await createAppointment(payload);
     if (response?.status >= 200 && response.status < 300) {
       const completedPendingAppointment = form.id && form.isPending && startDate;
+      applyAppointmentUpdate(response.data);
       setForm(null);
       if (completedPendingAppointment) {
         setSelectedDate(dateKey(startDate));
@@ -431,8 +476,6 @@ export default function SchedulePage() {
             ? new Date(startDate.getFullYear(), startDate.getMonth(), 1)
             : mondayOf(startDate),
         );
-      } else {
-        await load();
       }
     } else {
       setError(response?.data?.message || "Greška pri spremanju termina.");
@@ -850,6 +893,16 @@ export default function SchedulePage() {
                   disabled={saving}
                 >
                   Promijeni vlasnika
+                </button>
+              ) : null}
+              {form.id && !form.isPending && !form.readOnly ? (
+                <button
+                  type="button"
+                  className={styles.transferButton}
+                  onClick={resetToPending}
+                  disabled={saving}
+                >
+                  Vrati na čekanje
                 </button>
               ) : null}
               <button

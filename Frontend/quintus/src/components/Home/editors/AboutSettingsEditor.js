@@ -16,6 +16,7 @@ export default function AboutSettingsEditor({
   settingsId,
   aboutUs,
   aboutUsImageUrl,
+  onSettingsChanged,
 }) {
   const router = useRouter();
   const { canManage } = useCanManageSite();
@@ -72,6 +73,7 @@ export default function AboutSettingsEditor({
 
       setOpen(false);
       showToast({ type: "success", title: "Spremljeno", message: "O nama je ažurirano." });
+      await onSettingsChanged?.();
       router.refresh();
     } catch (e) {
       const msg = e?.message || "Greška pri spremanju postavki.";

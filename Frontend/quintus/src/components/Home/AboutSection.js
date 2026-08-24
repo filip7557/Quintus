@@ -12,6 +12,7 @@ export default function AboutSection({
   settingsId,
   aboutUs,
   aboutUsImageUrl,
+  onSettingsChanged,
 }) {
   const safeAboutUs = String(aboutUs ?? "");
   const paragraphs = splitParagraphs(safeAboutUs);
@@ -62,6 +63,7 @@ export default function AboutSection({
         settingsId={settingsId}
         aboutUs={safeAboutUs}
         aboutUsImageUrl={aboutUsImageUrl}
+        onSettingsChanged={onSettingsChanged}
       />
     </section>
   );

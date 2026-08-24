@@ -7,6 +7,7 @@ export default function ContactSection({
   address,
   contactEmail,
   phoneNumber,
+  onSettingsChanged,
 }) {
   return (
     <section id="contact" className="contact editable-block">
@@ -38,6 +39,7 @@ export default function ContactSection({
         address={address}
         contactEmail={contactEmail}
         phoneNumber={phoneNumber}
+        onSettingsChanged={onSettingsChanged}
       />
     </section>
   );

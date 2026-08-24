@@ -20,6 +20,7 @@ export default function HeroSettingsEditor({
   heroBackgroundImageMobileUrl,
   title,
   description,
+  onSettingsChanged,
 }) {
   const router = useRouter();
   const { canManage } = useCanManageSite();
@@ -95,6 +96,7 @@ export default function HeroSettingsEditor({
 
       setOpen(false);
       showToast({ type: "success", title: "Spremljeno", message: "Hero je ažuriran." });
+      await onSettingsChanged?.();
       router.refresh();
     } catch (e) {
       const msg = e?.message || "Greška pri spremanju postavki.";
@@ -125,6 +127,7 @@ export default function HeroSettingsEditor({
 
       setBgOnlyOpen(false);
       showToast({ type: "success", title: "Spremljeno", message: "Pozadina je ažurirana." });
+      await onSettingsChanged?.();
       router.refresh();
     } catch (e) {
       const msg = e?.message || "Greška pri spremanju postavki.";

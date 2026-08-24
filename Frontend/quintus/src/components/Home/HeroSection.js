@@ -7,6 +7,7 @@ export default function HeroSection({
   description,
   backgroundImageUrl,
   backgroundImageMobileUrl,
+  onSettingsChanged,
 }) {
   const safeTitle = String(title ?? "").trim();
   const safeDescription = String(description ?? "").trim();
@@ -65,6 +66,7 @@ export default function HeroSection({
         heroBackgroundImageMobileUrl={backgroundImageMobileUrl}
         title={safeTitle}
         description={safeDescription}
+        onSettingsChanged={onSettingsChanged}
       />
     </section>
   );
