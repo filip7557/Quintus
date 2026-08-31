@@ -21,6 +21,8 @@ namespace Quintus.Repository.Context
         public DbSet<Offer> Offers => Set<Offer>();
         public DbSet<UnitOfMeasurement> UnitsOfMeasurement => Set<UnitOfMeasurement>();
         public DbSet<Appointment> Appointments => Set<Appointment>();
+        public DbSet<PushSubscription> PushSubscriptions => Set<PushSubscription>();
+        public DbSet<PushNotificationJob> PushNotificationJobs => Set<PushNotificationJob>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -34,6 +36,28 @@ namespace Quintus.Repository.Context
 
             modelBuilder.Entity<Appointment>()
                 .HasIndex(appointment => appointment.StartAt);
+
+            modelBuilder.Entity<PushSubscription>()
+                .HasOne(subscription => subscription.User)
+                .WithMany()
+                .HasForeignKey(subscription => subscription.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PushSubscription>()
+                .HasIndex(subscription => subscription.Endpoint)
+                .IsUnique();
+
+            modelBuilder.Entity<PushSubscription>()
+                .HasIndex(subscription => subscription.UserId);
+
+            modelBuilder.Entity<PushNotificationJob>()
+                .HasOne(job => job.ActorUser)
+                .WithMany()
+                .HasForeignKey(job => job.ActorUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PushNotificationJob>()
+                .HasIndex(job => new { job.CompletedAt, job.NextAttemptAt, job.ProcessingStartedAt });
 
             modelBuilder.Entity<Role>().HasData(
                 new Role { Id = Guid.Parse("5beca67e-cf87-4ccc-b041-32a4fa4e921f"), Name = "Admin" },

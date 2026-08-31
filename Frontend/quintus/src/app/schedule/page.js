@@ -16,9 +16,49 @@ import {
 } from "@/services/appointmentService";
 import { getAppointmentOwners } from "@/services/userAdminService";
 import { canUseSchedule, isAdminOrOwner } from "@/lib/authz";
+import {
+  createBrowserPushSubscription,
+  getBrowserPushSubscription,
+  getPushConfig,
+  getPushPreferences,
+  isPushNotificationSupported,
+  removePushSubscription,
+  savePushSubscription,
+  updatePushPreferences,
+} from "@/services/pushNotificationService";
 import styles from "./page.module.css";
 
 const days = ["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"];
+const defaultPushPreferences = {
+  notifyOnAppointmentCreated: true,
+  notifyOnAppointmentUpdated: true,
+  notifyOnAppointmentDeleted: true,
+};
+
+function normalizePushPreferences(value) {
+  return {
+    endpoint: value?.endpoint ?? value?.Endpoint ?? "",
+    notifyOnAppointmentCreated:
+      value?.notifyOnAppointmentCreated ?? value?.NotifyOnAppointmentCreated ?? false,
+    notifyOnAppointmentUpdated:
+      value?.notifyOnAppointmentUpdated ?? value?.NotifyOnAppointmentUpdated ?? false,
+    notifyOnAppointmentDeleted:
+      value?.notifyOnAppointmentDeleted ?? value?.NotifyOnAppointmentDeleted ?? false,
+  };
+}
+
+function currentBrowserLabel() {
+  if (typeof navigator === "undefined") return "ovaj preglednik";
+
+  const userAgent = navigator.userAgent;
+  if (/Edg\//.test(userAgent)) return "Microsoft Edge";
+  if (/OPR\//.test(userAgent)) return "Opera";
+  if (/Firefox\//.test(userAgent)) return "Firefox";
+  if (/CriOS\//.test(userAgent)) return "Chrome na iOS-u";
+  if (/Chrome\//.test(userAgent)) return "Google Chrome";
+  if (/Safari\//.test(userAgent)) return "Safari";
+  return "ovaj preglednik";
+}
 
 function dateKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -91,6 +131,12 @@ export default function SchedulePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [pushSupported, setPushSupported] = useState(null);
+  const [pushPreferences, setPushPreferences] = useState(null);
+  const [pushLoading, setPushLoading] = useState(false);
+  const [pushSaving, setPushSaving] = useState(false);
+  const [pushError, setPushError] = useState("");
+  const [browserLabel, setBrowserLabel] = useState("ovaj preglednik");
   const [isMobile, setIsMobile] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [showPending, setShowPending] = useState(false);
@@ -126,6 +172,7 @@ export default function SchedulePage() {
   const visibleStart = calendarDays[0].date;
   const visibleEnd = new Date(calendarDays[calendarDays.length - 1].date);
   visibleEnd.setDate(visibleEnd.getDate() + 1);
+  const accountEmail = currentUser?.email ?? currentUser?.Email ?? "trenutni račun";
 
   // Patches the edited appointment into local state instead of refetching the whole range.
   const applyAppointmentUpdate = (rawAppointment) => {
@@ -202,6 +249,10 @@ export default function SchedulePage() {
   }, []);
 
   useEffect(() => {
+    setBrowserLabel(currentBrowserLabel());
+  }, []);
+
+  useEffect(() => {
     if (!showCreateMenu) return undefined;
     const closeOnOutsideClick = (event) => {
       if (!createMenuRef.current?.contains(event.target))
@@ -222,6 +273,102 @@ export default function SchedulePage() {
     if (currentUser && canUseSchedule(currentUser)) load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser, week, viewMode]);
+
+  useEffect(() => {
+    if (!currentUser) return undefined;
+
+    let cancelled = false;
+    const loadPushPreferences = async () => {
+      if (!isPushNotificationSupported()) {
+        if (!cancelled) {
+          setPushSupported(false);
+          setPushLoading(false);
+        }
+        return;
+      }
+
+      setPushSupported(true);
+      setPushLoading(true);
+      setPushError("");
+      try {
+        const subscription = await getBrowserPushSubscription();
+        if (!subscription) {
+          if (!cancelled) setPushPreferences(null);
+          return;
+        }
+
+        const response = await getPushPreferences(subscription.endpoint);
+        if (!cancelled) {
+          setPushPreferences(
+            response?.status >= 200 && response.status < 300
+              ? normalizePushPreferences(response.data)
+              : null,
+          );
+        }
+      } catch {
+        if (!cancelled)
+          setPushError("Obavijesti nisu dostupne u ovom pregledniku.");
+      } finally {
+        if (!cancelled) setPushLoading(false);
+      }
+    };
+
+    loadPushPreferences();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUser]);
+
+  const togglePushNotifications = async (enabled) => {
+    setPushSaving(true);
+    setPushError("");
+    try {
+      if (!enabled) {
+        const subscription = await getBrowserPushSubscription();
+        const endpoint = subscription?.endpoint || pushPreferences?.endpoint;
+        if (endpoint) {
+          const response = await removePushSubscription(endpoint);
+          if (response?.status && response.status !== 204 && response.status !== 404)
+            throw new Error("Spremanje promjene nije uspjelo.");
+        }
+        await subscription?.unsubscribe();
+        setPushPreferences(null);
+        return;
+      }
+
+      const configResponse = await getPushConfig();
+      const publicKey = configResponse?.data?.publicKey ?? configResponse?.data?.PublicKey;
+      if (configResponse?.status < 200 || configResponse.status >= 300 || !publicKey)
+        throw new Error(configResponse?.data?.message || "Web Push nije konfiguriran.");
+
+      const subscription = await createBrowserPushSubscription(publicKey);
+      const response = await savePushSubscription(subscription, defaultPushPreferences);
+      if (response?.status < 200 || response.status >= 300)
+        throw new Error(response?.data?.message || "Spremanje obavijesti nije uspjelo.");
+
+      setPushPreferences(normalizePushPreferences(response.data));
+    } catch (pushException) {
+      setPushError(pushException.message || "Promjena obavijesti nije uspjela.");
+    } finally {
+      setPushSaving(false);
+    }
+  };
+
+  const changePushPreference = async (key, value) => {
+    if (!pushPreferences) return;
+
+    const previous = pushPreferences;
+    const updated = { ...previous, [key]: value };
+    setPushPreferences(updated);
+    setPushSaving(true);
+    setPushError("");
+    const response = await updatePushPreferences(updated.endpoint, updated);
+    if (response?.status !== 204) {
+      setPushPreferences(previous);
+      setPushError(response?.data?.message || "Spremanje obavijesti nije uspjelo.");
+    }
+    setPushSaving(false);
+  };
 
   const movePeriod = (amount) => {
     if (viewMode === "month") {
@@ -558,6 +705,60 @@ export default function SchedulePage() {
                 </button>
               </div>
             </div>
+          </div>
+          <div className={styles.pushNotifications} aria-labelledby="push-notifications-title">
+            <div className={styles.pushNotificationsHeader}>
+              <div>
+                <h2 id="push-notifications-title">Obavijesti rasporeda</h2>
+                <p>Račun: {accountEmail} · Uređaj/preglednik: {browserLabel}</p>
+              </div>
+              {pushSupported === true ? (
+                <label className={styles.pushMasterToggle}>
+                  <input
+                    type="checkbox"
+                    checked={Boolean(pushPreferences)}
+                    disabled={pushLoading || pushSaving}
+                    onChange={(event) => togglePushNotifications(event.target.checked)}
+                  />
+                  <span>Uključi obavijesti</span>
+                </label>
+              ) : null}
+            </div>
+            {pushSupported === false ? (
+              <p className={styles.pushNotice}>Ovaj preglednik ne podržava obavijesti rasporeda.</p>
+            ) : null}
+            {pushError ? <p className={styles.pushError} role="alert">{pushError}</p> : null}
+            {pushPreferences ? (
+              <div className={styles.pushPreferenceList}>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={pushPreferences.notifyOnAppointmentCreated}
+                    disabled={pushSaving}
+                    onChange={(event) => changePushPreference("notifyOnAppointmentCreated", event.target.checked)}
+                  />
+                  <span>Novi termin</span>
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={pushPreferences.notifyOnAppointmentUpdated}
+                    disabled={pushSaving}
+                    onChange={(event) => changePushPreference("notifyOnAppointmentUpdated", event.target.checked)}
+                  />
+                  <span>Promjena ili zakazivanje termina</span>
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={pushPreferences.notifyOnAppointmentDeleted}
+                    disabled={pushSaving}
+                    onChange={(event) => changePushPreference("notifyOnAppointmentDeleted", event.target.checked)}
+                  />
+                  <span>Obrisani termin</span>
+                </label>
+              </div>
+            ) : null}
           </div>
           {error ? <div className={styles.error}>{error}</div> : null}
           {pendingAppointments.length > 0 ? (

@@ -32,7 +32,9 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(
                     "http://localhost:3000",
-                    "http://127.0.0.1:3000")
+                  "http://127.0.0.1:3000",
+                  "http://192.168.1.5:3000",
+                  "http://192.168.1.5:3001")
               .AllowAnyMethod()
               .AllowAnyHeader()
               .WithExposedHeaders("Authorization", "Content-Disposition");
@@ -73,6 +75,7 @@ builder.Services.AddRateLimiter(options =>
 });
 
 builder.Services.AddHttpClient();
+builder.Services.Configure<PushNotificationOptions>(builder.Configuration.GetSection("Vapid"));
 
 // Add services to the container.
 builder.Host
@@ -84,6 +87,9 @@ builder.Host
         containerBuilder.RegisterType<UserService>().As<IUserService>();
         containerBuilder.RegisterType<AppointmentRepository>().As<IAppointmentRepository>();
         containerBuilder.RegisterType<AppointmentService>().As<IAppointmentService>();
+        containerBuilder.RegisterType<PushSubscriptionRepository>().As<IPushSubscriptionRepository>();
+        containerBuilder.RegisterType<PushNotificationJobRepository>().As<IPushNotificationJobRepository>();
+        containerBuilder.RegisterType<PushNotificationService>().As<IPushNotificationService>();
 
         containerBuilder.RegisterType<EmailVerificationTokenRepository>().As<IEmailVerificationTokenRepository>();
         containerBuilder.RegisterType<EmailService>().As<IEmailService>();
@@ -129,6 +135,7 @@ builder.Host
 
 builder.Services.AddSingleton<IEmailQueue, EmailQueue>();
 builder.Services.AddHostedService<EmailWorkerService>();
+builder.Services.AddHostedService<PushNotificationWorkerService>();
 
 builder.Services.AddHttpContextAccessor();
 
