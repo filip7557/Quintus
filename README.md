@@ -34,3 +34,27 @@ Aplikacija primarno služi kao **digitalna vizitka i prezentacija usluga**, ali 
 ### 🎨 Frontend
 - **Next.js (React)** – Moderan framework za brzo renderiranje, odlične performanse i SEO.
 - **Axios** – HTTP klijent za pouzdanu komunikaciju s REST API-jem.
+
+---
+
+## Web Push obavijesti rasporeda
+
+Admin, Owner i Worker korisnici mogu uključiti obavijesti za raspored zasebno na svakom pregledniku i uređaju. Na stranici rasporeda mogu odabrati obavijesti za nove, promijenjene ili obrisane termine. Autor promjene nikad ne prima vlastitu obavijest.
+
+Web Push zahtijeva HTTPS u produkciji. Za lokalni razvoj preglednici dopuštaju `localhost`, ali stvarni uređaji i instalirana aplikacija moraju koristiti sigurnu HTTPS domenu.
+
+Jednom generirajte VAPID par ključeva, primjerice s alatom `web-push`:
+
+```text
+npx web-push generate-vapid-keys
+```
+
+Zatim postavite sljedeće varijable okruženja samo za backend (ili ekvivalentne User Secrets vrijednosti):
+
+```text
+Vapid__PublicKey=<VAPID public key>
+Vapid__PrivateKey=<VAPID private key>
+Vapid__Subject=mailto:kontakt@instalacije-quintus.hr
+```
+
+Privatni ključ se ne smije dodati u frontend, Git ili `docker-compose.yml`. Backend bez potpune VAPID konfiguracije i dalje radi, ali isključuje dostavu Web Push obavijesti i API vraća jasnu poruku pri pokušaju uključivanja.
