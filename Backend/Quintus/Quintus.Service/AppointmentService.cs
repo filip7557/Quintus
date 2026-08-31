@@ -10,12 +10,14 @@ namespace Quintus.Service
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly IAuthService _authService;
         private readonly IUserRepository _userRepository;
+        private readonly IPushNotificationService _pushNotificationService;
 
-        public AppointmentService(IAppointmentRepository appointmentRepository, IAuthService authService, IUserRepository userRepository)
+        public AppointmentService(IAppointmentRepository appointmentRepository, IAuthService authService, IUserRepository userRepository, IPushNotificationService pushNotificationService)
         {
             _appointmentRepository = appointmentRepository;
             _authService = authService;
             _userRepository = userRepository;
+            _pushNotificationService = pushNotificationService;
         }
 
         public async Task<List<AppointmentResponse>> GetByRangeAsync(DateTime weekStart, DateTime weekEnd)
@@ -56,6 +58,10 @@ namespace Quintus.Service
             };
 
             var savedAppointment = await _appointmentRepository.AddAsync(appointment);
+            await _pushNotificationService.EnqueueAppointmentChangeAsync(
+                PushNotificationEventType.AppointmentCreated,
+                currentUser.Id.Value,
+                savedAppointment);
             var appointmentWithCreator = await _appointmentRepository.GetByIdAsync(savedAppointment.Id);
             return appointmentWithCreator == null ? null : ToResponse(appointmentWithCreator);
         }
@@ -78,16 +84,29 @@ namespace Quintus.Service
             if (wasPending && !request.StartAt.HasValue)
                 throw new ArgumentException("Za dovršetak termina potrebno je unijeti datum i vrijeme početka.");
 
-            appointment.Title = request.Title.Trim();
-            appointment.StartAt = request.StartAt?.ToUniversalTime();
-            appointment.EndAt = request.EndAt?.ToUniversalTime();
-            appointment.RepeatUntil = request.RepeatUntil?.ToUniversalTime();
-            appointment.Notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim();
+            var title = request.Title.Trim();
+            var startAt = request.StartAt?.ToUniversalTime();
+            var endAt = request.EndAt?.ToUniversalTime();
+            var repeatUntil = request.RepeatUntil?.ToUniversalTime();
+            var notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim();
+            if (appointment.Title == title && appointment.StartAt == startAt && appointment.EndAt == endAt &&
+                appointment.RepeatUntil == repeatUntil && appointment.Notes == notes)
+                return ToResponse(appointment);
+
+            appointment.Title = title;
+            appointment.StartAt = startAt;
+            appointment.EndAt = endAt;
+            appointment.RepeatUntil = repeatUntil;
+            appointment.Notes = notes;
 
             var updated = await _appointmentRepository.UpdateAsync(appointment);
             if (!updated)
                 return null;
 
+            await _pushNotificationService.EnqueueAppointmentChangeAsync(
+                PushNotificationEventType.AppointmentUpdated,
+                currentUser.Id.Value,
+                appointment);
             var updatedAppointment = await _appointmentRepository.GetByIdAsync(appointmentId);
             return updatedAppointment == null ? null : ToResponse(updatedAppointment);
         }
@@ -125,7 +144,16 @@ namespace Quintus.Service
             if (!isPending && !isAdminOrOwner && appointment.CreatedByUserId != currentUser.Id.Value)
                 throw new UnauthorizedAccessException("Samo autor, Owner ili Admin može obrisati termin.");
 
-            return await _appointmentRepository.DeleteAsync(appointment);
+            var deleted = await _appointmentRepository.DeleteAsync(appointment);
+            if (deleted)
+            {
+                await _pushNotificationService.EnqueueAppointmentChangeAsync(
+                    PushNotificationEventType.AppointmentDeleted,
+                    currentUser.Id.Value,
+                    appointment);
+            }
+
+            return deleted;
         }
 
         private static AppointmentResponse ToResponse(Appointment appointment)

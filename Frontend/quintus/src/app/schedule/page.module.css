@@ -113,3 +113,16 @@
 }
 
 .mobileCreateMenu { display: none; }
+.pushNotifications { margin: 0 0 14px; padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,.1); background: rgba(18,24,27,.2); }
+.pushNotificationsHeader { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.pushNotifications h2 { margin: 0; font-size: .9rem; }
+.pushNotifications p { margin: 3px 0 0; color: rgba(238,245,255,.65); font-size: .75rem; }
+.pushMasterToggle,.pushPreferenceList label { display: flex; align-items: center; gap: 8px; color: #eef5ff; cursor: pointer; }
+.pushMasterToggle { flex: 0 0 auto; font-size: .85rem; font-weight: 600; }
+.pushMasterToggle input,.pushPreferenceList input { width: 16px; height: 16px; margin: 0; accent-color: #6ea8fe; cursor: pointer; }
+.pushMasterToggle input:disabled,.pushPreferenceList input:disabled { cursor: wait; }
+.pushPreferenceList { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 8px; }
+.pushPreferenceList label { min-width: 0; color: rgba(238,245,255,.82); font-size: .82rem; }
+.pushError { color: #ff9b9b !important; }
+.pushNotice { color: rgba(238,245,255,.65); }
+@media (max-width:760px) { .pushNotificationsHeader { align-items: flex-start; flex-direction: column; } .pushPreferenceList { grid-template-columns: 1fr; } }
