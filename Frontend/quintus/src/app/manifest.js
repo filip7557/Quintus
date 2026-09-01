@@ -8,7 +8,7 @@ export default function manifest() {
     scope: "/",
     display: "standalone",
     background_color: "#333a3d",
-    theme_color: "#007bff",
+    theme_color: "#333a3d",
     icons: [
       {
         src: "/favicon.ico",
