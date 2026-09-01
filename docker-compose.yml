@@ -38,6 +38,10 @@ services:
         restart: always
         depends_on:
             - backend
+        environment:
+            # Server-side only: lets SSR/sitemap reach the backend over the Docker network
+            # instead of round-tripping through the public domain.
+            API_BASE_URL: http://backend:8080/api
         expose:
             - "3000"
 

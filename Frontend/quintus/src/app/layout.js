@@ -50,7 +50,7 @@ export const metadata = {
     description:
       "Ovlašteni monteri klima uređaja za montažu, servis i održavanje u Našicama i Slavoniji. Quintus pruža i usluge grijanja, vode i plina.",
     url: "/",
-    siteName: "Quintus | Obrt za vodu, plin, grijanje i klimatizaciju - Našice",
+    siteName: "Quintus",
     locale: "hr_HR",
     type: "website",
     images: [
@@ -79,9 +79,24 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": "https://www.instalacije-quintus.hr/#website",
+    name: "Quintus",
+    alternateName: "Instalacije Quintus",
+    url: "https://www.instalacije-quintus.hr/",
+  };
+
   return (
     <html lang="hr" data-scroll-behavior="smooth">
       <body id="home">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(websiteSchema).replace(/</g, "\\u003c"),
+          }}
+        />
         <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
