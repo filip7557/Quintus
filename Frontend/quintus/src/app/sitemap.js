@@ -2,6 +2,10 @@ import { getSiteUrl } from "@/lib/siteUrl";
 import { slugify } from "@/lib/slugify";
 import { getSiteSettings } from "@/services/siteSettingsService";
 
+// Fetch services at request time; the backend API isn't reachable during `next build`,
+// which would otherwise bake an empty service list into a statically generated sitemap.
+export const dynamic = "force-dynamic";
+
 const siteUrl = getSiteUrl();
 
 const routes = [

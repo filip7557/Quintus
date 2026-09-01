@@ -72,7 +72,7 @@ export async function generateMetadata({ params }) {
       title: pageTitle,
       description,
       url: canonical,
-      siteName: "Quintus | Obrt za vodu, plin, grijanje i klimatizaciju - Našice",
+      siteName: "Quintus",
       locale: "hr_HR",
       type: "website",
       images: imageUrls.length
