@@ -39,6 +39,9 @@ export const metadata = {
     "plinske instalacije",
   ],
   manifest: "/manifest.webmanifest",
+  other: {
+    "theme-color": "#333a3d",
+  },
   alternates: {
     canonical: "https://www.instalacije-quintus.hr",
     languages: {
