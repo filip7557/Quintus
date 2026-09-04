@@ -137,9 +137,9 @@ export default function OfferForm() {
   // Add item to table
   const handleAddItem = () => {
     const errors = [];
-    if (!itemName.trim()) errors.push("Ime proizvoda je obavezno");
-    if (!itemQuantity || itemQuantity <= 0) errors.push("Količina mora biti > 0");
-    if (!itemPrice || itemPrice < 0) errors.push("Cijena mora biti >= 0");
+    if (!itemName.trim()) errors.push("Ime proizvoda je obavezno.");
+    if (!itemQuantity || itemQuantity <= 0) errors.push("Količina mora biti veća od 0.");
+    if (!itemPrice) errors.push("Cijena mora biti unešena.");
 
     if (errors.length > 0) {
       setError(errors[0]);
@@ -419,7 +419,6 @@ export default function OfferForm() {
                   placeholder="0.00"
                   value={itemPrice}
                   onChange={(e) => setItemPrice(e.target.value)}
-                  min="0"
                   step="0.01"
                 />
               </div>
@@ -442,7 +441,7 @@ export default function OfferForm() {
                 type="button"
                 className={styles.addItemBtn}
                 onClick={handleAddItem}
-                disabled={!itemName.trim() || !itemUnit || !itemQuantity || itemQuantity <= 0 || !itemPrice || itemPrice < 0}
+                disabled={!itemName.trim() || !itemUnit || !itemQuantity || itemQuantity <= 0 || !itemPrice}
               >
                 Dodaj proizvod
               </button>
