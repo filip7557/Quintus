@@ -158,15 +158,44 @@ export default function SchedulePage() {
     [week],
   );
 
+  // A week can span two months, so anchor the month view to the current day
+  // when the displayed week contains it, otherwise to the week's Thursday
+  // (the month most of the week belongs to).
+  const displayMonth = useMemo(() => {
+    const today = new Date();
+    const weekEnd = new Date(week);
+    weekEnd.setDate(week.getDate() + 7);
+    if (today >= week && today < weekEnd) return today;
+    const thursday = new Date(week);
+    thursday.setDate(week.getDate() + 3);
+    return thursday;
+  }, [week]);
+
   const monthDays = useMemo(() => {
-    const monthStart = new Date(week.getFullYear(), week.getMonth(), 1);
+    const monthStart = new Date(
+      displayMonth.getFullYear(),
+      displayMonth.getMonth(),
+      1,
+    );
     const gridStart = mondayOf(monthStart);
-    return Array.from({ length: 42 }, (_, index) => {
+    const monthEnd = new Date(
+      displayMonth.getFullYear(),
+      displayMonth.getMonth() + 1,
+      0,
+    );
+    // End the grid on the Sunday of the week containing the month's last day,
+    // so months that fit into 4 or 5 weeks don't render an extra row of the
+    // next month (a 31-day month starting on a weekend can still need 6).
+    const gridEnd = new Date(monthEnd);
+    gridEnd.setDate(monthEnd.getDate() + (7 - (monthEnd.getDay() || 7)));
+    const dayCount =
+      Math.round((gridEnd - gridStart) / (24 * 60 * 60 * 1000)) + 1;
+    return Array.from({ length: dayCount }, (_, index) => {
       const date = new Date(gridStart);
       date.setDate(gridStart.getDate() + index);
       return { label: days[index % 7], date, key: dateKey(date) };
     });
-  }, [week]);
+  }, [displayMonth]);
 
   const calendarDays = viewMode === "month" ? monthDays : weekDays;
   const visibleStart = calendarDays[0].date;
@@ -372,7 +401,13 @@ export default function SchedulePage() {
 
   const movePeriod = (amount) => {
     if (viewMode === "month") {
-      setWeek(new Date(week.getFullYear(), week.getMonth() + amount, 1));
+      setWeek(
+        new Date(
+          displayMonth.getFullYear(),
+          displayMonth.getMonth() + amount,
+          1,
+        ),
+      );
       return;
     }
 
@@ -664,7 +699,7 @@ export default function SchedulePage() {
               <h1 className={styles.title}>Raspored</h1>
               <p className={styles.subtitle}>
                 {viewMode === "month"
-                  ? week.toLocaleDateString("hr-HR", {
+                  ? displayMonth.toLocaleDateString("hr-HR", {
                       month: "long",
                       year: "numeric",
                     })
@@ -816,7 +851,7 @@ export default function SchedulePage() {
             >
               {calendarDays.map((day) => (
                 <div
-                  className={`${styles.day} ${viewMode === "month" && day.date.getMonth() !== week.getMonth() ? styles.outsideMonth : ""}`}
+                  className={`${styles.day} ${viewMode === "month" && day.date.getMonth() !== displayMonth.getMonth() ? styles.outsideMonth : ""}`}
                   key={day.key}
                 >
                   <button
