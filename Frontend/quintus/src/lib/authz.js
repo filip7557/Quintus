@@ -17,6 +17,11 @@ export function isAdminOrOwner(user) {
   return role === "admin" || role === "owner";
 }
 
+export function canManageOffers(user) {
+  const role = getRoleName(user).toLowerCase();
+  return role === "admin" || role === "owner" || role === "worker";
+}
+
 export function isAdmin(user) {
   const role = getRoleName(user).toLowerCase();
   return role === "admin";

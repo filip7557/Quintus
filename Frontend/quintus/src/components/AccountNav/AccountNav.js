@@ -5,13 +5,14 @@ import { getCurrentUser, logout, subscribeToAuthChanges } from "@/services/authS
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "./AccountNav.module.css";
-import { canUseSchedule, isAdminOrOwner } from "@/lib/authz";
+import { canManageOffers, canUseSchedule, isAdminOrOwner } from "@/lib/authz";
 
 export default function AccountNav() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [offersOpen, setOffersOpen] = useState(false);
   const [isAdminOrOwnerUser, setIsAdminOrOwnerUser] = useState(false);
+  const [canManageOffersUser, setCanManageOffersUser] = useState(false);
   const [canUseScheduleUser, setCanUseScheduleUser] = useState(false);
   const router = useRouter();
   const rootRef = useRef(null);
@@ -26,21 +27,25 @@ export default function AccountNav() {
             if (response?.data) {
               setIsLoggedIn(true);
               setIsAdminOrOwnerUser(isAdminOrOwner(response.data));
+              setCanManageOffersUser(canManageOffers(response.data));
               setCanUseScheduleUser(canUseSchedule(response.data));
             } else {
               setIsLoggedIn(false);
               setIsAdminOrOwnerUser(false);
+              setCanManageOffersUser(false);
               setCanUseScheduleUser(false);
             }
           })
           .catch(() => {
             setIsLoggedIn(false);
             setIsAdminOrOwnerUser(false);
+            setCanManageOffersUser(false);
             setCanUseScheduleUser(false);
           });
       } else {
         setIsLoggedIn(false);
         setIsAdminOrOwnerUser(false);
+        setCanManageOffersUser(false);
       }
     };
 
@@ -86,6 +91,7 @@ export default function AccountNav() {
     } finally {
       setIsLoggedIn(false);
       setIsAdminOrOwnerUser(false);
+      setCanManageOffersUser(false);
       setCanUseScheduleUser(false);
       setIsOpen(false);
       router.replace("/");
@@ -156,7 +162,7 @@ export default function AccountNav() {
                 Raspored
               </Link>
             ) : null}
-            {isAdminOrOwnerUser ? (
+            {canManageOffersUser ? (
               <div className={`${styles.subMenuWrapper} ${offersOpen ? styles.subMenuOpen : ""}`}>
                 <button
                   type="button"
