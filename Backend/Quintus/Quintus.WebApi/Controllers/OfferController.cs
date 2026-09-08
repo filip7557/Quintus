@@ -17,7 +17,7 @@ namespace Quintus.WebAPI.Controllers
             _offerService = offerService;
         }
 
-        [Authorize(Roles = "Admin,Owner")]
+        [Authorize(Roles = "Admin,Owner,Worker")]
         [HttpGet]
         public async Task<IActionResult> GetOffersAsync([FromQuery] OfferFilter filter)
         {
@@ -25,7 +25,7 @@ namespace Quintus.WebAPI.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "Admin,Owner")]
+        [Authorize(Roles = "Admin,Owner,Worker")]
         [HttpGet("{offerId}")]
         public async Task<IActionResult> GetOfferByIdAsync(Guid offerId)
         {
@@ -34,7 +34,7 @@ namespace Quintus.WebAPI.Controllers
             return Ok(offer);
         }
 
-        [Authorize(Roles = "Admin,Owner")]
+        [Authorize(Roles = "Admin,Owner,Worker")]
         [HttpPost]
         public async Task<IActionResult> AddOfferAsync([FromBody] OfferDTO offer)
         {
@@ -54,7 +54,7 @@ namespace Quintus.WebAPI.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin,Owner")]
+        [Authorize(Roles = "Admin,Owner,Worker")]
         [HttpGet("{offerId}/pdf")]
         public async Task<IActionResult> GetOfferPdfAsync(Guid offerId)
         {
@@ -71,7 +71,7 @@ namespace Quintus.WebAPI.Controllers
             catch { return StatusCode(500, "Greska pri generiranju PDF-a."); }
         }
 
-        [Authorize(Roles = "Admin,Owner")]
+        [Authorize(Roles = "Admin,Owner,Worker")]
         [HttpPost("{offerId}/send-email")]
         public async Task<IActionResult> SendOfferEmailAsync(Guid offerId)
         {

@@ -15,7 +15,7 @@ namespace Quintus.WebAPI.Controllers
             _unitOfMeasurementService = unitOfMeasurementService;
         }
 
-        [Authorize(Roles = "Admin,Owner")]
+        [Authorize(Roles = "Admin,Owner,Worker")]
         [HttpGet]
         public async Task<IActionResult> GetAllAsync()
         {
@@ -23,7 +23,7 @@ namespace Quintus.WebAPI.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "Admin,Owner")]
+        [Authorize(Roles = "Admin,Owner,Worker")]
         [HttpPost]
         public async Task<IActionResult> AddAsync([FromBody] string name)
         {
