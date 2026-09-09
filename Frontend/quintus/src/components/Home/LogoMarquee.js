@@ -8,7 +8,7 @@ const manufacturers = [
   // { name: "Samsung", src: "/images/samsung.png", width: 2000, height: 306 },
   { name: "Vaillant", src: "/images/vaillant.png", width: 613, height: 161 },
   { name: "Tesla", src: "/images/tesla.webp", width: 947, height: 232 },
-  { name: "Toshiba", src: "/images/toshiba.png", width: 747, height: 122 },
+  // { name: "Toshiba", src: "/images/toshiba.png", width: 747, height: 122 },
 ];
 
 function LogoGroup({ duplicate = false }) {
