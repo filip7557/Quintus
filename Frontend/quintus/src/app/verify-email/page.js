@@ -8,6 +8,7 @@ import NavBar from "@/components/NavBar/NavBar";
 import styles from "./page.module.css";
 
 import { resendVerification, verifyEmail } from "@/services/authService";
+import { getEmailWarning } from "@/lib/formValidation";
 
 function getApiMessage(response) {
   const data = response?.data;
@@ -95,11 +96,12 @@ function VerifyEmailInner() {
     e.preventDefault();
 
     const trimmed = String(email || "").trim();
-    if (!trimmed) {
+    const warning = getEmailWarning(trimmed);
+    if (warning) {
       setResendState({
         loading: false,
         ok: false,
-        message: "Unesite email adresu.",
+        message: warning,
       });
       return;
     }
@@ -116,6 +118,9 @@ function VerifyEmailInner() {
 
     setResendState({ loading: false, ok, message });
   };
+
+  const emailWarning = email ? getEmailWarning(email) : "";
+  const canResend = !resendState.loading && !getEmailWarning(email);
 
   return (
     <>
@@ -159,6 +164,8 @@ function VerifyEmailInner() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="vas@email.com"
+                  maxLength={254}
+                  required
                   autoComplete="email"
                 />
               </label>
@@ -166,12 +173,16 @@ function VerifyEmailInner() {
               <button
                 className={styles.button}
                 type="submit"
-                disabled={resendState.loading}
+                disabled={!canResend}
               >
                 {resendState.loading
                   ? "Slanje..."
                   : "Ponovno pošalji verifikaciju"}
               </button>
+
+              {emailWarning ? (
+                <div className={`${styles.notice} ${styles.error}`}>{emailWarning}</div>
+              ) : null}
 
               {resendState.message ? (
                 <div

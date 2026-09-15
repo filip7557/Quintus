@@ -92,6 +92,50 @@ function localTime(value) {
     : "";
 }
 
+function getAppointmentFormWarning(form) {
+  if (!form) return "";
+
+  const title = String(form.title ?? "").trim();
+  const notes = String(form.notes ?? "");
+  if (!title) return "Unesite naslov termina.";
+  if (title.length > 200) return "Naslov može imati najviše 200 znakova.";
+  if (notes.length > 2000) return "Bilješke mogu imati najviše 2000 znakova.";
+
+  const hasDate = Boolean(form.date);
+  const hasStartTime = Boolean(form.startTime);
+  const hasStart = hasDate && hasStartTime;
+  const hasEndDate = Boolean(form.repeatEndDate);
+  const hasEndTime = Boolean(form.endTime);
+
+  if (hasDate !== hasStartTime)
+    return "Unesite i datum i vrijeme početka.";
+  if ((!form.isPending || form.id) && !hasStart)
+    return "Za spremanje termina unesite datum i vrijeme početka.";
+  if (hasEndTime && !hasEndDate)
+    return "Za vrijeme završetka unesite datum završetka.";
+
+  const startDate = hasStart ? new Date(`${form.date}T${form.startTime}`) : null;
+  const endDate = hasEndDate && hasEndTime
+    ? new Date(`${form.repeatEndDate}T${form.endTime}`)
+    : null;
+  const repeatUntil = hasEndDate && !hasEndTime
+    ? new Date(`${form.repeatEndDate}T12:00:00`)
+    : null;
+
+  if (
+    (startDate && Number.isNaN(startDate.getTime())) ||
+    (endDate && Number.isNaN(endDate.getTime())) ||
+    (repeatUntil && Number.isNaN(repeatUntil.getTime()))
+  )
+    return "Unesite ispravan datum i vrijeme termina.";
+  if (endDate && startDate && endDate <= startDate)
+    return "Završetak mora biti nakon početka.";
+  if (repeatUntil && startDate && dateKey(repeatUntil) < dateKey(startDate))
+    return "Datum završetka mora biti na dan početka ili nakon njega.";
+
+  return "";
+}
+
 function normalize(item) {
   return {
     id: item?.id ?? item?.Id,
@@ -586,6 +630,12 @@ export default function SchedulePage() {
   const submit = async (event) => {
     event.preventDefault();
     setError("");
+    const validationWarning = getAppointmentFormWarning(form);
+    if (validationWarning) {
+      setError(validationWarning);
+      return;
+    }
+
     const hasStart = Boolean(form.date && form.startTime);
     const hasEndDate = Boolean(form.repeatEndDate);
     const hasEndTime = Boolean(form.endTime);
@@ -664,6 +714,10 @@ export default function SchedulePage() {
     }
     setSaving(false);
   };
+
+  const appointmentFormWarning = form?.readOnly
+    ? ""
+    : getAppointmentFormWarning(form);
 
   if (!authChecked) {
     return (
@@ -1015,6 +1069,11 @@ export default function SchedulePage() {
                 {error}
               </div>
             ) : null}
+            {!error && appointmentFormWarning ? (
+              <div className={styles.error} role="alert">
+                {appointmentFormWarning}
+              </div>
+            ) : null}
             <label>
               Naslov
               <input
@@ -1152,7 +1211,7 @@ export default function SchedulePage() {
                 {form.readOnly ? "Zatvori" : "Odustani"}
               </button>
               {form.readOnly ? null : (
-                <button type="submit" disabled={saving}>
+                <button type="submit" disabled={saving || Boolean(appointmentFormWarning)}>
                   {saving ? "Spremanje..." : "Spremi"}
                 </button>
               )}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import styles from "./RegisterForm.module.css";
 
 import { register } from "@/services/authService";
+import { getEmailWarning, getPasswordWarning, getPhoneWarning } from "@/lib/formValidation";
 
 function getApiMessage(payload) {
   if (!payload) return "";
@@ -93,7 +94,7 @@ export default function RegisterForm({ setIsRegister, router, onRegistered }) {
 
   const validatePassword = (pass) => {
     setPasswordChecks({
-      length: pass.length >= 6,
+      length: pass.length >= 8 && pass.length <= 128,
       uppercase: /[A-Z]/.test(pass),
       lowercase: /[a-z]/.test(pass),
       number: /[0-9]/.test(pass),
@@ -111,8 +112,8 @@ export default function RegisterForm({ setIsRegister, router, onRegistered }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
-      setError("Lozinke se ne podudaraju.");
+    if (formWarning) {
+      setError(formWarning);
       return;
     }
     setError(null);
@@ -153,6 +154,30 @@ export default function RegisterForm({ setIsRegister, router, onRegistered }) {
     }, 100);
   }
 
+  const formWarning =
+    firstName.trim().length > 0 && firstName.trim().length < 3
+      ? "Ime mora imati najmanje 3 znaka."
+      : lastName.trim().length > 0 && lastName.trim().length < 3
+        ? "Prezime mora imati najmanje 3 znaka."
+        : email && getEmailWarning(email)
+          ? getEmailWarning(email)
+          : getPhoneWarning(phoneNumber)
+            ? getPhoneWarning(phoneNumber)
+            : password && getPasswordWarning(password, { requireComplexity: true })
+              ? getPasswordWarning(password, { requireComplexity: true })
+              : confirmPassword && password !== confirmPassword
+                ? "Lozinke se ne podudaraju."
+                : "";
+  const canSubmit =
+    firstName.trim().length >= 3 &&
+    firstName.trim().length <= 100 &&
+    lastName.trim().length >= 3 &&
+    lastName.trim().length <= 100 &&
+    !getEmailWarning(email) &&
+    !getPhoneWarning(phoneNumber) &&
+    !getPasswordWarning(password, { requireComplexity: true }) &&
+    password === confirmPassword;
+
   return (
     <div className={styles.register_form}>
       <div className={styles.register_card}>
@@ -176,6 +201,9 @@ export default function RegisterForm({ setIsRegister, router, onRegistered }) {
                 placeholder="Ime"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
+                minLength={3}
+                maxLength={100}
+                required
                 disabled={loading}
                 autoComplete="given-name"
               />
@@ -190,6 +218,9 @@ export default function RegisterForm({ setIsRegister, router, onRegistered }) {
                 placeholder="Prezime"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
+                minLength={3}
+                maxLength={100}
+                required
                 disabled={loading}
                 autoComplete="family-name"
               />
@@ -206,6 +237,7 @@ export default function RegisterForm({ setIsRegister, router, onRegistered }) {
                 placeholder="Broj telefona"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
+                maxLength={32}
                 disabled={loading}
                 autoComplete="tel"
               />
@@ -220,6 +252,8 @@ export default function RegisterForm({ setIsRegister, router, onRegistered }) {
                 placeholder="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                maxLength={254}
+                required
                 disabled={loading}
                 autoComplete="email"
               />
@@ -237,6 +271,9 @@ export default function RegisterForm({ setIsRegister, router, onRegistered }) {
                   placeholder="Lozinka"
                   value={password}
                   onChange={handlePasswordChange}
+                  minLength={8}
+                  maxLength={128}
+                  required
                   disabled={loading}
                 />
                 <button
@@ -256,7 +293,7 @@ export default function RegisterForm({ setIsRegister, router, onRegistered }) {
                       passwordChecks.length ? styles.valid : styles.invalid
                     }`}
                   >
-                    Najmanje 6 znakova
+                    Najmanje 8 znakova
                   </div>
                   <div
                     className={`${styles.check_item} ${
@@ -300,6 +337,9 @@ export default function RegisterForm({ setIsRegister, router, onRegistered }) {
                   placeholder="Potvrdite lozinku"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  minLength={8}
+                  maxLength={128}
+                  required
                   disabled={loading}
                 />
                 <button
@@ -324,21 +364,14 @@ export default function RegisterForm({ setIsRegister, router, onRegistered }) {
             </div>
           </div>
 
+          {formWarning && <p className={styles.error_message}>{formWarning}</p>}
+
           <button
             type="submit"
             className={styles.submit_btn}
             disabled={
               loading ||
-              email.length < 10 ||
-              !email.includes("@") ||
-              !passwordChecks.length ||
-              !passwordChecks.uppercase ||
-              !passwordChecks.lowercase ||
-              !passwordChecks.number ||
-              !passwordChecks.special ||
-              password !== confirmPassword ||
-              firstName.length < 3 ||
-              lastName.length < 3
+              !canSubmit
             }
           >
             {loading ? (

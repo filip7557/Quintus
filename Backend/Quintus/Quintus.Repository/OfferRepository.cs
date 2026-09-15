@@ -1,55 +1,98 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Quintus.Common;
 using Quintus.Model.Entities;
 using Quintus.Repository.Common;
 using Quintus.Repository.Context;
+using System.Diagnostics;
 
 namespace Quintus.Repository
 {
     public class OfferRepository : IOfferRepository
     {
         private readonly AppDbContext _context;
+        private readonly ILogger<OfferRepository> _logger;
 
-        public OfferRepository(AppDbContext context)
+        public OfferRepository(AppDbContext context, ILogger<OfferRepository> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<Offer?> AddOfferAsync(Offer offer)
         {
+            var stopwatch = Stopwatch.StartNew();
+            _logger.LogInformation(
+                "Persisting offer {OfferId} with number {OfferNumber}/{OfferYear} and {ItemCount} items.",
+                offer.Id,
+                offer.OfferNumber,
+                offer.OfferYear,
+                offer.Items.Count);
+
             try
             {
                 _context.Offers.Add(offer);
                 await _context.SaveChangesAsync();
+                _logger.LogInformation(
+                    "Persisted offer {OfferId} in {ElapsedMilliseconds} ms.",
+                    offer.Id,
+                    stopwatch.ElapsedMilliseconds);
                 return offer;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error adding offer: {ex.Message}");
+                _logger.LogError(
+                    ex,
+                    "Failed to persist offer {OfferId} with number {OfferNumber}/{OfferYear} after {ElapsedMilliseconds} ms.",
+                    offer.Id,
+                    offer.OfferNumber,
+                    offer.OfferYear,
+                    stopwatch.ElapsedMilliseconds);
                 throw;
             }
         }
 
         public async Task<int> GetNextOfferNumberAsync(int offerYear)
         {
+            _logger.LogInformation("Resolving next offer number for year {OfferYear}.", offerYear);
             var currentMax = await _context.Offers
                 .Where(o => o.OfferYear == offerYear)
                 .MaxAsync(o => (int?)o.OfferNumber);
 
-            return (currentMax ?? 0) + 1;
+            var nextNumber = (currentMax ?? 0) + 1;
+            _logger.LogInformation(
+                "Resolved next offer number {OfferNumber}/{OfferYear}.",
+                nextNumber,
+                offerYear);
+            return nextNumber;
         }
 
         public async Task<Offer?> GetOfferByIdAsync(Guid offerId)
         {
+            var stopwatch = Stopwatch.StartNew();
+            _logger.LogInformation("Loading offer {OfferId} with items.", offerId);
+
             try
             {
-                return await _context.Offers
+                var offer = await _context.Offers
                     .Include(o => o.Items)
                     .FirstOrDefaultAsync(o => o.Id == offerId);
+
+                _logger.LogInformation(
+                    "Offer {OfferId} load completed in {ElapsedMilliseconds} ms. Found: {OfferFound}, ItemCount: {ItemCount}.",
+                    offerId,
+                    stopwatch.ElapsedMilliseconds,
+                    offer != null,
+                    offer?.Items.Count ?? 0);
+                return offer;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error retrieving offer by ID: {ex.Message}");
+                _logger.LogError(
+                    ex,
+                    "Failed to load offer {OfferId} after {ElapsedMilliseconds} ms.",
+                    offerId,
+                    stopwatch.ElapsedMilliseconds);
                 return null;
             }
         }

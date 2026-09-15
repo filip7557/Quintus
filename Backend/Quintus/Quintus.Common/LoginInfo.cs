@@ -6,6 +6,7 @@ namespace Quintus.Common
     {
         [Required]
         [EmailAddress]
+        [StringLength(254)]
         public string email { get; set; } = string.Empty;
 
         [Required]
