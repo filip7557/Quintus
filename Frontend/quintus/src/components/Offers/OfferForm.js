@@ -1,8 +1,15 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import styles from "./OfferForm.module.css";
-import { createOffer, downloadPDF, getFileNameFromResponse } from "@/services/offerService";
+import {
+  createOffer,
+  downloadPDF,
+  getFileNameFromResponse,
+  getOfferIdFromResponse,
+  setPendingOfferPdf,
+} from "@/services/offerService";
 import {
   getUnitsOfMeasurement,
   createUnitOfMeasurement,
@@ -13,6 +20,7 @@ const FIXED_NOTICE_TEXT =
   "Ova ponuda izrađena je na temelju stanja utvrđenog prilikom pregleda objekta. Tijekom izvođenja radova mogu se pojaviti skrivene ili nepredviđene okolnosti koje nije bilo moguće utvrditi unaprijed. U tom slučaju naručitelj će biti pravovremeno obaviješten, a dodatni radovi i eventualna promjena cijene izvršit će se isključivo uz prethodni dogovor.";
 
 export default function OfferForm() {
+  const router = useRouter();
   const [buyerName, setBuyerName] = useState("");
   const [buyerEmail, setBuyerEmail] = useState("");
   const [buyerPhone, setBuyerPhone] = useState("");
@@ -243,6 +251,14 @@ export default function OfferForm() {
           downloadPDF(response.data, getFileNameFromResponse(response, "Ponuda.pdf"));
         }
 
+        const offerId = getOfferIdFromResponse(response);
+        if (offerId && response?.data instanceof Blob) {
+          // Cache the just-generated PDF so the offer page can reuse it instead of regenerating.
+          setPendingOfferPdf(offerId, response.data);
+          router.push(`/offers/${offerId}`);
+          return;
+        }
+
         // Clear form
         setBuyerName("");
         setBuyerEmail("");
@@ -251,7 +267,7 @@ export default function OfferForm() {
         setItemName("");
         setItemUnit("");
         setItemQuantity("1");
-        setItemPrice("");""
+        setItemPrice("");
         setItemDiscountPercent("0");
         setCustomMessage(null);
         setTimeout(() => setSuccess(false), 3000);
@@ -533,7 +549,7 @@ export default function OfferForm() {
         {/* Custom message */}
         <div className={styles.section}>
           <div className={styles.formGroup}>
-            <label htmlFor="customMessage">Napomena</label>
+            <label htmlFor="customMessageAdditional">Napomena</label>
             
             {/* Fixed notice text (read-only) */}
             <div className={styles.fixedNoticeBox}>

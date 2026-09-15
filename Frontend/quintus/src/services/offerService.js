@@ -17,6 +17,26 @@ export function getFileNameFromResponse(response, fallback = "Ponuda.pdf") {
   return decodeFileName(header) ?? fallback;
 }
 
+export function getOfferIdFromResponse(response) {
+  return response?.headers?.["x-offer-id"] ?? response?.headers?.["X-Offer-Id"] ?? null;
+}
+
+// Single-slot in-memory cache so the offer page can reuse the PDF generated at creation time instead of regenerating it.
+let pendingOfferPdf = null;
+
+export function setPendingOfferPdf(offerId, blob) {
+  pendingOfferPdf = offerId && blob ? { offerId: String(offerId), blob } : null;
+}
+
+export function getPendingOfferPdf(offerId) {
+  if (!pendingOfferPdf || pendingOfferPdf.offerId !== String(offerId)) return null;
+  return pendingOfferPdf.blob;
+}
+
+export function clearPendingOfferPdf() {
+  pendingOfferPdf = null;
+}
+
 export async function getOffers({
   search,
   dateFrom,
