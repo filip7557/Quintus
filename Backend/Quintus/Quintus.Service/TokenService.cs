@@ -45,9 +45,9 @@ namespace Quintus.Service
                 return false;
             }
 
-            if (password.Length < 6)
+            if (password.Length < 8)
             {
-                errorMessage = "Lozinka mora imati barem 6 znakova.";
+                errorMessage = "Lozinka mora imati barem 8 znakova.";
                 return false;
             }
 

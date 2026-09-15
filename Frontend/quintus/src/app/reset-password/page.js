@@ -8,6 +8,7 @@ import NavBar from "@/components/NavBar/NavBar";
 import styles from "./page.module.css";
 
 import { resetPassword } from "@/services/authService";
+import { getPasswordWarning } from "@/lib/formValidation";
 
 function getApiMessage(payload) {
   if (!payload) return "";
@@ -40,12 +41,14 @@ function ResetPasswordInner() {
 
   const passwordsMismatch =
     Boolean(confirmPassword) && newPassword !== confirmPassword;
+  const passwordWarning = newPassword
+    ? getPasswordWarning(newPassword, { requireComplexity: true })
+    : "";
 
   const canSubmit =
     Boolean(token) &&
     !state.loading &&
-    Boolean(newPassword) &&
-    newPassword.length >= 6 &&
+    !getPasswordWarning(newPassword, { requireComplexity: true }) &&
     Boolean(confirmPassword) &&
     !passwordsMismatch;
 
@@ -123,11 +126,12 @@ function ResetPasswordInner() {
       return;
     }
 
-    if (!newPassword || newPassword.length < 6) {
+    const warning = getPasswordWarning(newPassword, { requireComplexity: true });
+    if (warning) {
       setState({
         loading: false,
         ok: false,
-        message: "Lozinka mora imati najmanje 6 znakova.",
+        message: warning,
       });
       return;
     }
@@ -199,6 +203,8 @@ function ResetPasswordInner() {
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="Nova lozinka"
+                      minLength={8}
+                      maxLength={128}
                       autoComplete="new-password"
                       disabled={state.loading}
                     />
@@ -238,6 +244,9 @@ function ResetPasswordInner() {
                   </div>
                   {passwordsMismatch ? (
                     <div className={styles.mismatchHint}>Lozinke se ne podudaraju.</div>
+                  ) : null}
+                  {passwordWarning ? (
+                    <div className={styles.mismatchHint}>{passwordWarning}</div>
                   ) : null}
                 </label>
 

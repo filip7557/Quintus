@@ -19,6 +19,9 @@ DotEnv.Load(options: new DotEnvOptions(probeForEnv: true));
 
 var builder = WebApplication.CreateBuilder(args);
 
+// The push worker polls every 10 seconds; keep EF command details out of normal logs.
+builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
+
 // Force HTTP-only by default (recommended when running behind nginx/ingress and terminating TLS there).
 // If you want HTTPS in-container, set ASPNETCORE_URLS yourself (and provide a cert).
 if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ASPNETCORE_URLS")))

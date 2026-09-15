@@ -1,4 +1,6 @@
-﻿namespace Quintus.Model.Entities
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Quintus.Model.Entities
 {
     public class Offer
     {
@@ -18,10 +20,23 @@
 
     public class OfferDTO
     {
+        [Required]
+        [StringLength(100, MinimumLength = 1)]
         public required string BuyerName { get; set; }
+
+        [EmailAddress]
+        [StringLength(254)]
         public string? BuyerEmail { get; set; }
+
+        [Phone]
+        [StringLength(32)]
         public string? BuyerPhone { get; set; }
+
+        [StringLength(2000)]
         public string? CustomMessage { get; set; }
+
+        [Required]
+        [MinLength(1)]
         public required List<ItemDTO> Items { get; set; }
     }
 }

@@ -6,6 +6,7 @@ import Link from "next/link";
 
 import { getCurrentUser, login, resendVerification } from "@/services/authService";
 import { getAuthorizedRedirect } from "@/lib/authz";
+import { getEmailWarning, getPasswordWarning } from "@/lib/formValidation";
 
 function getApiMessage(payload) {
   if (!payload) return "";
@@ -102,6 +103,10 @@ export default function LoginForm({ setIsRegister, router, redirectTo = "/" }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (formWarning) {
+      setError(formWarning);
+      return;
+    }
     setError("");
     setShowResend(false);
     setResendState({ loading: false, ok: false, message: "" });
@@ -163,6 +168,14 @@ export default function LoginForm({ setIsRegister, router, redirectTo = "/" }) {
     }, 100);
   }
 
+  const formWarning =
+    email && getEmailWarning(email)
+      ? getEmailWarning(email)
+      : password && getPasswordWarning(password)
+        ? getPasswordWarning(password)
+        : "";
+  const canSubmit = !getEmailWarning(email) && !getPasswordWarning(password);
+
   return (
     <div className={styles.login_form}>
       <div className={styles.login_card}>
@@ -215,6 +228,8 @@ export default function LoginForm({ setIsRegister, router, redirectTo = "/" }) {
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              maxLength={254}
+              required
               disabled={loading}
               autoComplete="email"
             />
@@ -230,6 +245,9 @@ export default function LoginForm({ setIsRegister, router, redirectTo = "/" }) {
                 placeholder="Lozinka"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                minLength={8}
+                maxLength={128}
+                required
                 disabled={loading}
                 autoComplete="current-password"
               />
@@ -245,10 +263,12 @@ export default function LoginForm({ setIsRegister, router, redirectTo = "/" }) {
             </div>
           </div>
 
+          {formWarning ? <div className={styles.error_message}>{formWarning}</div> : null}
+
           <button
             type="submit"
             className={styles.submit_btn}
-            disabled={loading}
+            disabled={loading || !canSubmit}
           >
             {loading ? (
               <>

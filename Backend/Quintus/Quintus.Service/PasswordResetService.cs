@@ -58,7 +58,7 @@ namespace Quintus.Service
                 intro: "Zaprimili smo zahtjev za reset lozinke.\nKliknite na gumb ispod kako biste postavili novu lozinku.",
                 ctaText: "Reset lozinke",
                 ctaUrl: resetUrl,
-                outro: "Ovaj link vrijedi 1 sat. Ako niste tra엍li reset, ignorirajte ovu poruku.",
+                outro: "Ovaj link vrijedi 1 sat. Ako niste tra탑ili reset, ignorirajte ovu poruku.",
                 logoUrl: "https://www.instalacije-quintus.hr/_next/image?url=%2Fimages%2Flogo.png&w=256&q=75"
             );
 
@@ -96,33 +96,33 @@ namespace Quintus.Service
                 return false;
             }
 
-            if (password.Length < 6)
+            if (password.Length < 8)
             {
-                errorMessage = "Lozinka mora imati barem 6 znakova.";
+                errorMessage = "Lozinka mora imati barem 8 znakova.";
                 return false;
             }
 
             if (!password.Any(char.IsUpper))
             {
-                errorMessage = "Lozinka mora sadr얷vati barem jedno veliko slovo.";
+                errorMessage = "Lozinka mora sadr탑avati barem jedno veliko slovo.";
                 return false;
             }
 
             if (!password.Any(char.IsLower))
             {
-                errorMessage = "Lozinka mora sadr얷vati barem jedno malo slovo.";
+                errorMessage = "Lozinka mora sadr탑avati barem jedno malo slovo.";
                 return false;
             }
 
             if (!password.Any(char.IsDigit))
             {
-                errorMessage = "Lozinka mora sadr얷vati barem jedan broj.";
+                errorMessage = "Lozinka mora sadr탑avati barem jedan broj.";
                 return false;
             }
 
             if (!password.Any(ch => "!@#$%^&*()-_=+[]{}|;:'\",.<>?/`~".Contains(ch)))
             {
-                errorMessage = "Lozinka mora sadr쉆vati barem jedan poseban znak.";
+                errorMessage = "Lozinka mora sadr탑avati barem jedan poseban znak.";
                 return false;
             }
 

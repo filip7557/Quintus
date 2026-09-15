@@ -7,6 +7,7 @@ import NavBar from "@/components/NavBar/NavBar";
 import styles from "./page.module.css";
 
 import { forgotPassword } from "@/services/authService";
+import { getEmailWarning } from "@/lib/formValidation";
 
 function getApiMessage(payload) {
   if (!payload) return "";
@@ -29,8 +30,9 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
 
     const trimmed = String(email || "").trim();
-    if (!trimmed) {
-      setState({ loading: false, ok: false, message: "Unesite email adresu." });
+    const warning = getEmailWarning(trimmed);
+    if (warning) {
+      setState({ loading: false, ok: false, message: warning });
       return;
     }
 
@@ -47,6 +49,9 @@ export default function ForgotPasswordPage() {
 
     setState({ loading: false, ok, message });
   };
+
+  const emailWarning = email ? getEmailWarning(email) : "";
+  const canSubmit = !state.loading && !getEmailWarning(email);
 
   return (
     <>
@@ -67,15 +72,21 @@ export default function ForgotPasswordPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="vas@email.com"
+                maxLength={254}
+                required
                 autoComplete="email"
                 disabled={state.loading}
               />
             </label>
 
-            <button className={styles.button} type="submit" disabled={state.loading}>
+            <button className={styles.button} type="submit" disabled={!canSubmit}>
               {state.loading ? "Slanje..." : "Pošalji reset link"}
             </button>
           </form>
+
+          {emailWarning ? (
+            <div className={`${styles.notice} ${styles.error}`}>{emailWarning}</div>
+          ) : null}
 
           {state.message ? (
             <div className={`${styles.notice} ${state.ok ? styles.success : styles.error}`}>

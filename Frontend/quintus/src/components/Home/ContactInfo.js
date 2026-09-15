@@ -80,6 +80,10 @@ export default function ContactInfo({
       <h3 className="contact-panel-title">Podaci</h3>
 
       <div className="contact-info-row">
+        <div className="contact-info-label">Vlasnik</div>
+        <div className="contact-info-value">Matej Peti</div>
+      </div>
+      <div className="contact-info-row">
         <div className="contact-info-label">Adresa</div>
         <div className="contact-info-value">
           {a ? (
