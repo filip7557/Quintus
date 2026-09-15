@@ -15,6 +15,7 @@ import {
   createUnitOfMeasurement,
   deleteUnitOfMeasurement,
 } from "@/services/unitOfMeasurementService";
+import { getEmailWarning, getPhoneWarning } from "@/lib/formValidation";
 
 const FIXED_NOTICE_TEXT =
   "Ova ponuda izrađena je na temelju stanja utvrđenog prilikom pregleda objekta. Tijekom izvođenja radova mogu se pojaviti skrivene ili nepredviđene okolnosti koje nije bilo moguće utvrditi unaprijed. U tom slučaju naručitelj će biti pravovremeno obaviješten, a dodatni radovi i eventualna promjena cijene izvršit će se isključivo uz prethodni dogovor.";
@@ -144,13 +145,8 @@ export default function OfferForm() {
 
   // Add item to table
   const handleAddItem = () => {
-    const errors = [];
-    if (!itemName.trim()) errors.push("Ime proizvoda je obavezno.");
-    if (!itemQuantity || itemQuantity <= 0) errors.push("Količina mora biti veća od 0.");
-    if (!itemPrice) errors.push("Cijena mora biti unešena.");
-
-    if (errors.length > 0) {
-      setError(errors[0]);
+    if (itemInputWarning) {
+      setError(itemInputWarning);
       return;
     }
 
@@ -212,15 +208,8 @@ export default function OfferForm() {
     e.preventDefault();
     setError(null);
 
-    // Validation
-    const errors = [];
-    if (!buyerName.trim()) errors.push("Ime kupca je obavezno");
-    if (buyerEmail.trim() && !buyerEmail.includes("@"))
-      errors.push("Validan email je obavezan");
-    if (items.length === 0) errors.push("Najmanje jedan proizvod je obavezan");
-
-    if (errors.length > 0) {
-      setError(errors[0]);
+    if (formWarning) {
+      setError(formWarning);
       return;
     }
 
@@ -283,9 +272,54 @@ export default function OfferForm() {
     }
   };
 
-  const isFormValid =
-    buyerName.trim().length > 0 &&
-    items.length > 0;
+  const quantityValue = Number.parseFloat(String(itemQuantity).replace(",", "."));
+  const priceValue = Number.parseFloat(String(itemPrice).replace(",", "."));
+  const discountValue = Number.parseFloat(String(itemDiscountPercent).replace(",", "."));
+  const itemInputStarted = Boolean(
+    itemName.trim() || itemUnit || itemPrice || itemQuantity !== "1" || itemDiscountPercent !== "0"
+  );
+  const itemInputWarning = !itemInputStarted
+    ? ""
+    : !itemName.trim()
+      ? "Unesite naziv proizvoda."
+      : itemName.trim().length > 200
+        ? "Naziv proizvoda može imati najviše 200 znakova."
+        : !itemUnit
+          ? "Odaberite jedinicu mjere."
+          : !Number.isFinite(quantityValue) || quantityValue <= 0
+            ? "Količina mora biti pozitivan broj."
+            : !Number.isFinite(priceValue) || priceValue < 0
+              ? "Cijena mora biti broj veći ili jednak nuli."
+              : !Number.isFinite(discountValue) || discountValue < 0 || discountValue > 100
+                ? "Popust mora biti broj između 0 i 100."
+                : "";
+  const invalidSavedItem = items.find(
+    (item) =>
+      !item.name?.trim() ||
+      !item.unitOfMeasurement?.trim() ||
+      !Number.isFinite(Number(item.quantity)) ||
+      Number(item.quantity) <= 0 ||
+      !Number.isFinite(Number(item.price)) ||
+      Number(item.price) < 0 ||
+      !Number.isFinite(Number(item.discountPercent)) ||
+      Number(item.discountPercent) < 0 ||
+      Number(item.discountPercent) > 100
+  );
+  const formWarning =
+    !buyerName.trim()
+      ? "Unesite ime kupca."
+      : buyerName.trim().length > 100
+        ? "Ime kupca može imati najviše 100 znakova."
+        : getEmailWarning(buyerEmail, { required: false })
+          ? getEmailWarning(buyerEmail, { required: false })
+          : getPhoneWarning(buyerPhone)
+            ? getPhoneWarning(buyerPhone)
+            : items.length === 0
+              ? "Dodajte najmanje jedan proizvod."
+              : invalidSavedItem
+                ? "Jedan od proizvoda sadrži neispravne podatke."
+                : "";
+  const isFormValid = !formWarning;
 
   return (
     <div className={styles.card}>
@@ -327,6 +361,7 @@ export default function OfferForm() {
               placeholder="kupac@primjer.com"
               value={buyerEmail}
               onChange={(e) => setBuyerEmail(e.target.value)}
+              maxLength={254}
             />
           </div>
 
@@ -338,6 +373,7 @@ export default function OfferForm() {
               placeholder="+385 1 1234 5678"
               value={buyerPhone}
               onChange={(e) => setBuyerPhone(e.target.value)}
+              maxLength={32}
             />
           </div>
         </div>
@@ -356,6 +392,7 @@ export default function OfferForm() {
                   placeholder="npr. Instalacija klime"
                   value={itemName}
                   onChange={(e) => setItemName(e.target.value)}
+                  maxLength={200}
                 />
               </div>
 
@@ -422,8 +459,8 @@ export default function OfferForm() {
                   placeholder="1"
                   value={itemQuantity}
                   onChange={(e) => setItemQuantity(e.target.value)}
-                  min="1"
-                  step="1"
+                  min="0.01"
+                  step="0.01"
                 />
               </div>
 
@@ -435,6 +472,7 @@ export default function OfferForm() {
                   placeholder="0.00"
                   value={itemPrice}
                   onChange={(e) => setItemPrice(e.target.value)}
+                  min="0"
                   step="0.01"
                 />
               </div>
@@ -457,11 +495,17 @@ export default function OfferForm() {
                 type="button"
                 className={styles.addItemBtn}
                 onClick={handleAddItem}
-                disabled={!itemName.trim() || !itemUnit || !itemQuantity || itemQuantity <= 0 || !itemPrice}
+                disabled={!itemInputStarted || Boolean(itemInputWarning)}
               >
                 Dodaj proizvod
               </button>
             </div>
+
+            {itemInputWarning && (
+              <div className={styles.errorMessage} role="alert">
+                {itemInputWarning}
+              </div>
+            )}
 
             {/* Items Table */}
             {items.length > 0 && (
@@ -582,6 +626,11 @@ export default function OfferForm() {
               <span className={styles.grandTotalValue}>
                 €{calculateGrandTotal()}
               </span>
+            </div>
+          )}
+          {formWarning && (
+            <div className={styles.errorMessage} role="alert">
+              {formWarning}
             </div>
           )}
           <button

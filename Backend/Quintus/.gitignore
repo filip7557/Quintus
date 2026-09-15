@@ -17,6 +17,7 @@ Release/
 *.generated.cs
 *.g.cs
 *.designer.cs
+!Quintus.Repository/Migrations/20260915191530_SupportDecimalOfferQuantities.Designer.cs
 
 # Visual Studio Code
 .vscode/

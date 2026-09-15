@@ -6,13 +6,13 @@ using QuestPDF.Infrastructure;
 using Quintus.Model;
 using Quintus.Model.Entities;
 using Quintus.Service.Common;
+using System.Diagnostics;
 using System.Globalization;
 
 namespace Quintus.Service
 {
     public class PdfOfferService
     {
-        private const string LogoUrl = "https://www.instalacije-quintus.hr/images/logo.png";
         private const string FontFamily = "DejaVu Sans";
 
         private readonly ISiteSettingsService _siteSettingsService;
@@ -28,13 +28,26 @@ namespace Quintus.Service
         {
             if (offer == null) throw new ArgumentNullException(nameof(offer));
 
+            var stopwatch = Stopwatch.StartNew();
+            _logger.LogInformation(
+                "Starting PDF rendering for offer {OfferId} with {ItemCount} items.",
+                offer.Id,
+                offer.Items?.Count ?? 0);
+
             QuestPDF.Settings.License = LicenseType.Community;
 
             var hrCulture = new CultureInfo("hr-HR");
             var siteSettings = await _siteSettingsService.GetSiteSettingsAsync();
+            _logger.LogInformation("Loaded site settings for offer {OfferId} PDF.", offer.Id);
             var logoBytes = await TryGetLogoBytesAsync();
+            _logger.LogInformation(
+                "Loaded local logo for offer {OfferId} PDF. Available: {LogoAvailable}, ByteCount: {LogoByteCount}.",
+                offer.Id,
+                logoBytes != null,
+                logoBytes?.Length ?? 0);
 
             EnsureFontRegistered();
+            _logger.LogInformation("Registered PDF font for offer {OfferId}.", offer.Id);
 
             var offerTitle = offer.OfferNumber > 0
                 ? $"Ponuda {offer.OfferNumber}/{(offer.OfferYear > 0 ? offer.OfferYear : offer.CreatedAt.Year)}"
@@ -42,7 +55,7 @@ namespace Quintus.Service
 
             var hasDiscount = (offer.Items ?? Enumerable.Empty<Item>()).Any(i => i.DiscountPercent > 0);
 
-            return Document.Create(container =>
+            var pdfBytes = Document.Create(container =>
             {
                 container.Page(page =>
                 {
@@ -55,18 +68,30 @@ namespace Quintus.Service
                     page.Footer().Element(ComposeFooter);
                 });
             }).GeneratePdf();
+
+            _logger.LogInformation(
+                "Rendered offer {OfferId} PDF in {ElapsedMilliseconds} ms. ByteCount: {PdfByteCount}.",
+                offer.Id,
+                stopwatch.ElapsedMilliseconds,
+                pdfBytes.Length);
+            return pdfBytes;
         }
 
         private async Task<byte[]?> TryGetLogoBytesAsync()
         {
+            var logoPath = Path.Combine(AppContext.BaseDirectory, "assets", "images", "logo.png");
+
             try
             {
-                using var client = new HttpClient();
-                return await client.GetByteArrayAsync(LogoUrl);
+                if (File.Exists(logoPath))
+                    return await File.ReadAllBytesAsync(logoPath);
+
+                _logger.LogWarning("Offer PDF logo was not found at {LogoPath}.", logoPath);
+                return null;
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to load logo image for offer PDF from {LogoUrl}", LogoUrl);
+                _logger.LogWarning(ex, "Failed to load logo image for offer PDF from {LogoPath}", logoPath);
                 return null;
             }
         }

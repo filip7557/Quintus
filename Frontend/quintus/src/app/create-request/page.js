@@ -7,6 +7,8 @@ import NavBar from "@/components/NavBar/NavBar";
 import { createRequest } from "@/services/requestService";
 import { getCurrentUser } from "@/services/authService";
 
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+
 export default function CreateRequestPage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
@@ -44,6 +46,12 @@ export default function CreateRequestPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+
+    if (formWarning) {
+      setError(formWarning);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -65,7 +73,30 @@ export default function CreateRequestPage() {
     }
   };
 
-  const isFormValid = title.trim().length > 0 && description.trim().length > 0;
+  const trimmedTitle = title.trim();
+  const trimmedDescription = description.trim();
+  const invalidImage = images.find((image) => !image.type.startsWith("image/"));
+  const oversizedImage = images.find((image) => image.size > MAX_IMAGE_SIZE_BYTES);
+  const formWarning =
+    trimmedTitle.length > 0 && trimmedTitle.length < 3
+      ? "Naslov mora imati najmanje 3 znaka."
+      : trimmedDescription.length > 0 && trimmedDescription.length < 10
+        ? "Opis mora imati najmanje 10 znakova."
+        : images.length === 0
+          ? "Odaberite najmanje jednu fotografiju."
+          : invalidImage
+            ? `${invalidImage.name} nije podržana fotografija.`
+            : oversizedImage
+              ? `Fotografija ${oversizedImage.name} veća je od 5 MB.`
+              : "";
+  const isFormValid =
+    trimmedTitle.length >= 3 &&
+    trimmedTitle.length <= 200 &&
+    trimmedDescription.length >= 10 &&
+    trimmedDescription.length <= 4000 &&
+    images.length > 0 &&
+    !invalidImage &&
+    !oversizedImage;
 
   return (
     <>
@@ -100,11 +131,12 @@ export default function CreateRequestPage() {
                 placeholder="Kratko opišite problem"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                maxLength={100}
+                minLength={3}
+                maxLength={200}
                 required
               />
               <span className={styles.charCount}>
-                {title.length}/100
+                {title.length}/200
               </span>
             </div>
 
@@ -115,23 +147,25 @@ export default function CreateRequestPage() {
                 placeholder="Detaljno opišite problem ili zahtjev"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                maxLength={500}
+                minLength={10}
+                maxLength={4000}
                 rows={5}
                 required
               />
               <span className={styles.charCount}>
-                {description.length}/500
+                {description.length}/4000
               </span>
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor="images">Fotografije (opcionalno)</label>
+              <label htmlFor="images">Fotografije *</label>
               <div className={styles.fileInput}>
                 <input
                   id="images"
                   type="file"
                   multiple
                   accept="image/*"
+                  required
                   onChange={handleImageChange}
                 />
                 <span className={styles.fileLabel}>
@@ -144,6 +178,12 @@ export default function CreateRequestPage() {
                 Možete odabrati više slika. Maksimalna veličina: 5MB po slici.
               </p>
             </div>
+
+            {formWarning && (
+              <div className={styles.errorMessage} role="alert">
+                {formWarning}
+              </div>
+            )}
 
             <button
               type="submit"
