@@ -27,7 +27,7 @@ namespace Quintus.Model
         [Range(typeof(decimal), "0.01", "79228162514264337593543950335")]
         public required decimal Quantity { get; set; }
 
-        [Range(typeof(decimal), "0", "79228162514264337593543950335")]
+        [Range(typeof(decimal), "-79228162514264337593543950335", "79228162514264337593543950335")]
         public required decimal Price { get; set; }
 
         [Range(typeof(decimal), "0", "100")]
