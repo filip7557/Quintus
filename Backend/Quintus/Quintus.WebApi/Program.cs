@@ -37,7 +37,7 @@ builder.Services.AddCors(options =>
                   "http://192.168.1.5:3001")
               .AllowAnyMethod()
               .AllowAnyHeader()
-              .WithExposedHeaders("Authorization", "Content-Disposition");
+              .WithExposedHeaders("Authorization", "Content-Disposition", "X-Offer-Id");
     });
 
     options.AddPolicy("AllowQuintusProdOrigins", policy =>
@@ -46,7 +46,7 @@ builder.Services.AddCors(options =>
                     "https://www.instalacije-quintus.hr")
               .AllowAnyMethod()
               .AllowAnyHeader()
-              .WithExposedHeaders("Authorization", "Content-Disposition");
+              .WithExposedHeaders("Authorization", "Content-Disposition", "X-Offer-Id");
     });
 });
 

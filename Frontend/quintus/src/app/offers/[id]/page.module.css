@@ -211,7 +211,15 @@
   border: none;
   cursor: pointer;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
+
+.btnIcon {
+  flex-shrink: 0;
+}
+
 
 .primaryBtn {
   background: linear-gradient(90deg, #6ea8fe, #8fc6ff);

@@ -45,6 +45,7 @@ namespace Quintus.WebAPI.Controllers
                 var result = await _offerService.AddOfferAsync(offer);
                 var createdOffer = await _offerService.GetOfferByIdAsync(result.Key);
                 var fileName = createdOffer == null ? $"Ponuda_{result.Key:N}.pdf" : OfferFileNameFormatter.GetFileName(createdOffer);
+                Response.Headers["X-Offer-Id"] = result.Key.ToString();
                 return File(result.Value, "application/pdf", fileName);
             }
             catch (Exception ex)

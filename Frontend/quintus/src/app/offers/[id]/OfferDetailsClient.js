@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import NavBar from "@/components/NavBar/NavBar";
-import { getOfferById, getOfferPdf, downloadPDF, getFileNameFromResponse } from "@/services/offerService";
+import { getOfferById, getOfferPdf, downloadPDF, getPendingOfferPdf, clearPendingOfferPdf } from "@/services/offerService";
 import styles from "./page.module.css";
 
 function pickField(obj, keys, fallback = "") {
@@ -35,15 +35,58 @@ export default function OfferDetailsClient({ offerId }) {
   const [error, setError] = useState("");
   const [offer, setOffer] = useState(null);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [printLoading, setPrintLoading] = useState(false);
+
+  // Reuses the PDF cached from creation (if any) instead of asking the backend to regenerate it.
+  const resolveOfferPdfBlob = async () => {
+    const cached = getPendingOfferPdf(requestedId);
+    if (cached) {
+      clearPendingOfferPdf();
+      return cached;
+    }
+    const response = await getOfferPdf(requestedId);
+    if (response?.status >= 200 && response?.status < 300 && response?.data) {
+      return response.data;
+    }
+    return null;
+  };
 
   const handleDownloadPdf = async () => {
     if (!requestedId || pdfLoading) return;
     setPdfLoading(true);
-    const response = await getOfferPdf(requestedId);
-    if (response?.status >= 200 && response?.status < 300 && response?.data) {
-      downloadPDF(response.data, getFileNameFromResponse(response, `ponuda-${requestedId}.pdf`));
+    const blob = await resolveOfferPdfBlob();
+    if (blob) {
+      downloadPDF(blob, `ponuda-${requestedId}.pdf`);
     }
     setPdfLoading(false);
+  };
+
+  const handlePrintPdf = async () => {
+    if (!requestedId || printLoading) return;
+    setPrintLoading(true);
+    const blob = await resolveOfferPdfBlob();
+    if (blob) {
+      const url = window.URL.createObjectURL(blob);
+      const iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      iframe.src = url;
+
+      const cleanup = () => {
+        iframe.remove();
+        window.URL.revokeObjectURL(url);
+      };
+
+      iframe.onload = () => {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+        iframe.contentWindow?.addEventListener("afterprint", cleanup);
+        // Fallback in case the browser doesn't fire afterprint on the iframe.
+        setTimeout(cleanup, 60000);
+      };
+
+      document.body.appendChild(iframe);
+    }
+    setPrintLoading(false);
   };
 
   const requestedId = useMemo(() => String(offerId ?? "").trim(), [offerId]);
@@ -247,6 +290,29 @@ export default function OfferDetailsClient({ offerId }) {
                   disabled={pdfLoading}
                 >
                   {pdfLoading ? "Dohvaćanje..." : "Preuzmi PDF"}
+                </button>
+                <button
+                  type="button"
+                  className={styles.secondaryBtn}
+                  onClick={handlePrintPdf}
+                  disabled={printLoading}
+                >
+                  <svg
+                    className={styles.btnIcon}
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                  >
+                    <path
+                      d="M4 6V2h8v4M4 12H2.5A1.5 1.5 0 0 1 1 10.5v-3A1.5 1.5 0 0 1 2.5 6h11A1.5 1.5 0 0 1 15 7.5v3a1.5 1.5 0 0 1-1.5 1.5H12M4 9h8v5H4V9Z"
+                      stroke="currentColor"
+                      strokeWidth="1.3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {printLoading ? "Pripremanje..." : "Ispis"}
                 </button>
                 <button
                   type="button"
