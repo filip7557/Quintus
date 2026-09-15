@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useToast } from "@/components/Common/ToastProvider";
 import { postContact } from "@/services/contactService";
+import { getEmailWarning } from "@/lib/formValidation";
 
 export default function ContactForm() {
   const { showToast } = useToast();
@@ -11,11 +12,27 @@ export default function ContactForm() {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const validationWarning = useMemo(() => {
+    const trimmedName = String(fullName).trim();
+    const trimmedEmail = String(email).trim();
+    const trimmedMessage = String(message).trim();
+
+    if (trimmedName.length > 0 && trimmedName.length < 2)
+      return "Ime i prezime moraju imati najmanje 2 znaka.";
+    if (trimmedEmail.length > 0 && getEmailWarning(trimmedEmail))
+      return getEmailWarning(trimmedEmail);
+    if (trimmedMessage.length > 0 && trimmedMessage.length < 10)
+      return "Poruka mora imati najmanje 10 znakova.";
+    return "";
+  }, [fullName, email, message]);
+
   const canSubmit = useMemo(() => {
     return (
-      String(fullName).trim().length > 0 &&
-      String(email).trim().length > 0 &&
-      String(message).trim().length > 0
+      String(fullName).trim().length >= 2 &&
+      String(fullName).trim().length <= 100 &&
+      !getEmailWarning(email) &&
+      String(message).trim().length >= 10 &&
+      String(message).trim().length <= 4000
     );
   }, [fullName, email, message]);
 
@@ -49,7 +66,7 @@ export default function ContactForm() {
       <h3 className="contact-panel-title">Pošaljite poruku</h3>
       <form className="contact-form-form" id="contact-form" onSubmit={onSubmit}>
         <label className="contact-field">
-          <span className="contact-field-label">Ime i prezime</span>
+          <span className="contact-field-label">Vaše ime i prezime</span>
           <input
             type="text"
             name="name"
@@ -58,12 +75,14 @@ export default function ContactForm() {
             autoComplete="name"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
+            minLength={2}
+            maxLength={100}
             disabled={submitting}
           />
         </label>
 
         <label className="contact-field">
-          <span className="contact-field-label">Email adresa</span>
+          <span className="contact-field-label">Vaša email adresa</span>
           <input
             type="email"
             name="email"
@@ -72,12 +91,13 @@ export default function ContactForm() {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            maxLength={254}
             disabled={submitting}
           />
         </label>
 
         <label className="contact-field">
-          <span className="contact-field-label">Poruka</span>
+          <span className="contact-field-label">Vaša poruka</span>
           <textarea
             name="message"
             rows={5}
@@ -85,11 +105,15 @@ export default function ContactForm() {
             required
             value={message}
             onChange={(e) => setMessage(e.target.value)}
+            minLength={10}
+            maxLength={4000}
             disabled={submitting}
           />
         </label>
 
-        <div className="contact-form-hint">Odgovaramo u najkraćem mogućem roku.</div>
+        <div className="contact-form-hint" role={validationWarning ? "alert" : undefined}>
+          {validationWarning || "Odgovaramo u najkraćem mogućem roku."}
+        </div>
         <button
           type="submit"
           className="hero-button"
