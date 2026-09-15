@@ -288,8 +288,8 @@ export default function OfferForm() {
           ? "Odaberite jedinicu mjere."
           : !Number.isFinite(quantityValue) || quantityValue <= 0
             ? "Količina mora biti pozitivan broj."
-            : !Number.isFinite(priceValue) || priceValue < 0
-              ? "Cijena mora biti broj veći ili jednak nuli."
+            : !Number.isFinite(priceValue)
+              ? "Cijena mora biti broj."
               : !Number.isFinite(discountValue) || discountValue < 0 || discountValue > 100
                 ? "Popust mora biti broj između 0 i 100."
                 : "";
@@ -300,7 +300,6 @@ export default function OfferForm() {
       !Number.isFinite(Number(item.quantity)) ||
       Number(item.quantity) <= 0 ||
       !Number.isFinite(Number(item.price)) ||
-      Number(item.price) < 0 ||
       !Number.isFinite(Number(item.discountPercent)) ||
       Number(item.discountPercent) < 0 ||
       Number(item.discountPercent) > 100
