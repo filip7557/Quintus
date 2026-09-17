@@ -187,6 +187,28 @@ section {
   background-color: #333a3d;
 }
 
+.diploma {
+  min-height: 100vh;
+  height: auto;
+  background:
+        radial-gradient(
+            650px circle at 18% 22%,
+            rgba(110, 168, 254, 0.26),
+            transparent 60%
+        ),
+        radial-gradient(
+            520px circle at 82% 28%,
+            rgba(143, 198, 255, 0.18),
+            transparent 58%
+        ),
+        radial-gradient(
+            720px circle at 50% 84%,
+            rgba(110, 168, 254, 0.12),
+            transparent 64%
+        ),
+        linear-gradient(180deg, #2e3336 0%, #23272a 100%);
+}
+
 .about {
   min-height: 100vh;
   height: auto;
@@ -595,7 +617,7 @@ header {
   max-width: var(--container-width);
   margin: 0 auto;
   padding: 0 var(--container-padding);
-  justify-content: center;
+  justify-content: center; /* Center the service items horizontally */
 }
 
 .services-container .service {
@@ -1752,6 +1774,138 @@ header {
   .edit-button {
     padding: 7px 9px;
     font-size: 0.85rem;
+  }
+}
+
+.diploma {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+  text-align: center;
+  padding-top: 96px;
+  padding-bottom: 80px;
+  position: relative;
+  z-index: 1;
+}
+
+.diploma-header {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(234, 242, 255, 0.62);
+  margin-bottom: 8px;
+}
+
+.diploma-title {
+  color: var(--primary-hover);
+  margin: 0;
+  line-height: 1.25;
+}
+
+.diploma-container {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+  max-width: var(--container-width);
+  margin: 24px auto 0;
+  padding: 0 var(--container-padding);
+}
+
+.diploma-item {
+  min-width: 0;
+}
+
+.diploma-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  width: calc(100% - (var(--container-padding) * 2));
+  max-width: calc(var(--container-width) - (var(--container-padding) * 2));
+  margin: 32px auto 0;
+  padding: 32px 48px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--border-radius, 8px);
+  background: rgba(25, 29, 31, 0.92);
+  text-align: left;
+}
+
+.diploma-cta-copy {
+  min-width: 0;
+}
+
+.diploma-cta-copy h3 {
+  margin: 0;
+  color: #f4f8ff;
+  font-size: clamp(1.25rem, 2.4vw, 1.8rem);
+  line-height: 1.25;
+  text-shadow: none;
+}
+
+.diploma-cta-copy p {
+  max-width: 680px;
+  margin: 12px 0 0;
+  color: rgba(234, 242, 255, 0.72);
+  font-family: var(--font-body);
+  line-height: 1.6;
+}
+
+.diploma-cta-button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 214px;
+  padding: 16px 24px;
+  border-radius: var(--border-radius, 8px);
+  background: var(--primary-blue);
+  box-shadow: 0 10px 24px rgba(0, 123, 255, 0.24);
+  color: #fff;
+  font-family: var(--font-headings);
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.diploma-cta-button:hover {
+  background: var(--primary-hover);
+  box-shadow: 0 12px 28px rgba(0, 123, 255, 0.34);
+  transform: translateY(-2px);
+}
+
+.diploma-cta-button:focus-visible {
+  outline: 3px solid rgba(143, 198, 255, 0.55);
+  outline-offset: 4px;
+}
+
+@media (max-width: 900px) {
+  .diploma-container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .diploma-container {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 420px;
+  }
+
+  .diploma-cta {
+    align-items: stretch;
+    flex-direction: column;
+    width: calc(100% - 32px);
+    padding: 24px;
+  }
+
+  .diploma-cta-button {
+    width: 100%;
   }
 }
 
