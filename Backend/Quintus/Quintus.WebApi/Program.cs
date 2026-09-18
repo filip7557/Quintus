@@ -134,6 +134,9 @@ builder.Host
         containerBuilder.RegisterType<UnitOfMeasurementService>().As<IUnitOfMeasurementService>();
 
         containerBuilder.RegisterType<PdfOfferService>();
+
+        containerBuilder.RegisterType<CertificateRepository>().As<ICertificateRepository>();
+        containerBuilder.RegisterType<CertificateService>().As<ICertificateService>();
     });
 
 builder.Services.AddSingleton<IEmailQueue, EmailQueue>();
