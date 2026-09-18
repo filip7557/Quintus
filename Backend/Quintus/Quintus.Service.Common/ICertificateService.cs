@@ -1,4 +1,5 @@
-﻿using Quintus.Model.Entities;
+﻿using Microsoft.AspNetCore.Http;
+using Quintus.Model.Entities;
 
 namespace Quintus.Service.Common
 {
@@ -10,7 +11,7 @@ namespace Quintus.Service.Common
 
         Task<bool> UpdateCertificateAsync(CertificateUpdateDTO certificate, Guid id);
 
-        Task<bool> UpdateCertificateImageAsync(Guid id, string imageUrl);
+        Task<bool> UpdateCertificateImageAsync(Guid id, IFormFile image);
 
         Task<bool> DeleteCertificateAsync(Guid id);
     }

@@ -1,4 +1,5 @@
-﻿using Quintus.Model.Entities;
+﻿using Microsoft.AspNetCore.Http;
+using Quintus.Model.Entities;
 using Quintus.Repository.Common;
 using Quintus.Service.Common;
 
@@ -52,9 +53,11 @@ namespace Quintus.Service
             return await _certificateRepository.UpdateCertificateAsync(certificate, id);
         }
 
-        public async Task<bool> UpdateCertificateImageAsync(Guid id, string imageUrl)
+        public async Task<bool> UpdateCertificateImageAsync(Guid id, IFormFile image)
         {
-            return await _certificateRepository.UpdateCertificateImageAsync(id, imageUrl);
+            var imageUrl = await _imageService.AddImageAsync(image);
+            if (imageUrl == null) return false;
+            return await _certificateRepository.UpdateCertificateImageAsync(id, imageUrl.Url);
         }
     }
 }
