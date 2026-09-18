@@ -23,6 +23,7 @@ namespace Quintus.Repository.Context
         public DbSet<Appointment> Appointments => Set<Appointment>();
         public DbSet<PushSubscription> PushSubscriptions => Set<PushSubscription>();
         public DbSet<PushNotificationJob> PushNotificationJobs => Set<PushNotificationJob>();
+        public DbSet<Certificate> Certificates => Set<Certificate>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
