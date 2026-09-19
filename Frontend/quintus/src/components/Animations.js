@@ -65,6 +65,16 @@ export default function Animations() {
         servicesObserver.observe(service);
       });
 
+      // DIPLOMA cards animation (observe individually so new ones animate too)
+      const diplomaItems = document.querySelectorAll(".diploma-container .diploma-item");
+      diplomaItems.forEach((item, index) => {
+        if (item.classList.contains("animate-in")) return;
+        if (!item.dataset.animDelayMs) {
+          item.dataset.animDelayMs = String(Math.min(index * 120, 600));
+        }
+        servicesObserver.observe(item);
+      });
+
       // ABOUT animation (also observe individual containers)
       const aboutContainers = document.querySelectorAll(".about-container");
       aboutContainers.forEach((container) => {

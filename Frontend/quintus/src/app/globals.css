@@ -1817,6 +1817,12 @@ header {
 
 .diploma-item {
   min-width: 0;
+  opacity: 0;
+  transform: translateY(40px);
+}
+
+.diploma-item.animate-in {
+  animation: popUp 0.6s ease-out forwards;
 }
 
 .diploma-cta {
