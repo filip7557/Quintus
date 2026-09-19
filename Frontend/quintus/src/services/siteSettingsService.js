@@ -154,7 +154,7 @@ export async function getSiteSettings(options = {}) {
 export async function getDiplomas(options = {}) {
   const preferredBaseUrl = normalizeBaseUrl(options?.baseUrl);
   const bases = buildFallbackBaseUrls(API_BASE_URL, preferredBaseUrl);
-  const routes = ["/Diplomas", "/diplomas"];
+  const routes = ["/Certificate"];
   let lastError = null;
   const logResolvedUrl = shouldLogResolvedUrl(options);
 

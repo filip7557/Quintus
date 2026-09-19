@@ -3,10 +3,10 @@ import styles from "./DiplomaCard.module.css";
 export default function DiplomaCard({ diploma }) {
     return (
         <div className={styles.diplomaCard}>
-            {diploma.image && (
+            {diploma.imageUrl && (
                 <img
                     className={styles.diplomaImage}
-                    src={diploma.image}
+                    src={diploma.imageUrl}
                     alt={diploma.title}
                 />
             )}

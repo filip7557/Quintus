@@ -5,6 +5,7 @@ using Quintus.Service.Common;
 
 namespace Quintus.WebAPI.Controllers
 {
+    [Route("api/[controller]")]
     public class CertificateController : ControllerBase
     {
         private readonly ICertificateService _certificateService;
@@ -23,7 +24,7 @@ namespace Quintus.WebAPI.Controllers
 
         [Authorize(Roles = "Admin,Owner")]
         [HttpPost]
-        public async Task<IActionResult> AddCertificateAsync([FromBody] CertificateDTO certificate)
+        public async Task<IActionResult> AddCertificateAsync([FromForm] CertificateDTO certificate)
         {
             var result = await _certificateService.AddCertificateAsync(certificate);
             if (!result)
@@ -48,7 +49,8 @@ namespace Quintus.WebAPI.Controllers
 
         [Authorize(Roles = "Admin,Owner")]
         [HttpPut("{id}/image")]
-        public async Task<IActionResult> UpdateCertificateImageAsync(Guid id, [FromBody] IFormFile image)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateCertificateImageAsync(Guid id, [FromForm] IFormFile image)
         {
             if (image == null) return BadRequest("Slika certifikata je obavezna.");
             var result = await _certificateService.UpdateCertificateImageAsync(id, image);
