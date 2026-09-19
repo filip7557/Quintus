@@ -107,9 +107,11 @@ function getClientBaseCandidates() {
   );
 }
 
-export default function HomePageContent({ initialSettings }) {
+export default function HomePageContent({ initialSettings, initialDiplomas }) {
   const [settings, setSettings] = useState(initialSettings ?? null);
+  const [diplomas, setDiplomas] = useState(initialDiplomas ?? []);
   const hasData = hasUsableSettings(settings);
+  const hasDiplomas = Array.isArray(diplomas) && diplomas.length > 0;
 
   const fetchSettingsFromApi = useCallback(async () => {
     const bases = getClientBaseCandidates();
@@ -223,7 +225,7 @@ export default function HomePageContent({ initialSettings }) {
           services={viewModel.services}
           onSettingsChanged={reloadSettings}
         />
-        <DiplomaSection />
+        <DiplomaSection diplomas={diplomas} />
         <AboutSection
           settingsId={viewModel.settingsId}
           aboutUs={viewModel.aboutUs}

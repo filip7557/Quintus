@@ -41,7 +41,9 @@ function buildFallbackBaseUrls(baseUrl, preferredBaseUrl = "") {
   // Heuristic dev fallback for ASP.NET templates:
   // https://<host>:7xxx -> http://<host>:5xxx (or same port)
   for (const candidate of candidates) {
-    const m = String(candidate || "").match(/^https:\/\/([^/:]+):(\d+)(\/api)?$/i);
+    const m = String(candidate || "").match(
+      /^https:\/\/([^/:]+):(\d+)(\/api)?$/i,
+    );
     if (!m) continue;
 
     const host = m[1];
@@ -77,7 +79,7 @@ function unwrapSettingsPayload(payload) {
   ].filter(Boolean);
 
   let settings = directCandidates.find(
-    (item) => item && typeof item === "object" && !Array.isArray(item)
+    (item) => item && typeof item === "object" && !Array.isArray(item),
   );
 
   if (!settings) {
@@ -120,19 +122,66 @@ export async function getSiteSettings(options = {}) {
 
         const payload = await response.json();
         if (logResolvedUrl) {
-          console.info(`[siteSettingsService] Loaded site settings from ${url}`);
+          console.info(
+            `[siteSettingsService] Loaded site settings from ${url}`,
+          );
         }
         return unwrapSettingsPayload(payload);
       } catch (error) {
         lastError = error;
       }
     }
+
+    // Keep rendering resilient
+    if (process.env.NODE_ENV !== "production" && lastError) {
+      console.warn("[siteSettingsService] Failed to fetch diplomas", lastError);
+    }
+
+    return [];
   }
 
   // Keep rendering resilient
   if (process.env.NODE_ENV !== "production" && lastError) {
-    console.warn("[siteSettingsService] Failed to fetch site settings", lastError);
+    console.warn(
+      "[siteSettingsService] Failed to fetch site settings",
+      lastError,
+    );
   }
 
   return null;
+}
+
+export async function getDiplomas(options = {}) {
+  const preferredBaseUrl = normalizeBaseUrl(options?.baseUrl);
+  const bases = buildFallbackBaseUrls(API_BASE_URL, preferredBaseUrl);
+  const routes = ["/Diplomas", "/diplomas"];
+  let lastError = null;
+  const logResolvedUrl = shouldLogResolvedUrl(options);
+
+  for (const base of bases) {
+    for (const route of routes) {
+      const url = `${base}${route}`;
+      try {
+        const response = await fetch(url, { cache: "no-store" });
+        if (!response.ok) {
+          lastError = new Error(`HTTP ${response.status} from ${url}`);
+          continue;
+        }
+
+        const payload = await response.json();
+        if (logResolvedUrl) {
+          console.info(`[siteSettingsService] Loaded diplomas from ${url}`);
+        }
+        return normalizeEnumerable(payload);
+      } catch (error) {
+        lastError = error;
+      }
+    }
+    // Keep rendering resilient
+    if (process.env.NODE_ENV !== "production" && lastError) {
+      console.warn("[siteSettingsService] Failed to fetch diplomas", lastError);
+    }
+
+    return [];
+  }
 }

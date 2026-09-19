@@ -1,42 +1,40 @@
 import { useState, useEffect } from 'react';
 
 import DiplomaCard from "../DiplomaCard/DiplomaCard";
+import DiplomaCreateModal from "./DiplomaCreateModal";
+import { addDiploma } from "@/services/diplomaService";
+import useCanManageSite from "@/hooks/useCanManageSite";
 
 export default function DiplomaSection(
+    { diplomas }
 ) {
-    const [diplomas, setDiplomas] = useState([]);
-
-    const mockDiplomas = [
-        {
-            id: 1,
-            title: "Grijanje",
-            description: "Stručna potvrda za izvedbu i održavanje sustava grijanja.",
-            image: "/images/diplomas/heating-flame.svg"
-        },
-        {
-            id: 2,
-            title: "Vodne instalacije",
-            description: "Certificirana stručnost za sigurne i pouzdane vodne instalacije.",
-            image: "/images/diplomas/water-faucet.svg"
-        },
-        {
-            id: 3,
-            title: "Hlađenje",
-            description: "Osposobljenost za ugradnju i servis rashladnih sustava.",
-            image: "/images/diplomas/cooling-snowflake.svg"
-        },
-        {
-            id: 4,
-            title: "A1 plinski certifikat",
-            description: "Ovlaštenje za stručan i siguran rad s plinskim instalacijama.",
-            image: "/images/diplomas/a1-gas-certificate.svg"
-        }
-    ];
+    const [localDiplomas, setLocalDiplomas] = useState([]);
+    const [modalOpen, setModalOpen] = useState(false);
+    const { canManage } = useCanManageSite();
 
     useEffect(() => {
-        //TODO: Pull diplomas from backend
-        setDiplomas(mockDiplomas);
-    }, []);
+        setLocalDiplomas(diplomas ?? []);
+    }, [diplomas]);
+
+    const handleCreate = async ({ title, description, image, url }) => {
+        // Show the new diploma immediately; backend persistence isn't wired up yet.
+        const newDiploma = {
+            id: `local-${Date.now()}`,
+            title,
+            description,
+            image: URL.createObjectURL(image),
+            url,
+        };
+        setLocalDiplomas((prev) => [...prev, newDiploma]);
+
+        //TODO: Wire this up to the real backend endpoint (CertificateDTO: Title, Description, Image).
+        const response = await addDiploma({ title, description, image, url });
+        if (response?.data) {
+            setLocalDiplomas((prev) =>
+                prev.map((d) => (d.id === newDiploma.id ? response.data : d))
+            );
+        }
+    };
 
     return (
         <section id="diploma" className="diploma">
@@ -46,16 +44,37 @@ export default function DiplomaSection(
             </div>
 
             <div className="diploma-container">
-                {!diplomas?.length ? 
+                {!localDiplomas?.length ? 
                     <p className="diploma-empty">No diplomas available.</p> 
                     :
-                    diplomas.map((diploma) => (
+                    localDiplomas.map((diploma) => (
                     <div key={diploma.id} className="diploma-item">
                         {/* TODO: Make a diploma component and display it here. */}
                         <DiplomaCard diploma={diploma} />
                     </div>
                 ))}
             </div>
+
+            {canManage ? (
+                <div className="services-admin-footer">
+                    <button
+                        type="button"
+                        className="edit-button"
+                        onClick={() => setModalOpen(true)}
+                    >
+                        <span className="edit-button-icon" aria-hidden="true">
+                            +
+                        </span>
+                        Dodaj certifikat
+                    </button>
+                </div>
+            ) : null}
+
+            <DiplomaCreateModal
+                open={modalOpen}
+                onClose={() => setModalOpen(false)}
+                onSubmit={handleCreate}
+            />
 
             <div className="diploma-cta">
                 <div className="diploma-cta-copy">

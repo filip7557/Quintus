@@ -15,16 +15,18 @@ export default function DiplomaCard({ diploma }) {
                 {diploma.description && (
                     <p className={styles.diplomaDescription}>{diploma.description}</p>
                 )}
+                {diploma.url && (
                 <a
                     className={styles.diplomaLink}
-                    href={diploma.link || "#"}
-                    aria-disabled={!diploma.link}
+                    href={diploma.url || "#"}
+                    aria-disabled={!diploma.url}
                     onClick={(event) => {
-                        if (!diploma.link) event.preventDefault();
+                        if (!diploma.url) event.preventDefault();
                     }}
                 >
                     Pogledaj certifikat
                 </a>
+                )}
             </div>
         </div>
     );

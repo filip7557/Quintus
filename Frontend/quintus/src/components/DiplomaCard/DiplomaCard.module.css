@@ -1,4 +1,5 @@
 .diplomaCard {
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	width: 100%;
@@ -13,6 +14,21 @@
 	transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
 }
 
+.diplomaCard::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	background: linear-gradient(
+		180deg,
+		rgba(20, 23, 25, 0.25) 0%,
+		rgba(20, 23, 25, 0.55) 42%,
+		rgba(20, 23, 25, 0.92) 70%,
+		rgba(20, 23, 25, 0.97) 100%
+	);
+	pointer-events: none;
+}
+
 .diplomaCard:hover {
 	transform: translateY(-4px);
 	border-color: color-mix(in srgb, var(--primary-blue, #6ea8fe) 65%, transparent);
@@ -20,21 +36,30 @@
 }
 
 .diplomaImage {
-	display: block;
-	width: 64px;
-	height: 64px;
-	margin: 28px 28px 0;
-	padding: 12px;
-	border: 1px solid color-mix(in srgb, var(--primary-blue, #6ea8fe) 45%, transparent);
-	border-radius: 16px;
-	background: color-mix(in srgb, var(--primary-blue, #6ea8fe) 12%, transparent);
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	width: 100%;
+	height: 100%;
+	padding: 36px 36px 0;
 	object-fit: contain;
+	object-position: center 12%;
+	box-sizing: border-box;
+	opacity: 0.92;
+	transition: transform 220ms ease;
+}
+
+.diplomaCard:hover .diplomaImage {
+	transform: scale(1.05);
 }
 
 .diplomaContent {
+	position: relative;
+	z-index: 2;
 	display: flex;
 	flex: 1;
 	flex-direction: column;
+	justify-content: flex-end;
 	align-items: flex-start;
 	min-height: 0;
 	overflow: hidden;
@@ -52,9 +77,9 @@
 	line-height: 1.25;
 	letter-spacing: 0;
 	text-shadow: none;
-	line-clamp: 2;
+	line-clamp: 3;
 	-webkit-box-orient: vertical;
-	-webkit-line-clamp: 2;
+	-webkit-line-clamp: 3;
 }
 
 .diplomaDescription {
@@ -112,16 +137,21 @@
 	}
 
 	.diplomaImage {
-		margin: 22px 22px 0;
+		padding: 26px 26px 0;
 	}
 
 	.diplomaCard:hover {
+		transform: none;
+	}
+
+	.diplomaCard:hover .diplomaImage {
 		transform: none;
 	}
 }
 
 @media (prefers-reduced-motion: reduce) {
 	.diplomaCard,
+	.diplomaImage,
 	.diplomaLink,
 	.diplomaLink::after {
 		transition: none;
