@@ -83,7 +83,7 @@
 }
 
 .diplomaDescription {
-	margin: 12px 0 24px;
+	margin: 12px 0 0;
 	display: -webkit-box;
 	overflow: hidden;
 	color: rgba(234, 242, 255, 0.64);
@@ -95,11 +95,17 @@
 	-webkit-line-clamp: 4;
 }
 
+.diplomaAction {
+	margin-top: 16px;
+	min-height: 1.4rem;
+	display: flex;
+	align-items: center;
+}
+
 .diplomaLink {
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
-	margin-top: auto;
 	color: var(--primary-blue, #6ea8fe);
 	font-family: var(--font-headings, "Poppins", sans-serif);
 	font-size: 0.85rem;

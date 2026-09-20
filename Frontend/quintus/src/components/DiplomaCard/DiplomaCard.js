@@ -1,4 +1,6 @@
 import styles from "./DiplomaCard.module.css";
+import { useState } from "react";
+import PdfModal from "../Home/PdfModal";
 
 export default function DiplomaCard({
   diploma,
@@ -6,6 +8,9 @@ export default function DiplomaCard({
   setModalOpen,
   canManage,
 }) {
+
+  const [pdfModalOpen, setPdfModalOpen] = useState(false);
+
   return (
     <>
     <div className={styles.diplomaCard}>
@@ -21,18 +26,21 @@ export default function DiplomaCard({
         {diploma.description && (
           <p className={styles.diplomaDescription}>{diploma.description}</p>
         )}
-        {diploma.url && (
-          <a
-            className={styles.diplomaLink}
-            href={diploma.url || "#"}
-            aria-disabled={!diploma.url}
-            onClick={(event) => {
-              if (!diploma.url) event.preventDefault();
-            }}
-          >
-            Pogledaj certifikat
-          </a>
-        )}
+        <div className={styles.diplomaAction}>
+          {diploma.url ? (
+            <a
+              className={styles.diplomaLink}
+              href={diploma.url || "#"}
+              aria-disabled={!diploma.url}
+              onClick={(event) => {
+                event.preventDefault();
+                setPdfModalOpen(true);
+              }}
+            >
+              Pogledaj certifikat
+            </a>
+          ) : null}
+        </div>
       </div>
     </div>
     {canManage ? (
@@ -54,6 +62,12 @@ export default function DiplomaCard({
           </button>
         </div>
       ) : null}
+    <PdfModal
+      open={pdfModalOpen}
+      onClose={() => setPdfModalOpen(false)}
+      url={diploma.url}
+      title="Pregled certifikata"
+    />
     </> 
   );
 }
