@@ -28,8 +28,7 @@ namespace Quintus.Model.Entities
         [Required]
         public required IFormFile Image { get; set; }
 
-        [StringLength(500, MinimumLength = 1)]
-        public string? Url { get; set; }
+        public IFormFile? Pdf { get; set; }
     }
 
     public class CertificateUpdateDTO
@@ -41,7 +40,7 @@ namespace Quintus.Model.Entities
         [StringLength(1000, MinimumLength = 1)]
         public required string Description { get; set; }
         [StringLength(500, MinimumLength = 1)]
-        public string? Url { get; set; }
+        public IFormFile? Pdf { get; set; }
     }
 
     public class CertificateResponseDTO

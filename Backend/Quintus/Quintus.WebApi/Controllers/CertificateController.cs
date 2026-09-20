@@ -62,6 +62,20 @@ namespace Quintus.WebAPI.Controllers
         }
 
         [Authorize(Roles = "Admin,Owner")]
+        [HttpPut("file/{id}")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateCertificateFileAsync(Guid id, [FromForm] IFormFile file)
+        {
+            if (file == null) return BadRequest("Datoteka certifikata je obavezna.");
+            var result = await _certificateService.UpdateCertificateFileAsync(id, file);
+            if (!result)
+            {
+                return BadRequest("Greška pri ažuriranju datoteke certifikata.");
+            }
+            return Ok();
+        }
+
+        [Authorize(Roles = "Admin,Owner")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCertificateAsync(Guid id)
         {

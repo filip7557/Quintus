@@ -13,6 +13,8 @@ namespace Quintus.Service.Common
 
         Task<bool> UpdateCertificateImageAsync(Guid id, IFormFile image);
 
+        Task<bool> UpdateCertificateFileAsync(Guid id, IFormFile file);
+
         Task<bool> DeleteCertificateAsync(Guid id);
     }
 }

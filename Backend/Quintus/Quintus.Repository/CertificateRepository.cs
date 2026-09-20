@@ -73,7 +73,6 @@ namespace Quintus.Repository
 
                 existingCertificate.Title = certificate.Title;
                 existingCertificate.Description = certificate.Description;
-                existingCertificate.Url = certificate.Url;
                 // Add other properties as needed
 
                 _context.Certificates.Update(existingCertificate);
@@ -96,6 +95,26 @@ namespace Quintus.Repository
                     return false;
                 }
                 existingCertificate.ImageUrl = imageUrl;
+                _context.Certificates.Update(existingCertificate);
+                return await _context.SaveChangesAsync() > 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error updating certificate image: " + ex.Message);
+                return false;
+            }
+        }
+
+        public async Task<bool> UpdateCertificateFileAsync(Guid id, string fileUrl)
+        {
+            try
+            {
+                var existingCertificate = await _context.Certificates.FindAsync(id);
+                if (existingCertificate == null)
+                {
+                    return false;
+                }
+                existingCertificate.Url = fileUrl;
                 _context.Certificates.Update(existingCertificate);
                 return await _context.SaveChangesAsync() > 0;
             }

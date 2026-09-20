@@ -13,5 +13,7 @@ namespace Quintus.Repository.Common
         Task<bool> UpdateCertificateAsync(CertificateUpdateDTO certificate, Guid id);
 
         Task<bool> UpdateCertificateImageAsync(Guid id, string imageUrl);
+
+        Task<bool> UpdateCertificateFileAsync(Guid id, string fileUrl);
     }
 }
