@@ -1797,6 +1797,7 @@ header {
   text-transform: uppercase;
   color: rgba(234, 242, 255, 0.62);
   margin-bottom: 8px;
+  padding-bottom: 16px;
 }
 
 .diploma-title {

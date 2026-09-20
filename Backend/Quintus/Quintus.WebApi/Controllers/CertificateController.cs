@@ -48,7 +48,7 @@ namespace Quintus.WebAPI.Controllers
         }
 
         [Authorize(Roles = "Admin,Owner")]
-        [HttpPut("{id}/image")]
+        [HttpPut("image/{id}")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UpdateCertificateImageAsync(Guid id, [FromForm] IFormFile image)
         {

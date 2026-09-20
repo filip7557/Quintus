@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import { deleteDiploma, getDiplomas } from "@/services/diplomaService";
 import { useToast } from "@/components/Common/ToastProvider";
 import useLockBodyScroll from "@/hooks/useLockBodyScroll";
 
@@ -9,7 +10,7 @@ function passthroughLoader({ src }) {
   return src;
 }
 
-export default function DiplomaCreateModal({ open, onClose, onSubmit }) {
+export default function DiplomaCreateModal({ open, onClose, onSubmit, diploma, setLocalDiplomas }) {
   const { showToast } = useToast();
   useLockBodyScroll(open);
   const [title, setTitle] = useState("");
@@ -19,19 +20,23 @@ export default function DiplomaCreateModal({ open, onClose, onSubmit }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  const [deleting, setDeleting] = useState(false);
+
   const fileInputRef = useRef(null);
   const dialogRef = useRef(null);
+
+  const isEdit = diploma ?? false;
 
   useEffect(() => {
     if (!open) return;
 
-    setTitle("");
-    setDescription("");
-    setUrl("");
+    setTitle(diploma?.title || "");
+    setDescription(diploma?.description || "");
+    setUrl(diploma?.url || "");
     setError("");
     setImage((prev) => {
       if (prev?.url) URL.revokeObjectURL(prev.url);
-      return null;
+      return diploma?.imageUrl ? { file: null, url: diploma.imageUrl } : null;
     });
   }, [open]);
 
@@ -47,7 +52,7 @@ export default function DiplomaCreateModal({ open, onClose, onSubmit }) {
   }, [open, onClose, submitting]);
 
   const canSubmit = useMemo(() => {
-    return title.trim().length > 0 && description.trim().length > 0 && !!image?.file;
+    return title.trim().length > 0 && description.trim().length > 0 && (image?.file || isEdit);
   }, [title, description, image]);
 
   const handleFileSelected = (e) => {
@@ -103,6 +108,41 @@ export default function DiplomaCreateModal({ open, onClose, onSubmit }) {
     }
   };
 
+  const handleDelete = async () => {
+    if (!deleteDiploma || deleting || submitting) return;
+    if (!diploma?.id) {
+      setError("Nije moguće obrisati ovaj certifikat.");
+      showToast({ type: "error", title: "Greška", message: "Brisanje nije moguće." });
+      return;
+    }
+
+    const confirmed = window.confirm("Jeste li sigurni da želite obrisati ovaj certifikat?");
+    if (!confirmed) return;
+
+    setError("");
+    setDeleting(true);
+    try {
+      const resp = await deleteDiploma(diploma.id);
+      const ok = resp?.status === 200 || resp?.status === 204;
+      if (!ok) {
+        const msg = resp?.data?.message || "Greška pri brisanju certifikata.";
+        setError(msg);
+        showToast({ type: "error", title: "Neuspješno", message: msg });
+        return;
+      }
+
+      showToast({ type: "success", title: "Obrisano", message: "Certifikat je obrisan." });
+      onClose?.();
+      const newDiplomas = await getDiplomas();
+      setLocalDiplomas(newDiplomas.data);
+    } catch {
+      setError("Greška pri brisanju certifikata.");
+      showToast({ type: "error", title: "Greška", message: "Pokušajte ponovno." });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (!open) return null;
 
   return (
@@ -116,7 +156,7 @@ export default function DiplomaCreateModal({ open, onClose, onSubmit }) {
     >
       <div className="modal" role="dialog" aria-modal="true" ref={dialogRef}>
         <div className="modal-header">
-          <h3>Dodaj certifikat</h3>
+          <h3>{isEdit ? "Uredi certifikat" : "Dodaj certifikat"}</h3>
           <button
             type="button"
             className="modal-close"
@@ -210,6 +250,14 @@ export default function DiplomaCreateModal({ open, onClose, onSubmit }) {
         </div>
 
         <div className="modal-actions">
+          <button
+              type="button"
+              className="modal-danger"
+              onClick={handleDelete}
+              disabled={submitting || deleting}
+            >
+              {deleting ? "Brisanje..." : "Obriši"}
+            </button>
           <button
             type="button"
             className="modal-secondary"

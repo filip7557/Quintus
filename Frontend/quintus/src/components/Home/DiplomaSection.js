@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 import DiplomaCard from "../DiplomaCard/DiplomaCard";
 import DiplomaCreateModal from "./DiplomaCreateModal";
-import { addDiploma } from "@/services/diplomaService";
+import { addDiploma, updateDiploma, updateDiplomaImage, getDiplomas } from "@/services/diplomaService";
 import useCanManageSite from "@/hooks/useCanManageSite";
 
 export default function DiplomaSection(
@@ -10,6 +10,7 @@ export default function DiplomaSection(
 ) {
     const [localDiplomas, setLocalDiplomas] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
+    const [editingDiploma, setEditingDiploma] = useState(null);
     const { canManage } = useCanManageSite();
 
     useEffect(() => {
@@ -17,23 +18,22 @@ export default function DiplomaSection(
     }, [diplomas]);
 
     const handleCreate = async ({ title, description, image, url }) => {
-        // Show the new diploma immediately; backend persistence isn't wired up yet.
-        const newDiploma = {
-            id: `local-${Date.now()}`,
-            title,
-            description,
-            image: URL.createObjectURL(image),
-            url,
-        };
-        setLocalDiplomas((prev) => [...prev, newDiploma]);
-
         //TODO: Wire this up to the real backend endpoint (CertificateDTO: Title, Description, Image).
-        const response = await addDiploma({ title, description, image, url });
-        if (response?.data) {
-            setLocalDiplomas((prev) =>
-                prev.map((d) => (d.id === newDiploma.id ? response.data : d))
-            );
+        await addDiploma({ title, description, image, url });
+
+        const newDiplomas = await getDiplomas();
+        setLocalDiplomas(newDiplomas.data);
+    };
+
+    const handleUpdate = async ({ title, description, image, url }) => {
+        //TODO: Wire this up to the real backend endpoint (CertificateDTO: Title, Description, Image).
+        await updateDiploma({ id: editingDiploma.id, title, description, url });
+        if (image) {
+            await updateDiplomaImage({ diplomaId: editingDiploma.id, image });
         }
+
+        const newDiplomas = await getDiplomas();
+        setLocalDiplomas(newDiplomas.data);
     };
 
     return (
@@ -50,7 +50,7 @@ export default function DiplomaSection(
                     localDiplomas.map((diploma) => (
                     <div key={diploma.id} className="diploma-item">
                         {/* TODO: Make a diploma component and display it here. */}
-                        <DiplomaCard diploma={diploma} />
+                        <DiplomaCard diploma={diploma} setEditingDiploma={setEditingDiploma} setModalOpen={setModalOpen} canManage={canManage}/>
                     </div>
                 ))}
             </div>
@@ -60,7 +60,10 @@ export default function DiplomaSection(
                     <button
                         type="button"
                         className="edit-button"
-                        onClick={() => setModalOpen(true)}
+                        onClick={() => {
+                            setEditingDiploma(null);
+                            setModalOpen(true);
+                        }}
                     >
                         <span className="edit-button-icon" aria-hidden="true">
                             +
@@ -73,7 +76,9 @@ export default function DiplomaSection(
             <DiplomaCreateModal
                 open={modalOpen}
                 onClose={() => setModalOpen(false)}
-                onSubmit={handleCreate}
+                onSubmit={editingDiploma ? handleUpdate : handleCreate}
+                diploma={editingDiploma}
+                setLocalDiplomas={setLocalDiplomas}
             />
 
             <div className="diploma-cta">

@@ -32,11 +32,13 @@ export async function updateDiploma(diploma) {
   }
 }
 
-export async function updateDiplomaImage(diplomaId, image) {
+export async function updateDiplomaImage({diplomaId, image}) {
   try {
     const formData = new FormData();
     formData.append("image", image);
-    return await api.put(`/Certificate/${diplomaId}/image`, formData, {
+    console.log(diplomaId);
+    console.log(formData.get("image"));
+    return await api.put(`/Certificate/image/${diplomaId}`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },

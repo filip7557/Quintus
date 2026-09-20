@@ -131,6 +131,10 @@
 	outline-offset: 4px;
 }
 
+.service-edit-button-wrap button:hover {
+	cursor: pointer;
+}
+
 @media (max-width: 600px) {
 	.diplomaContent {
 		padding: 20px 22px 24px;
