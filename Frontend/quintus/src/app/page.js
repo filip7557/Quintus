@@ -1,7 +1,7 @@
 import HomePageContent from "@/components/Home/HomePageContent";
 import LocalBusinessJsonLd from "@/components/Seo/LocalBusinessJsonLd";
 
-import { getSiteSettings } from "@/services/siteSettingsService";
+import { getSiteSettings, getDiplomas } from "@/services/siteSettingsService";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -17,10 +17,16 @@ export default async function HomePage() {
         ? PRODUCTION_INTERNAL_API_BASE_URL
         : undefined,
   });
+  const diplomas = await getDiplomas({
+    baseUrl:
+      process.env.NODE_ENV === "production"
+        ? PRODUCTION_INTERNAL_API_BASE_URL
+        : undefined,
+  });
   return (
     <>
       <LocalBusinessJsonLd settings={settings} />
-      <HomePageContent initialSettings={settings} />
+      <HomePageContent initialSettings={settings} initialDiplomas={diplomas} />
     </>
   );
 }

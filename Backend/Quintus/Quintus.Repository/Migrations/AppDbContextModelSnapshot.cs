@@ -64,6 +64,72 @@ namespace Quintus.Repository.Migrations
                     b.ToTable("Appointments");
                 });
 
+            modelBuilder.Entity("Quintus.Model.Entities.Certificate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CreatedDateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Url")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Certificates");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("31993434-7c6d-4071-83a5-e063b457ac81"),
+                            CreatedDateTime = new DateTime(2026, 9, 20, 23, 11, 36, 92, DateTimeKind.Utc),
+                            Description = "Ovlašteni majstor vodoinstalater, instalater grijanja i klimatizacije",
+                            ImageUrl = "https://res.cloudinary.com/dzhmn7c4d/image/upload/v1789945894/quintus_images/pbfc7fb3nxyzwbbdfyqd.png",
+                            Title = "Majstor instalater",
+                            Url = "https://quintus-files.s3.eu-south-mil.io.cloud.ovh.net/d6719da15d444d38b4160d5558bc7316.pdf"
+                        },
+                        new
+                        {
+                            Id = new Guid("210562a4-052f-4fb6-add0-dcfb55516bc5"),
+                            CreatedDateTime = new DateTime(2026, 9, 20, 23, 17, 26, 992, DateTimeKind.Utc),
+                            Description = "Ovlašteni majstor plinoinstalater",
+                            ImageUrl = "https://res.cloudinary.com/dzhmn7c4d/image/upload/v1789946245/quintus_images/r3lt8gemsgydxowfnyqb.png",
+                            Title = "Majstor plinoinstalater",
+                            Url = "https://quintus-files.s3.eu-south-mil.io.cloud.ovh.net/3bedd3d343904e88ab108e869370d1b1.pdf"
+                        },
+                        new
+                        {
+                            Id = new Guid("44a532f0-8072-4727-9577-aecf9d12921f"),
+                            CreatedDateTime = new DateTime(2026, 9, 20, 11, 57, 18, 389, DateTimeKind.Utc),
+                            Description = "Ovlašteni majstor za vodovod, grijanje i klimatizaciju (Kategorija A1).",
+                            ImageUrl = "https://res.cloudinary.com/dzhmn7c4d/image/upload/v1789905438/quintus_images/gfjnfyhvrwgn6spvyfqs.webp",
+                            Title = "Majstor instalater",
+                            Url = "https://quintus-files.s3.eu-south-mil.io.cloud.ovh.net/a4f0bcd1dbdc43efba36b95ace84c83a.pdf"
+                        },
+                        new
+                        {
+                            Id = new Guid("80f17497-8c63-4459-be9c-65f471de95fc"),
+                            CreatedDateTime = new DateTime(2026, 9, 20, 23, 16, 43, 785, DateTimeKind.Utc),
+                            Description = "Vaillant Excellence Partner (VEP) je Vaillantova elitna mreža certificiranih partnera instalatera.",
+                            ImageUrl = "https://res.cloudinary.com/dzhmn7c4d/image/upload/v1789946203/quintus_images/ibed5jn1gbyagzlv6zgr.png",
+                            Title = "Vaillant Partner"
+                        });
+                });
+
             modelBuilder.Entity("Quintus.Model.Entities.EmailVerificationToken", b =>
                 {
                     b.Property<Guid>("Id")

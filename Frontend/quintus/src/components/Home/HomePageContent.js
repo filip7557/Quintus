@@ -7,6 +7,7 @@ import NavBar from "@/components/NavBar/NavBar";
 
 import HeroSection from "@/components/Home/HeroSection";
 import ServicesSection from "@/components/Home/ServicesSection";
+import DiplomaSection from "@/components/Home/DiplomaSection";
 import AboutSection from "@/components/Home/AboutSection";
 import ContactSection from "@/components/Home/ContactSection";
 import LogoMarquee from "@/components/Home/LogoMarquee";
@@ -106,9 +107,11 @@ function getClientBaseCandidates() {
   );
 }
 
-export default function HomePageContent({ initialSettings }) {
+export default function HomePageContent({ initialSettings, initialDiplomas }) {
   const [settings, setSettings] = useState(initialSettings ?? null);
+  const [diplomas, setDiplomas] = useState(initialDiplomas ?? []);
   const hasData = hasUsableSettings(settings);
+  const hasDiplomas = Array.isArray(diplomas) && diplomas.length > 0;
 
   const fetchSettingsFromApi = useCallback(async () => {
     const bases = getClientBaseCandidates();
@@ -222,6 +225,7 @@ export default function HomePageContent({ initialSettings }) {
           services={viewModel.services}
           onSettingsChanged={reloadSettings}
         />
+        <DiplomaSection diplomas={diplomas} />
         <AboutSection
           settingsId={viewModel.settingsId}
           aboutUs={viewModel.aboutUs}

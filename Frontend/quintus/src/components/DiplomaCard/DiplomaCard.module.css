@@ -1,0 +1,169 @@
+.diplomaCard {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	aspect-ratio: 3 / 4;
+	min-height: 0;
+	overflow: hidden;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: var(--border-radius, 8px);
+	background: rgba(25, 29, 31, 0.96);
+	box-shadow: 0 14px 30px rgba(0, 0, 0, 0.2);
+	text-align: left;
+	transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.diplomaCard::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	background: linear-gradient(
+		180deg,
+		rgba(20, 23, 25, 0.25) 0%,
+		rgba(20, 23, 25, 0.55) 42%,
+		rgba(20, 23, 25, 0.92) 70%,
+		rgba(20, 23, 25, 0.97) 100%
+	);
+	pointer-events: none;
+}
+
+.diplomaCard:hover {
+	transform: translateY(-4px);
+	border-color: color-mix(in srgb, var(--primary-blue, #6ea8fe) 65%, transparent);
+	box-shadow: 0 18px 36px rgba(0, 0, 0, 0.3);
+}
+
+.diplomaImage {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	width: 100%;
+	height: 100%;
+	padding: 36px 36px 0;
+	object-fit: contain;
+	object-position: center 12%;
+	box-sizing: border-box;
+	opacity: 0.92;
+	transition: transform 220ms ease;
+}
+
+.diplomaCard:hover .diplomaImage {
+	transform: scale(1.05);
+}
+
+.diplomaContent {
+	position: relative;
+	z-index: 2;
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	justify-content: flex-end;
+	align-items: flex-start;
+	min-height: 0;
+	overflow: hidden;
+	padding: 24px 28px 28px;
+}
+
+.diplomaTitle {
+	margin: 0;
+	max-width: 15ch;
+	display: -webkit-box;
+	overflow: hidden;
+	color: #f4f8ff;
+	font-family: var(--font-headings, "Poppins", sans-serif);
+	font-size: clamp(1.15rem, 2vw, 1.4rem);
+	line-height: 1.25;
+	letter-spacing: 0;
+	text-shadow: none;
+	line-clamp: 3;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 3;
+}
+
+.diplomaDescription {
+	margin: 12px 0 0;
+	display: -webkit-box;
+	overflow: hidden;
+	color: rgba(234, 242, 255, 0.64);
+	font-family: var(--font-body, "Open Sans", sans-serif);
+	font-size: 0.9rem;
+	line-height: 1.65;
+	line-clamp: 4;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 4;
+}
+
+.diplomaAction {
+	margin-top: 16px;
+	min-height: 1.4rem;
+	display: flex;
+	align-items: center;
+}
+
+.diplomaLink {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--primary-blue, #6ea8fe);
+	font-family: var(--font-headings, "Poppins", sans-serif);
+	font-size: 0.85rem;
+	font-weight: 700;
+	line-height: 1.4;
+	text-decoration: none;
+	transition: color 160ms ease, gap 160ms ease;
+}
+
+.diplomaLink::after {
+	content: "➜";
+	font-size: 1rem;
+	line-height: 1;
+	transition: transform 160ms ease;
+}
+
+.diplomaLink:hover {
+	color: color-mix(in srgb, var(--primary-blue, #6ea8fe) 75%, white);
+	gap: 12px;
+}
+
+.diplomaLink:hover::after {
+	transform: translateX(2px);
+}
+
+.diplomaLink:focus-visible {
+	border-radius: 4px;
+	outline: 3px solid color-mix(in srgb, var(--primary-blue, #6ea8fe) 45%, transparent);
+	outline-offset: 4px;
+}
+
+.service-edit-button-wrap button:hover {
+	cursor: pointer;
+}
+
+@media (max-width: 600px) {
+	.diplomaContent {
+		padding: 20px 22px 24px;
+	}
+
+	.diplomaImage {
+		padding: 26px 26px 0;
+	}
+
+	.diplomaCard:hover {
+		transform: none;
+	}
+
+	.diplomaCard:hover .diplomaImage {
+		transform: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.diplomaCard,
+	.diplomaImage,
+	.diplomaLink,
+	.diplomaLink::after {
+		transition: none;
+	}
+}
