@@ -10,12 +10,19 @@ function passthroughLoader({ src }) {
   return src;
 }
 
-export default function DiplomaCreateModal({ open, onClose, onSubmit, diploma, setLocalDiplomas }) {
+export default function DiplomaCreateModal({
+  open,
+  onClose,
+  onSubmit,
+  diploma,
+  setLocalDiplomas,
+}) {
   const { showToast } = useToast();
   useLockBodyScroll(open);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState(null); // { file, url }
+  const [pdf, setPdf] = useState(null); // { file, url }
   const [url, setUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -23,6 +30,7 @@ export default function DiplomaCreateModal({ open, onClose, onSubmit, diploma, s
   const [deleting, setDeleting] = useState(false);
 
   const fileInputRef = useRef(null);
+  const pdfInputRef = useRef(null);
   const dialogRef = useRef(null);
 
   const isEdit = diploma ?? false;
@@ -38,6 +46,10 @@ export default function DiplomaCreateModal({ open, onClose, onSubmit, diploma, s
       if (prev?.url) URL.revokeObjectURL(prev.url);
       return diploma?.imageUrl ? { file: null, url: diploma.imageUrl } : null;
     });
+    setPdf((prev) => {
+      if (prev?.url) URL.revokeObjectURL(prev.url);
+      return diploma?.url ? { file: null, url: diploma.url } : null;
+    });
   }, [open]);
 
   useEffect(() => {
@@ -52,7 +64,11 @@ export default function DiplomaCreateModal({ open, onClose, onSubmit, diploma, s
   }, [open, onClose, submitting]);
 
   const canSubmit = useMemo(() => {
-    return title.trim().length > 0 && description.trim().length > 0 && (image?.file || isEdit);
+    return (
+      title.trim().length > 0 &&
+      description.trim().length > 0 &&
+      (image?.file || isEdit)
+    );
   }, [title, description, image]);
 
   const handleFileSelected = (e) => {
@@ -67,8 +83,27 @@ export default function DiplomaCreateModal({ open, onClose, onSubmit, diploma, s
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const handlePdfSelected = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setPdf((prev) => {
+      if (prev?.url) URL.revokeObjectURL(prev.url);
+      return { file, url: URL.createObjectURL(file) };
+    });
+
+    if (pdfInputRef.current) pdfInputRef.current.value = "";
+  };
+
   const removeImage = () => {
     setImage((prev) => {
+      if (prev?.url) URL.revokeObjectURL(prev.url);
+      return null;
+    });
+  };
+
+  const removePdf = () => {
+    setPdf((prev) => {
       if (prev?.url) URL.revokeObjectURL(prev.url);
       return null;
     });
@@ -84,12 +119,18 @@ export default function DiplomaCreateModal({ open, onClose, onSubmit, diploma, s
         title: title.trim(),
         description: description.trim(),
         image: image.file,
+        pdf: pdf?.file,
         url: url.trim(),
       });
 
-      const ok = response?.status === 200 || response?.status === 201 || response === undefined;
+      const ok =
+        response?.status === 200 ||
+        response?.status === 201 ||
+        response === undefined;
       if (!ok) {
-        setError(response?.data?.message || "Greška pri spremanju certifikata.");
+        setError(
+          response?.data?.message || "Greška pri spremanju certifikata.",
+        );
         showToast({
           type: "error",
           title: "Neuspješno",
@@ -98,11 +139,19 @@ export default function DiplomaCreateModal({ open, onClose, onSubmit, diploma, s
         return;
       }
 
-      showToast({ type: "success", title: "Spremljeno", message: "Certifikat je dodan." });
+      showToast({
+        type: "success",
+        title: "Spremljeno",
+        message: "Certifikat je dodan.",
+      });
       onClose?.();
     } catch {
       setError("Greška pri spremanju certifikata. Pokušajte ponovno.");
-      showToast({ type: "error", title: "Greška", message: "Pokušajte ponovno." });
+      showToast({
+        type: "error",
+        title: "Greška",
+        message: "Pokušajte ponovno.",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -112,11 +161,17 @@ export default function DiplomaCreateModal({ open, onClose, onSubmit, diploma, s
     if (!deleteDiploma || deleting || submitting) return;
     if (!diploma?.id) {
       setError("Nije moguće obrisati ovaj certifikat.");
-      showToast({ type: "error", title: "Greška", message: "Brisanje nije moguće." });
+      showToast({
+        type: "error",
+        title: "Greška",
+        message: "Brisanje nije moguće.",
+      });
       return;
     }
 
-    const confirmed = window.confirm("Jeste li sigurni da želite obrisati ovaj certifikat?");
+    const confirmed = window.confirm(
+      "Jeste li sigurni da želite obrisati ovaj certifikat?",
+    );
     if (!confirmed) return;
 
     setError("");
@@ -131,13 +186,21 @@ export default function DiplomaCreateModal({ open, onClose, onSubmit, diploma, s
         return;
       }
 
-      showToast({ type: "success", title: "Obrisano", message: "Certifikat je obrisan." });
+      showToast({
+        type: "success",
+        title: "Obrisano",
+        message: "Certifikat je obrisan.",
+      });
       onClose?.();
       const newDiplomas = await getDiplomas();
       setLocalDiplomas(newDiplomas.data);
     } catch {
       setError("Greška pri brisanju certifikata.");
-      showToast({ type: "error", title: "Greška", message: "Pokušajte ponovno." });
+      showToast({
+        type: "error",
+        title: "Greška",
+        message: "Pokušajte ponovno.",
+      });
     } finally {
       setDeleting(false);
     }
@@ -173,7 +236,7 @@ export default function DiplomaCreateModal({ open, onClose, onSubmit, diploma, s
 
         {error ? <div className="modal-error">{error}</div> : null}
 
-        <div className="modal-body">
+        <div className="modal-body diploma-modal">
           <div className="modal-row">
             <label className="modal-label" style={{ flex: 1 }}>
               Naslov *
@@ -185,15 +248,39 @@ export default function DiplomaCreateModal({ open, onClose, onSubmit, diploma, s
                 maxLength={200}
               />
             </label>
-            <label className="modal-label" style={{ flex: 1 }}>
-              URL
+          </div>
+          <div className="modal-row" style={{ alignItems: "center" }}>
+            <div style={{ flex: 1 }}>
+              <div className="modal-label">Datoteka certifikata</div>
+              <div className="modal-help">
+                Odaberite datoteku certifikata ili diplome.
+              </div>
+            </div>
+            <label className="modal-file">
+              Odaberi
               <input
-                className="modal-input"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://..."
+                ref={pdfInputRef}
+                type="file"
+                accept="application/pdf"
+                onChange={handlePdfSelected}
               />
             </label>
+
+            {pdf ? (
+              <div style={{ marginTop: 8 }}>
+                <a className="footer-credit" href={pdf.url} target="_blank" rel="noopener noreferrer">
+                  Pregledaj odabranu datoteku
+                </a>
+                <button
+                  className="modal-danger"
+                  type="button"
+                  onClick={removePdf}
+                  style={{ marginLeft: 8 }}
+                >
+                  Ukloni
+                </button>
+              </div>
+            ) : null}
           </div>
 
           <label className="modal-label">
@@ -211,7 +298,9 @@ export default function DiplomaCreateModal({ open, onClose, onSubmit, diploma, s
           <div className="modal-row" style={{ alignItems: "center" }}>
             <div style={{ flex: 1 }}>
               <div className="modal-label">Slika *</div>
-              <div className="modal-help">Odaberite sliku certifikata ili diplome.</div>
+              <div className="modal-help">
+                Odaberite sliku certifikata ili diplome.
+              </div>
             </div>
             <label className="modal-file">
               Odaberi
@@ -250,14 +339,16 @@ export default function DiplomaCreateModal({ open, onClose, onSubmit, diploma, s
         </div>
 
         <div className="modal-actions">
+          {isEdit ? (
           <button
-              type="button"
-              className="modal-danger"
-              onClick={handleDelete}
-              disabled={submitting || deleting}
-            >
-              {deleting ? "Brisanje..." : "Obriši"}
-            </button>
+            type="button"
+            className="modal-danger"
+            onClick={handleDelete}
+            disabled={submitting || deleting}
+          >
+            {deleting ? "Brisanje..." : "Obriši"}
+          </button>
+          ) : null }
           <button
             type="button"
             className="modal-secondary"

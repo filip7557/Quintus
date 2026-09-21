@@ -36,9 +36,21 @@ export async function updateDiplomaImage({diplomaId, image}) {
   try {
     const formData = new FormData();
     formData.append("image", image);
-    console.log(diplomaId);
-    console.log(formData.get("image"));
     return await api.put(`/Certificate/image/${diplomaId}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  } catch (error) {
+    return error.response;
+  }
+}
+
+export async function updateDiplomaPdf({id, pdf}) {
+  try {
+    const formData = new FormData();
+    formData.append("file", pdf);
+    return await api.put(`/Certificate/file/${id}`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },

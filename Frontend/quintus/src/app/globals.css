@@ -1057,6 +1057,34 @@ header {
   max-width: 680px;
 }
 
+.modal.diploma-modal {
+  max-width: 820px;
+}
+
+.modal-label, .modal-help {
+  text-align: start;
+}
+
+.diploma-modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.diploma-modal-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+@media (max-width: 680px) {
+  .diploma-modal-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
 .modal.pdf-modal {
   max-width: min(1060px, calc(100vw - 40px));
   width: 100%;
@@ -1860,6 +1888,24 @@ header {
   .edit-button {
     padding: 7px 9px;
     font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 630px) {
+  .modal.pdf-modal {
+    max-width: 100%;
+    height: calc(75svh - (40px + var(--modal-top-offset)));
+    height: calc(75dvh - (40px + var(--modal-top-offset)));
+  }
+
+  .pdf-modal-container {
+    height: calc(75svh - (40px + var(--modal-top-offset)));
+    height: calc(75dvh - (40px + var(--modal-top-offset)));
+  }
+
+  .pdf-modal-frame {
+    height: calc(75svh - (40px + var(--modal-top-offset)));
+    height: calc(75dvh - (40px + var(--modal-top-offset)));
   }
 }
 

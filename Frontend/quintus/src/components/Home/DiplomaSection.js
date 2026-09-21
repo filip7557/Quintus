@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 import DiplomaCard from "../DiplomaCard/DiplomaCard";
 import DiplomaCreateModal from "./DiplomaCreateModal";
-import { addDiploma, updateDiploma, updateDiplomaImage, getDiplomas } from "@/services/diplomaService";
+import { addDiploma, updateDiploma, updateDiplomaImage, updateDiplomaPdf, getDiplomas } from "@/services/diplomaService";
 import useCanManageSite from "@/hooks/useCanManageSite";
 
 export default function DiplomaSection(
@@ -17,19 +17,23 @@ export default function DiplomaSection(
         setLocalDiplomas(diplomas ?? []);
     }, [diplomas]);
 
-    const handleCreate = async ({ title, description, image, url }) => {
+    const handleCreate = async ({ title, description, image, pdf }) => {
         //TODO: Wire this up to the real backend endpoint (CertificateDTO: Title, Description, Image).
-        await addDiploma({ title, description, image, url });
+        await addDiploma({ title, description, image, pdf });
 
         const newDiplomas = await getDiplomas();
         setLocalDiplomas(newDiplomas.data);
     };
 
-    const handleUpdate = async ({ title, description, image, url }) => {
+    const handleUpdate = async ({ title, description, image, pdf }) => {
         //TODO: Wire this up to the real backend endpoint (CertificateDTO: Title, Description, Image).
-        await updateDiploma({ id: editingDiploma.id, title, description, url });
+        await updateDiploma({ id: editingDiploma.id, title, description });
         if (image) {
             await updateDiplomaImage({ diplomaId: editingDiploma.id, image });
+        }
+
+        if (pdf) {
+            await updateDiplomaPdf({ id: editingDiploma.id, pdf });
         }
 
         const newDiplomas = await getDiplomas();
