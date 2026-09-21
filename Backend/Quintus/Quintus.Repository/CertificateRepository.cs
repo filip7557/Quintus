@@ -52,7 +52,7 @@ namespace Quintus.Repository
         {
             try
             {
-                return await _context.Certificates.ToListAsync();
+                return await _context.Certificates.OrderBy(c => c.CreatedDateTime).ToListAsync();
             }
             catch (Exception ex)
             {
