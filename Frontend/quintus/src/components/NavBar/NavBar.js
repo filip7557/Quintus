@@ -111,19 +111,19 @@ export default function NavBar() {
           </li>
           <li>
             <div className="nav-link-wrapper">
-              <Link href="/#about" className="nav-link" onClick={closeMenu}>
-                O nama
-              </Link>
-            </div>
-          </li>
-          <li>
-            <div className="nav-link-wrapper">
               <Link
                 href="/#diploma"
                 className="nav-link"
                 onClick={(event) => handleSectionClick(event, "diploma")}
               >
                 Certifikati
+              </Link>
+            </div>
+          </li>
+          <li>
+            <div className="nav-link-wrapper">
+              <Link href="/#about" className="nav-link" onClick={closeMenu}>
+                O nama
               </Link>
             </div>
           </li>
