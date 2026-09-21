@@ -23,6 +23,7 @@ namespace Quintus.Repository.Context
         public DbSet<Appointment> Appointments => Set<Appointment>();
         public DbSet<PushSubscription> PushSubscriptions => Set<PushSubscription>();
         public DbSet<PushNotificationJob> PushNotificationJobs => Set<PushNotificationJob>();
+        public DbSet<Certificate> Certificates => Set<Certificate>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -69,6 +70,45 @@ namespace Quintus.Repository.Context
             modelBuilder.Entity<UnitOfMeasurement>().HasData(
                 new UnitOfMeasurement { Id = Guid.Parse("b1a3e4d7-89c2-4f6a-a5d8-3e7b9c1f2d4a"), Name = "M" },
                 new UnitOfMeasurement { Id = Guid.Parse("d4f6a8c2-1b3e-4d7f-9a5c-7e2b8d0f3a6c"), Name = "KOM" }
+            );
+
+            modelBuilder.Entity<Certificate>().HasData(
+                new Certificate
+                {
+                    Id = Guid.Parse("31993434-7c6d-4071-83a5-e063b457ac81"),
+                    Title = "Majstor instalater",
+                    Description = "Ovlašteni majstor vodoinstalater, instalater grijanja i klimatizacije",
+                    CreatedDateTime = DateTimeOffset.ParseExact("2026-09-21 01:11:36.092 +0200", "yyyy-MM-dd HH:mm:ss.fff zzz", System.Globalization.CultureInfo.InvariantCulture).UtcDateTime,
+                    ImageUrl = "https://res.cloudinary.com/dzhmn7c4d/image/upload/v1789945894/quintus_images/pbfc7fb3nxyzwbbdfyqd.png",
+                    Url = "https://quintus-files.s3.eu-south-mil.io.cloud.ovh.net/d6719da15d444d38b4160d5558bc7316.pdf"
+                },
+                new Certificate
+                {
+                    Id = Guid.Parse("210562a4-052f-4fb6-add0-dcfb55516bc5"),
+                    Title = "Majstor plinoinstalater",
+                    Description = "Ovlašteni majstor plinoinstalater",
+                    CreatedDateTime = DateTimeOffset.ParseExact("2026-09-21 01:17:26.992 +0200", "yyyy-MM-dd HH:mm:ss.fff zzz", System.Globalization.CultureInfo.InvariantCulture).UtcDateTime,
+                    ImageUrl = "https://res.cloudinary.com/dzhmn7c4d/image/upload/v1789946245/quintus_images/r3lt8gemsgydxowfnyqb.png",
+                    Url = "https://quintus-files.s3.eu-south-mil.io.cloud.ovh.net/3bedd3d343904e88ab108e869370d1b1.pdf"
+                },
+                new Certificate
+                {
+                    Id = Guid.Parse("44a532f0-8072-4727-9577-aecf9d12921f"),
+                    Title = "Majstor instalater",
+                    Description = "Ovlašteni majstor za vodovod, grijanje i klimatizaciju (Kategorija A1).",
+                    CreatedDateTime = DateTimeOffset.ParseExact("2026-09-20 13:57:18.389 +0200", "yyyy-MM-dd HH:mm:ss.fff zzz", System.Globalization.CultureInfo.InvariantCulture).UtcDateTime,
+                    ImageUrl = "https://res.cloudinary.com/dzhmn7c4d/image/upload/v1789905438/quintus_images/gfjnfyhvrwgn6spvyfqs.webp",
+                    Url = "https://quintus-files.s3.eu-south-mil.io.cloud.ovh.net/a4f0bcd1dbdc43efba36b95ace84c83a.pdf"
+                },
+                new Certificate
+                {
+                    Id = Guid.Parse("80f17497-8c63-4459-be9c-65f471de95fc"),
+                    Title = "Vaillant Partner",
+                    Description = "Vaillant Excellence Partner (VEP) je Vaillantova elitna mreža certificiranih partnera instalatera.",
+                    CreatedDateTime = DateTimeOffset.ParseExact("2026-09-21 01:16:43.785 +0200", "yyyy-MM-dd HH:mm:ss.fff zzz", System.Globalization.CultureInfo.InvariantCulture).UtcDateTime,
+                    ImageUrl = "https://res.cloudinary.com/dzhmn7c4d/image/upload/v1789946203/quintus_images/ibed5jn1gbyagzlv6zgr.png",
+                    Url = null
+                }
             );
         }
     }

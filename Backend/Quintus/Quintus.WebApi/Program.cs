@@ -1,3 +1,4 @@
+using Amazon.S3;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using CloudinaryDotNet;
@@ -5,6 +6,7 @@ using dotenv.net;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Quintus.Common;
 using Quintus.Repository;
 using Quintus.Repository.Common;
 using Quintus.Repository.Context;
@@ -80,6 +82,29 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.AddHttpClient();
 builder.Services.Configure<PushNotificationOptions>(builder.Configuration.GetSection("Vapid"));
 
+builder.Services.Configure<S3Options>(
+    builder.Configuration.GetSection("S3"));
+
+var s3Options = builder.Configuration
+    .GetSection("S3")
+    .Get<S3Options>()
+    ?? throw new InvalidOperationException("S3 configuration is missing.");
+
+builder.Services.AddSingleton<IAmazonS3>(_ =>
+{
+    var config = new AmazonS3Config
+    {
+        ServiceURL = s3Options.ServiceUrl,
+        ForcePathStyle = false
+    };
+
+    return new AmazonS3Client(
+        s3Options.AccessKey,
+        s3Options.SecretKey,
+        config);
+});
+
+
 // Add services to the container.
 builder.Host
     .UseServiceProviderFactory(new AutofacServiceProviderFactory())
@@ -134,6 +159,11 @@ builder.Host
         containerBuilder.RegisterType<UnitOfMeasurementService>().As<IUnitOfMeasurementService>();
 
         containerBuilder.RegisterType<PdfOfferService>();
+
+        containerBuilder.RegisterType<CertificateRepository>().As<ICertificateRepository>();
+        containerBuilder.RegisterType<CertificateService>().As<ICertificateService>();
+
+        containerBuilder.RegisterType<S3Service>().As<IS3Service>();
     });
 
 builder.Services.AddSingleton<IEmailQueue, EmailQueue>();

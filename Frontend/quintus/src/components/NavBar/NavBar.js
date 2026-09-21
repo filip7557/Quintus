@@ -42,6 +42,19 @@ export default function NavBar() {
     setIsMenuOpen((v) => !v);
   };
 
+  const handleSectionClick = (event, sectionId) => {
+    closeMenu();
+
+    if (window.location.pathname !== "/") return;
+
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+
+    event.preventDefault();
+    window.history.pushState(null, "", `/#${sectionId}`);
+    section.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const handleNavClick = (e) => {
     const link = e.target?.closest?.("a.nav-link");
     if (link) setIsMenuOpen(false);
@@ -100,6 +113,17 @@ export default function NavBar() {
             <div className="nav-link-wrapper">
               <Link href="/#about" className="nav-link" onClick={closeMenu}>
                 O nama
+              </Link>
+            </div>
+          </li>
+          <li>
+            <div className="nav-link-wrapper">
+              <Link
+                href="/#diploma"
+                className="nav-link"
+                onClick={(event) => handleSectionClick(event, "diploma")}
+              >
+                Certifikati
               </Link>
             </div>
           </li>
