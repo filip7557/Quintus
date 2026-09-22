@@ -67,7 +67,7 @@ namespace Quintus.Service
 
             if (!string.IsNullOrWhiteSpace(newOffer.BuyerEmail))
             {
-                _emailQueue.Enqueue(new EmailJobItem(newOffer.Id));
+                _emailQueue.Enqueue(new EmailJobItem(newOffer.Id, EmailJobType.Offer));
                 _logger.LogInformation("Email job queued for offer {OfferId}.", newOffer.Id);
             }
             else
@@ -111,7 +111,7 @@ namespace Quintus.Service
 
         public Task SendOfferEmailAsync(Guid offerId)
         {
-            _emailQueue.Enqueue(new EmailJobItem(offerId));
+            _emailQueue.Enqueue(new EmailJobItem(offerId, EmailJobType.Offer));
             return Task.CompletedTask;
         }
     }
