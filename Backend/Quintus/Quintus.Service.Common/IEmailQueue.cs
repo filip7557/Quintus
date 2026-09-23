@@ -2,7 +2,13 @@ using System.Threading.Channels;
 
 namespace Quintus.Service.Common
 {
-    public record EmailJobItem(Guid OfferId);
+    public record EmailJobItem(Guid entityId, EmailJobType jobType);
+
+    public enum EmailJobType
+    {
+        Offer,
+        Estimate,
+    }
 
     public interface IEmailQueue
     {

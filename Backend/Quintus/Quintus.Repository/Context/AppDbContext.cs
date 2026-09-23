@@ -25,6 +25,8 @@ namespace Quintus.Repository.Context
         public DbSet<PushNotificationJob> PushNotificationJobs => Set<PushNotificationJob>();
         public DbSet<Certificate> Certificates => Set<Certificate>();
 
+        public DbSet<Estimate> Estimates => Set<Estimate>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

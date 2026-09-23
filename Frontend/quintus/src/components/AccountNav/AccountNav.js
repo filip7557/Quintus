@@ -5,14 +5,21 @@ import { getCurrentUser, logout, subscribeToAuthChanges } from "@/services/authS
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "./AccountNav.module.css";
-import { canManageOffers, canUseSchedule, isAdminOrOwner } from "@/lib/authz";
+import {
+  canManageEstimates,
+  canManageOffers,
+  canUseSchedule,
+  isAdminOrOwner,
+} from "@/lib/authz";
 
 export default function AccountNav() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [offersOpen, setOffersOpen] = useState(false);
+  const [estimatesOpen, setEstimatesOpen] = useState(false);
   const [isAdminOrOwnerUser, setIsAdminOrOwnerUser] = useState(false);
   const [canManageOffersUser, setCanManageOffersUser] = useState(false);
+  const [canManageEstimatesUser, setCanManageEstimatesUser] = useState(false);
   const [canUseScheduleUser, setCanUseScheduleUser] = useState(false);
   const router = useRouter();
   const rootRef = useRef(null);
@@ -28,11 +35,13 @@ export default function AccountNav() {
               setIsLoggedIn(true);
               setIsAdminOrOwnerUser(isAdminOrOwner(response.data));
               setCanManageOffersUser(canManageOffers(response.data));
+              setCanManageEstimatesUser(canManageEstimates(response.data));
               setCanUseScheduleUser(canUseSchedule(response.data));
             } else {
               setIsLoggedIn(false);
               setIsAdminOrOwnerUser(false);
               setCanManageOffersUser(false);
+              setCanManageEstimatesUser(false);
               setCanUseScheduleUser(false);
             }
           })
@@ -40,12 +49,14 @@ export default function AccountNav() {
             setIsLoggedIn(false);
             setIsAdminOrOwnerUser(false);
             setCanManageOffersUser(false);
+            setCanManageEstimatesUser(false);
             setCanUseScheduleUser(false);
           });
       } else {
         setIsLoggedIn(false);
         setIsAdminOrOwnerUser(false);
         setCanManageOffersUser(false);
+        setCanManageEstimatesUser(false);
       }
     };
 
@@ -92,6 +103,7 @@ export default function AccountNav() {
       setIsLoggedIn(false);
       setIsAdminOrOwnerUser(false);
       setCanManageOffersUser(false);
+      setCanManageEstimatesUser(false);
       setCanUseScheduleUser(false);
       setIsOpen(false);
       router.replace("/");
@@ -105,6 +117,7 @@ export default function AccountNav() {
   const handleItemClick = () => {
     setIsOpen(false);
     setOffersOpen(false);
+    setEstimatesOpen(false);
   };
 
   return (
@@ -196,6 +209,44 @@ export default function AccountNav() {
                     onClick={handleItemClick}
                   >
                     Pretraga ponuda
+                  </Link>
+                </div>
+              </div>
+            ) : null}
+            {canManageEstimatesUser ? (
+              <div className={`${styles.subMenuWrapper} ${estimatesOpen ? styles.subMenuOpen : ""}`}>
+                <button
+                  type="button"
+                  className={`${styles.dropdownItem} ${styles.subMenuTrigger}`}
+                  onClick={() => setEstimatesOpen((v) => !v)}
+                  aria-expanded={estimatesOpen}
+                >
+                  Predračuni
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    className={styles.subMenuArrow}
+                  >
+                    <path d="M6 9l6 6 6-6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                <div className={styles.subMenuItems}>
+                  <Link
+                    href="/estimates/create"
+                    className={`${styles.dropdownItem} ${styles.subMenuItem}`}
+                    onClick={handleItemClick}
+                  >
+                    Izrada predračuna
+                  </Link>
+                  <Link
+                    href="/estimates/list"
+                    className={`${styles.dropdownItem} ${styles.subMenuItem}`}
+                    onClick={handleItemClick}
+                  >
+                    Pretraga predračuna
                   </Link>
                 </div>
               </div>
