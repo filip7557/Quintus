@@ -56,27 +56,36 @@ namespace Quintus.Service
 
             var hasDiscount = (estimate.Items ?? Enumerable.Empty<Item>()).Any(i => i.DiscountPercent > 0);
 
-            var pdfBytes = Document.Create(container =>
+            try
             {
-                container.Page(page =>
+                var pdfBytes = Document.Create(container =>
                 {
-                    page.Size(PageSizes.A4);
-                    page.Margin(36);
-                    page.DefaultTextStyle(x => x.FontFamily(FontFamily).FontSize(10));
+                    container.Page(page =>
+                    {
+                        page.Size(PageSizes.A4);
+                        page.Margin(36);
+                        page.DefaultTextStyle(x => x.FontFamily(FontFamily).FontSize(10));
 
-                    page.Header().Element(header => ComposeHeader(header, logoBytes, siteSettings));
-                    page.Content().Element(content => ComposeContent(content, estimate, hrCulture, estimateTitle, hasDiscount, siteSettings));
-                    page.Footer().Element(ComposeFooter);
-                });
-            }).GeneratePdf();
+                        page.Header().Element(header => ComposeHeader(header, logoBytes, siteSettings));
+                        page.Content().Element(content => ComposeContent(content, estimate, hrCulture, estimateTitle, hasDiscount, siteSettings));
+                        page.Footer().Element(ComposeFooter);
+                    });
+                }).GeneratePdf();
 
-            stopwatch.Stop();
-            _logger.LogInformation(
-                "Rendered estimate {EstimateId} PDF in {ElapsedMilliseconds} ms. ByteCount: {PdfByteCount}.",
-                estimate.Id,
-                stopwatch.ElapsedMilliseconds,
-                pdfBytes.Length);
-            return pdfBytes;
+                stopwatch.Stop();
+                _logger.LogInformation(
+                    "Rendered estimate {EstimateId} PDF in {ElapsedMilliseconds} ms. ByteCount: {PdfByteCount}.",
+                    estimate.Id,
+                    stopwatch.ElapsedMilliseconds,
+                    pdfBytes.Length);
+                return pdfBytes;
+            }
+            catch (Exception ex)
+            {
+                stopwatch.Stop();
+                _logger.LogError(ex, "Failed to render estimate {EstimateId} PDF after {ElapsedMilliseconds} ms.", estimate.Id, stopwatch.ElapsedMilliseconds);
+                throw;
+            }
         }
 
         private async Task<byte[]?> TryGetLogoBytesAsync()
@@ -234,7 +243,7 @@ namespace Quintus.Service
                 { 
                     var paymentData = PaymentBarcode(estimate, siteSettings);
                     column.Item().PaddingTop(32).AlignCenter().Text("Platite predračun skeniranjem bar koda putem m-banking aplikacije.").FontColor(Colors.Grey.Medium).FontSize(10);
-                    column.Item().PaddingTop(16).AlignCenter().Width(7, Unit.Centimetre).Height(3, Unit.Centimetre).Image(paymentData.Value);
+                    column.Item().PaddingTop(16).AlignCenter().Width(7, Unit.Centimetre).Height(3, Unit.Centimetre).Svg(paymentData.Value);
                     column.Item().PaddingTop(-20).AlignCenter().Text($"IBAN: {paymentData.Key.Iban}").FontColor(Colors.Grey.Medium).FontSize(10);
                     column.Item().PaddingTop(0).AlignCenter().Text($"Model: HR{paymentData.Key.Model}").FontColor(Colors.Grey.Medium).FontSize(10);
                     column.Item().PaddingTop(4).AlignCenter().Text($"Poziv na broj: {paymentData.Key.ReferenceNumber}").FontColor(Colors.Grey.Medium).FontSize(10);
@@ -305,7 +314,7 @@ namespace Quintus.Service
             };
         }
 
-        private KeyValuePair<Hub3PaymentData, byte[]> PaymentBarcode(Estimate estimate, SiteSettings siteSettings)
+        private KeyValuePair<Hub3PaymentData, string> PaymentBarcode(Estimate estimate, SiteSettings siteSettings)
         {
             var date = DateTime.UtcNow.AddHours(2);
 
@@ -326,7 +335,7 @@ namespace Quintus.Service
 
             var generator = new Hub3BarcodeGenerator();
             var barcode = generator.Generate(payment);
-            return new KeyValuePair<Hub3PaymentData, byte[]>(payment, barcode);
+            return new KeyValuePair<Hub3PaymentData, string>(payment, barcode);
         }
 
         private enum CellAlign
