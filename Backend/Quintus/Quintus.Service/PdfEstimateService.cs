@@ -65,7 +65,7 @@ namespace Quintus.Service
                     page.DefaultTextStyle(x => x.FontFamily(FontFamily).FontSize(10));
 
                     page.Header().Element(header => ComposeHeader(header, logoBytes, siteSettings));
-                    page.Content().Element(content => ComposeContent(content, estimate, hrCulture, estimateTitle, hasDiscount));
+                    page.Content().Element(content => ComposeContent(content, estimate, hrCulture, estimateTitle, hasDiscount, siteSettings));
                     page.Footer().Element(ComposeFooter);
                 });
             }).GeneratePdf();
@@ -109,7 +109,7 @@ namespace Quintus.Service
             FontManager.RegisterFont(fontStream);
         }
 
-        private static void ComposeHeader(IContainer container, byte[]? logoBytes, SiteSettings siteSettings)
+        private void ComposeHeader(IContainer container, byte[]? logoBytes, SiteSettings siteSettings)
         {
             container.Row(row =>
             {
@@ -129,7 +129,7 @@ namespace Quintus.Service
             });
         }
 
-        private static void ComposeContent(IContainer container, Estimate estimate, CultureInfo hrCulture, string offerTitle, bool hasDiscount)
+        private void ComposeContent(IContainer container, Estimate estimate, CultureInfo hrCulture, string offerTitle, bool hasDiscount, SiteSettings siteSettings)
         {
             container.PaddingTop(36).Column(column =>
             {
@@ -224,25 +224,29 @@ namespace Quintus.Service
 
                 column.Item().LineHorizontal(0.8f).LineColor(Colors.Grey.Lighten2);
 
-                column.Item().PaddingTop(16).AlignRight().Text($"Ukupno: {estimate.Total.ToString("F2", hrCulture)} €").Bold().FontSize(14);
-
-                column.Item().PaddingTop(16).AlignCenter().Row(row =>
+                column.Item().PaddingTop(16).Row(row =>
                 {
-                    row.RelativeItem().AlignLeft().Text($"Način plaćanja: {(estimate.IsTransactional ? "Transakcijski" : "Gotovina")}").FontSize(10);
-                    if (estimate.IsTransactional)
-                    {
-                        row.RelativeItem().AlignRight().Width(7, Unit.Centimetre).Height(3, Unit.Centimetre).Image(PaymentBarcode(estimate));
-                    }
+                    row.RelativeItem().PaddingTop(2).AlignLeft().Text($"Način plaćanja: {(estimate.IsTransactional ? "Transakcijski" : "Gotovina")}").FontSize(10);
+                    row.RelativeItem().AlignRight().Text($"Ukupno: {estimate.Total.ToString("F2", hrCulture)} €").Bold().FontSize(14);
                 });
 
-                column.Item().PaddingTop(24).Text("Hvala na vašem interesu!").Italic().FontSize(10);
+                if (estimate.IsTransactional)
+                { 
+                    var paymentData = PaymentBarcode(estimate, siteSettings);
+                    column.Item().PaddingTop(32).AlignCenter().Text("Platite predračun skeniranjem bar koda putem m-banking aplikacije.").FontColor(Colors.Grey.Medium).FontSize(10);
+                    column.Item().PaddingTop(16).AlignCenter().Width(7, Unit.Centimetre).Height(3, Unit.Centimetre).Image(paymentData.Value);
+                    column.Item().PaddingTop(-20).AlignCenter().Text($"IBAN: {paymentData.Key.Iban}").FontColor(Colors.Grey.Medium).FontSize(10);
+                    column.Item().PaddingTop(0).AlignCenter().Text($"Model: HR{paymentData.Key.Model}").FontColor(Colors.Grey.Medium).FontSize(10);
+                    column.Item().PaddingTop(4).AlignCenter().Text($"Poziv na broj: {paymentData.Key.ReferenceNumber}").FontColor(Colors.Grey.Medium).FontSize(10);
+                }
             });
         }
 
-        private static void ComposeFooter(IContainer container)
+        private void ComposeFooter(IContainer container)
         {
             container.Column(column =>
             {
+                column.Item().PaddingBottom(8).AlignCenter().Text("Obrt nije u sustavu PDV-a sukladno članku 90. Zakona o porezu na dodanu vrijednost.\r\nNa navedene cijene ne obračunava se PDV.").FontColor(Colors.Grey.Medium).FontSize(8);
                 column.Item().LineHorizontal(0.5f).LineColor(Colors.Grey.Lighten1);
                 column.Item().PaddingTop(8)
                     .AlignCenter()
@@ -262,7 +266,7 @@ namespace Quintus.Service
             });
         }
 
-        private static void HeaderCell(IContainer container, string text, CellAlign align)
+        private void HeaderCell(IContainer container, string text, CellAlign align)
         {
             var alignedContainer = ApplyHorizontalAlignment(
                 container
@@ -278,7 +282,7 @@ namespace Quintus.Service
                 .FontColor(Colors.White);
         }
 
-        private static void BodyCell(IContainer container, string text, CellAlign align, string rowBackgroundColor)
+        private void BodyCell(IContainer container, string text, CellAlign align, string rowBackgroundColor)
         {
             var cell = container
                 .ShowEntire()
@@ -290,7 +294,7 @@ namespace Quintus.Service
             ApplyHorizontalAlignment(cell, align).Text(text);
         }
 
-        private static IContainer ApplyHorizontalAlignment(IContainer container, CellAlign align)
+        private IContainer ApplyHorizontalAlignment(IContainer container, CellAlign align)
         {
             return align switch
             {
@@ -301,7 +305,7 @@ namespace Quintus.Service
             };
         }
 
-        private static byte[] PaymentBarcode(Estimate estimate)
+        private KeyValuePair<Hub3PaymentData, byte[]> PaymentBarcode(Estimate estimate, SiteSettings siteSettings)
         {
             var date = DateTime.UtcNow.AddHours(2);
 
@@ -312,17 +316,17 @@ namespace Quintus.Service
                 RecipientName: "QUINTUS, VL. MATEJ PETI",
                 RecipientAddress: "Dudić 9",
                 RecipientCity: "Našice",
-                Iban: "HR1223400091160851975",
+                Iban: siteSettings.Iban,
                 Amount: estimate.Total,
-                Model: "00",
+                Model: "01",
                 ReferenceNumber: $"{date.Year}{date.Month:D2}{date.Day:D2}-{estimate.Number}/{estimate.Year}",
-                PurposeCode: "COST",
+                PurposeCode: "COMM",
                 Description: $"Predračun {estimate.Number}/{estimate.Year}"
             );
 
             var generator = new Hub3BarcodeGenerator();
             var barcode = generator.Generate(payment);
-            return barcode;
+            return new KeyValuePair<Hub3PaymentData, byte[]>(payment, barcode);
         }
 
         private enum CellAlign
