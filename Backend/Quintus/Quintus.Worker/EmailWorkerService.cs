@@ -28,45 +28,92 @@ namespace Quintus.Worker
                 {
                     await using var scope = _scopeFactory.CreateAsyncScope();
                     var offerService = scope.ServiceProvider.GetRequiredService<IOfferService>();
+                    var estimateService = scope.ServiceProvider.GetRequiredService<IEstimateService>();
                     var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
 
-                    var offer = await offerService.GetOfferByIdAsync(job.OfferId);
-                    if (offer == null)
-                    {
-                        _logger.LogWarning("Email job skipped: offer {OfferId} not found.", job.OfferId);
-                        continue;
-                    }
-
-                    if (offer.BuyerEmail == null)
-                    {
-                        _logger.LogWarning("Email job skipped: offer {OfferId} has no buyer email.", job.OfferId);
-                        continue;
-                    }
-
-                    var pdfBytes = await offerService.GenerateOfferPdfAsync(job.OfferId);
-
                     var hrCulture = new CultureInfo("hr-HR");
-                    var subject = $"Vaša ponuda od {offer.CreatedAt.ToString("dd. MMMM yyyy.", hrCulture)}";
-                    var html = EmailTemplates.Build(
-                        title: "Vaša ponuda",
-                        intro: $"Poštovani {offer.BuyerName},\n\nU prilogu se nalazi Vaša ponuda.",
-                        outro: "Hvala što ste nas odabrali!",
-                        logoUrl: "https://www.instalacije-quintus.hr/_next/image?url=%2Fimages%2Flogo.png&w=256&q=75"
-                    );
 
-                    await emailService.SendEmailWithAttachmentAsync(
-                        offer.BuyerEmail,
-                        subject,
-                        html,
-                        pdfBytes,
-                        OfferFileNameFormatter.GetFileName(offer)
-                    );
+                    switch (job.jobType)
+                    {
+                        case EmailJobType.Offer:
+                        {
+                            var offer = await offerService.GetOfferByIdAsync(job.entityId);
+                            if (offer == null)
+                            {
+                                _logger.LogWarning("Email job skipped: entity {EntityId} not found.", job.entityId);
+                                break;
+                            }
 
-                    _logger.LogInformation("Email sent to {ToEmail} for offer {OfferId}.", offer.BuyerEmail, job.OfferId);
+                            if (offer.BuyerEmail == null)
+                            {
+                                _logger.LogWarning("Email job skipped: entity {EntityId} has no buyer email.", job.entityId);
+                                break;
+                            }
+
+                            var pdfBytes = await offerService.GenerateOfferPdfAsync(job.entityId);
+                            var subject = $"Vaša ponuda od {offer.CreatedAt.ToString("dd. MMMM yyyy.", hrCulture)}";
+                            var html = EmailTemplates.Build(
+                                title: "Vaša ponuda",
+                                intro: $"Poštovani {offer.BuyerName},\n\nU prilogu se nalazi Vaša ponuda.",
+                                outro: "Hvala što ste nas odabrali!",
+                                logoUrl: "https://www.instalacije-quintus.hr/_next/image?url=%2Fimages%2Flogo.png&w=256&q=75"
+                            );
+
+                            await emailService.SendEmailWithAttachmentAsync(
+                                offer.BuyerEmail,
+                                subject,
+                                html,
+                                pdfBytes,
+                                OfferFileNameFormatter.GetFileName(offer)
+                            );
+
+                            _logger.LogInformation("Email sent to {ToEmail} for entity {EntityId}.", offer.BuyerEmail, job.entityId);
+                            break;
+                        }
+
+                        case EmailJobType.Estimate:
+                        {
+                            var estimate = await estimateService.GetEstimateByIdAsync(job.entityId);
+                            if (estimate == null)
+                            {
+                                _logger.LogWarning("Email job skipped: entity {EntityId} not found.", job.entityId);
+                                break;
+                            }
+
+                            if (estimate.BuyerEmail == null)
+                            {
+                                _logger.LogWarning("Email job skipped: entity {EntityId} has no buyer email.", job.entityId);
+                                break;
+                            }
+
+                            var pdfBytes = await estimateService.GenerateEstimatePdfAsync(job.entityId);
+                            var subject = $"Vaša procjena od {estimate.CreatedAt.ToString("dd. MMMM yyyy.", hrCulture)}";
+                            var html = EmailTemplates.Build(
+                                title: "Vaš predračun",
+                                intro: $"Poštovani {estimate.BuyerName},\n\nU prilogu se nalazi Vaš predračun.",
+                                outro: "Hvala što ste nas odabrali!",
+                                logoUrl: "https://www.instalacije-quintus.hr/_next/image?url=%2Fimages%2Flogo.png&w=256&q=75"
+                            );
+
+                            await emailService.SendEmailWithAttachmentAsync(
+                                estimate.BuyerEmail,
+                                subject,
+                                html,
+                                pdfBytes,
+                                EstimateFileNameFormatter.GetFileName(estimate)
+                            );
+
+                            _logger.LogInformation("Email sent to {ToEmail} for entity {EntityId}.", estimate.BuyerEmail, job.entityId);
+                            break;
+                        }
+
+                        default:
+                            throw new NotSupportedException($"Unsupported job type: {job.jobType}");
+                    }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Failed to process email job for offer {OfferId}.", job.OfferId);
+                    _logger.LogError(ex, "Failed to process email job for entity {EntityId}.", job.entityId);
                 }
             }
         }

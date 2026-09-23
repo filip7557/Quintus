@@ -3,9 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import NavBar from "@/components/NavBar/NavBar";
-import { getOfferById, getOfferPdf, downloadPDF, getPendingOfferPdf, clearPendingOfferPdf } from "@/services/offerService";
-import { getCurrentUser } from "@/services/authService";
-import { canManageEstimates } from "@/lib/authz";
+import {
+  getEstimateById,
+  getEstimatePdf,
+  sendEstimateEmail,
+  downloadPDF,
+  getPendingEstimatePdf,
+  clearPendingEstimatePdf,
+} from "@/services/estimateService";
+import EstimateAccessGate from "../EstimateAccessGate";
 import styles from "./page.module.css";
 
 function pickField(obj, keys, fallback = "") {
@@ -31,23 +37,27 @@ function formatDate(dateValue) {
   });
 }
 
-export default function OfferDetailsClient({ offerId }) {
+function EstimateDetailsContent({ estimateId }) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [offer, setOffer] = useState(null);
+  const [estimate, setEstimate] = useState(null);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [printLoading, setPrintLoading] = useState(false);
-  const [canCreateEstimate, setCanCreateEstimate] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailMessage, setEmailMessage] = useState("");
+  const [emailError, setEmailError] = useState("");
+
+  const requestedId = useMemo(() => String(estimateId ?? "").trim(), [estimateId]);
 
   // Reuses the PDF cached from creation (if any) instead of asking the backend to regenerate it.
-  const resolveOfferPdfBlob = async () => {
-    const cached = getPendingOfferPdf(requestedId);
+  const resolveEstimatePdfBlob = async () => {
+    const cached = getPendingEstimatePdf(requestedId);
     if (cached) {
-      clearPendingOfferPdf();
+      clearPendingEstimatePdf();
       return cached;
     }
-    const response = await getOfferPdf(requestedId);
+    const response = await getEstimatePdf(requestedId);
     if (response?.status >= 200 && response?.status < 300 && response?.data) {
       return response.data;
     }
@@ -57,9 +67,9 @@ export default function OfferDetailsClient({ offerId }) {
   const handleDownloadPdf = async () => {
     if (!requestedId || pdfLoading) return;
     setPdfLoading(true);
-    const blob = await resolveOfferPdfBlob();
+    const blob = await resolveEstimatePdfBlob();
     if (blob) {
-      downloadPDF(blob, `ponuda-${requestedId}.pdf`);
+      downloadPDF(blob, `predracun-${requestedId}.pdf`);
     }
     setPdfLoading(false);
   };
@@ -67,7 +77,7 @@ export default function OfferDetailsClient({ offerId }) {
   const handlePrintPdf = async () => {
     if (!requestedId || printLoading) return;
     setPrintLoading(true);
-    const blob = await resolveOfferPdfBlob();
+    const blob = await resolveEstimatePdfBlob();
     if (blob) {
       const url = window.URL.createObjectURL(blob);
       const iframe = document.createElement("iframe");
@@ -92,25 +102,28 @@ export default function OfferDetailsClient({ offerId }) {
     setPrintLoading(false);
   };
 
-  const requestedId = useMemo(() => String(offerId ?? "").trim(), [offerId]);
+  const handleSendEmail = async () => {
+    if (!requestedId || emailLoading) return;
+    setEmailLoading(true);
+    setEmailMessage("");
+    setEmailError("");
 
-  useEffect(() => {
-    let cancelled = false;
-    getCurrentUser().then((response) => {
-      if (cancelled) return;
-      setCanCreateEstimate(canManageEstimates(response?.data));
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    const response = await sendEstimateEmail(requestedId);
+    if (response?.status >= 200 && response?.status < 300) {
+      setEmailMessage("Predračun je poslan na email kupca.");
+    } else {
+      setEmailError(response?.data?.message || "Greška pri slanju predračuna e-poštom.");
+    }
+
+    setEmailLoading(false);
+  };
 
   useEffect(() => {
     let cancelled = false;
 
     const load = async () => {
       if (!requestedId) {
-        setError("Nedostaje ID ponude.");
+        setError("Nedostaje ID predračuna.");
         setLoading(false);
         return;
       }
@@ -118,13 +131,13 @@ export default function OfferDetailsClient({ offerId }) {
       setLoading(true);
       setError("");
 
-      const response = await getOfferById(requestedId);
+      const response = await getEstimateById(requestedId);
       if (cancelled) return;
 
       if (response?.status >= 200 && response?.status < 300 && response?.data) {
-        setOffer(response.data);
+        setEstimate(response.data);
       } else {
-        setError(response?.data?.message || "Greška pri dohvaćanju ponude.");
+        setError(response?.data?.message || "Greška pri dohvaćanju predračuna.");
       }
 
       setLoading(false);
@@ -138,11 +151,11 @@ export default function OfferDetailsClient({ offerId }) {
   }, [requestedId]);
 
   const items = useMemo(() => {
-    if (!offer) return [];
-    const rawItems = Array.isArray(offer?.Items)
-      ? offer.Items
-      : Array.isArray(offer?.items)
-        ? offer.items
+    if (!estimate) return [];
+    const rawItems = Array.isArray(estimate?.Items)
+      ? estimate.Items
+      : Array.isArray(estimate?.items)
+        ? estimate.items
         : [];
 
     return rawItems.map((item, index) => {
@@ -162,23 +175,23 @@ export default function OfferDetailsClient({ offerId }) {
         total: quantity * price * discountMultiplier,
       };
     });
-  }, [offer]);
+  }, [estimate]);
 
   const buyerName = useMemo(
-    () => pickField(offer, ["BuyerName", "buyerName"], "—"),
-    [offer]
+    () => pickField(estimate, ["BuyerName", "buyerName"], "—"),
+    [estimate]
   );
   const buyerEmail = useMemo(
-    () => pickField(offer, ["BuyerEmail", "buyerEmail"], "—"),
-    [offer]
+    () => pickField(estimate, ["BuyerEmail", "buyerEmail"], "—"),
+    [estimate]
   );
   const buyerPhone = useMemo(
-    () => pickField(offer, ["BuyerPhone", "buyerPhone"], "—"),
-    [offer]
+    () => pickField(estimate, ["BuyerPhone", "buyerPhone"], "—"),
+    [estimate]
   );
   const createdAt = useMemo(
-    () => pickField(offer, ["CreatedAt", "createdAt", "Date", "date"], ""),
-    [offer]
+    () => pickField(estimate, ["CreatedAt", "createdAt", "Date", "date"], ""),
+    [estimate]
   );
 
   const grandTotal = useMemo(() => {
@@ -186,19 +199,19 @@ export default function OfferDetailsClient({ offerId }) {
     return items.reduce((sum, item) => sum + item.total, 0);
   }, [items]);
 
-  const customMessage = useMemo(
-    () => pickField(offer, ["CustomMessage", "customMessage"], null),
-    [offer]
+  const isTransactional = useMemo(
+    () => Boolean(estimate?.IsTransactional ?? estimate?.isTransactional ?? false),
+    [estimate]
   );
 
-  const offerNumber = useMemo(
-    () => pickField(offer, ["OfferNumber", "offerNumber"], ""),
-    [offer]
+  const estimateNumber = useMemo(
+    () => pickField(estimate, ["Number", "number"], ""),
+    [estimate]
   );
 
-  const offerYear = useMemo(
-    () => pickField(offer, ["OfferYear", "offerYear"], ""),
-    [offer]
+  const estimateYear = useMemo(
+    () => pickField(estimate, ["Year", "year"], ""),
+    [estimate]
   );
 
   return (
@@ -208,12 +221,12 @@ export default function OfferDetailsClient({ offerId }) {
         <section className={styles.card}>
           <div className={styles.header}>
             <div>
-              <h1 className={styles.title}>Detalji ponude</h1>
+              <h1 className={styles.title}>Detalji predračuna</h1>
             </div>
             <button
               type="button"
               className={styles.secondaryBtn}
-              onClick={() => router.push("/offers/list")}
+              onClick={() => router.push("/estimates/list")}
             >
               Natrag na pretragu
             </button>
@@ -222,13 +235,13 @@ export default function OfferDetailsClient({ offerId }) {
           {loading ? <div className={styles.notice}>Učitavanje...</div> : null}
           {!loading && error ? <div className={styles.errorMessage}>{error}</div> : null}
 
-          {!loading && !error && offer ? (
+          {!loading && !error && estimate ? (
             <>
               <div className={styles.infoGrid}>
                 <div className={styles.infoField}>
-                  <span className={styles.label}>Broj ponude</span>
+                  <span className={styles.label}>Broj predračuna</span>
                   <div className={styles.value}>
-                    {offerNumber && offerYear ? `${offerNumber}/${offerYear}` : "—"}
+                    {estimateNumber && estimateYear ? `${estimateNumber}/${estimateYear}` : "—"}
                   </div>
                 </div>
                 <div className={styles.infoField}>
@@ -244,6 +257,12 @@ export default function OfferDetailsClient({ offerId }) {
                   <div className={styles.value}>{buyerPhone}</div>
                 </div>
                 <div className={styles.infoField}>
+                  <span className={styles.label}>Način plaćanja</span>
+                  <div className={styles.value}>
+                    {isTransactional ? "Transakcijsko plaćanje" : "Gotovina"}
+                  </div>
+                </div>
+                <div className={styles.infoField}>
                   <span className={styles.label}>Datum</span>
                   <div className={styles.value}>{formatDate(createdAt)}</div>
                 </div>
@@ -255,7 +274,7 @@ export default function OfferDetailsClient({ offerId }) {
               </div>
 
               {items.length === 0 ? (
-                <div className={styles.emptyMessage}>Ponuda nema stavki.</div>
+                <div className={styles.emptyMessage}>Predračun nema stavki.</div>
               ) : (
                 <div className={styles.tableWrapper}>
                   <table className={styles.table}>
@@ -289,12 +308,10 @@ export default function OfferDetailsClient({ offerId }) {
                 </div>
               )}
 
-              {customMessage ? (
-                <div className={styles.customMessage}>
-                  <span className={styles.label}>Napomena</span>
-                  <p className={styles.customMessageText}>{customMessage}</p>
-                </div>
+              {emailMessage ? (
+                <div className={styles.successMessage}>{emailMessage}</div>
               ) : null}
+              {emailError ? <div className={styles.errorMessage}>{emailError}</div> : null}
 
               <div className={styles.actions}>
                 <button
@@ -326,18 +343,28 @@ export default function OfferDetailsClient({ offerId }) {
                       strokeLinejoin="round"
                     />
                   </svg>
-                  {printLoading ? "Pripremanje..." : "Ispis"}
+                  {printLoading ? " Pripremanje..." : " Ispis"}
+                </button>
+                <button
+                  type="button"
+                  className={styles.secondaryBtn}
+                  onClick={handleSendEmail}
+                  disabled={emailLoading || buyerEmail === "—"}
+                  title={buyerEmail === "—" ? "Predračun nema email kupca." : undefined}
+                >
+                  {emailLoading ? "Slanje..." : "Pošalji e-poštom"}
                 </button>
                 <button
                   type="button"
                   className={styles.primaryBtn}
                   onClick={() => {
                     sessionStorage.setItem(
-                      "offerPrefill",
+                      "estimatePrefill",
                       JSON.stringify({
                         buyerName,
                         buyerEmail: buyerEmail === "—" ? "" : buyerEmail,
                         buyerPhone: buyerPhone === "—" ? "" : buyerPhone,
+                        isTransactional,
                         items: items.map((item) => ({
                           id: Date.now() + Math.random(),
                           name: item.name,
@@ -348,44 +375,24 @@ export default function OfferDetailsClient({ offerId }) {
                         })),
                       })
                     );
-                    router.push("/offers/create");
+                    router.push("/estimates/create");
                   }}
                 >
-                  Izrada nove ponude
+                  Izrada novog predračuna
                 </button>
-                {canCreateEstimate ? (
-                  <button
-                    type="button"
-                    className={styles.primaryBtn}
-                    onClick={() => {
-                      sessionStorage.setItem(
-                        "estimatePrefill",
-                        JSON.stringify({
-                          buyerName,
-                          buyerEmail: buyerEmail === "—" ? "" : buyerEmail,
-                          buyerPhone: buyerPhone === "—" ? "" : buyerPhone,
-                          isTransactional: false,
-                          items: items.map((item) => ({
-                            id: Date.now() + Math.random(),
-                            name: item.name,
-                            unitOfMeasurement: item.unit,
-                            quantity: item.quantity,
-                            price: item.price,
-                            discountPercent: item.discountPercent,
-                          })),
-                        })
-                      );
-                      router.push("/estimates/create");
-                    }}
-                  >
-                    Izrada predračuna
-                  </button>
-                ) : null}
               </div>
             </>
           ) : null}
         </section>
       </main>
     </>
+  );
+}
+
+export default function EstimateDetailsClient({ estimateId }) {
+  return (
+    <EstimateAccessGate redirectTo={`/estimates/${estimateId ?? ""}`}>
+      <EstimateDetailsContent estimateId={estimateId} />
+    </EstimateAccessGate>
   );
 }

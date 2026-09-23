@@ -156,6 +156,39 @@ namespace Quintus.Repository.Migrations
                     b.ToTable("EmailVerificationTokens");
                 });
 
+            modelBuilder.Entity("Quintus.Model.Entities.Estimate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BuyerEmail")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BuyerName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("BuyerPhone")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsTransactional")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Estimates");
+                });
+
             modelBuilder.Entity("Quintus.Model.Entities.Image", b =>
                 {
                     b.Property<Guid>("Id")
@@ -622,6 +655,9 @@ namespace Quintus.Repository.Migrations
                     b.Property<decimal>("DiscountPercent")
                         .HasColumnType("numeric");
 
+                    b.Property<Guid?>("EstimateId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -640,6 +676,8 @@ namespace Quintus.Repository.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EstimateId");
 
                     b.HasIndex("OfferId");
 
@@ -750,9 +788,18 @@ namespace Quintus.Repository.Migrations
 
             modelBuilder.Entity("Quintus.Model.Item", b =>
                 {
+                    b.HasOne("Quintus.Model.Entities.Estimate", null)
+                        .WithMany("Items")
+                        .HasForeignKey("EstimateId");
+
                     b.HasOne("Quintus.Model.Entities.Offer", null)
                         .WithMany("Items")
                         .HasForeignKey("OfferId");
+                });
+
+            modelBuilder.Entity("Quintus.Model.Entities.Estimate", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("Quintus.Model.Entities.Offer", b =>

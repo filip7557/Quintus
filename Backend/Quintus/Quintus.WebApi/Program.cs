@@ -164,6 +164,10 @@ builder.Host
         containerBuilder.RegisterType<CertificateService>().As<ICertificateService>();
 
         containerBuilder.RegisterType<S3Service>().As<IS3Service>();
+
+        containerBuilder.RegisterType<EstimateRepository>().As<IEstimateRepository>();
+        containerBuilder.RegisterType<EstimateService>().As<IEstimateService>();
+        containerBuilder.RegisterType<PdfEstimateService>();
     });
 
 builder.Services.AddSingleton<IEmailQueue, EmailQueue>();
