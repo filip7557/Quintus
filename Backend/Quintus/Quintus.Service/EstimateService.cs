@@ -78,7 +78,7 @@ namespace Quintus.Service
             }
 
             _logger.LogInformation("Generating PDF for persisted estimate {EstimateId}.", newEstimate.Id);
-            var pdfBytes = await _pdfEstimateService.GeneratePdfAsync(newEstimate.Id);
+            var pdfBytes = await _pdfEstimateService.GeneratePdfAsync(newEstimate);
             _logger.LogInformation(
                 "Estimate creation completed in {ElapsedMilliseconds} ms with a {PdfByteCount}-byte PDF.",
                 stopwatch.ElapsedMilliseconds,
@@ -97,7 +97,7 @@ namespace Quintus.Service
                 throw new KeyNotFoundException($"Predračun s ID {estimateId} nije pronađen.");
             }
 
-            var pdfBytes = await _pdfEstimateService.GeneratePdfAsync(estimateId);
+            var pdfBytes = await _pdfEstimateService.GeneratePdfAsync(estimate);
             _logger.LogInformation(
                 "PDF generation pipeline for estimate {EstimateId} completed in {ElapsedMilliseconds} ms.",
                 estimateId,
