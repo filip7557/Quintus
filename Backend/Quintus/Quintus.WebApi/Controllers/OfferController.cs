@@ -79,7 +79,7 @@ namespace Quintus.WebAPI.Controllers
                     stopwatch.ElapsedMilliseconds,
                     offer.Items.Count,
                     !string.IsNullOrWhiteSpace(offer.BuyerEmail));
-                return StatusCode(500, "Nesto je poslo po zlu. Pokusajte kasnije.");
+                return StatusCode(500, "Nešto je pošlo po zlu. Pokušajte kasnije.");
             }
         }
 
