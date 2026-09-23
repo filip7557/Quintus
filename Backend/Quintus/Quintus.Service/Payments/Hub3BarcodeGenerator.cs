@@ -1,5 +1,4 @@
-﻿using SkiaSharp;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 using ZXing;
 using ZXing.Common;
@@ -9,7 +8,7 @@ namespace Quintus.Service.Payments;
 
 public sealed class Hub3BarcodeGenerator
 {
-    public byte[] Generate(Hub3PaymentData payment)
+    public string Generate(Hub3PaymentData payment)
     {
         var payload = BuildPayload(payment);
 
@@ -29,7 +28,7 @@ public sealed class Hub3BarcodeGenerator
             180,
             hints);
 
-        return RenderPng(matrix);
+        return RenderSvg(matrix);
     }
 
     private static string BuildPayload(Hub3PaymentData p)
@@ -66,8 +65,6 @@ public sealed class Hub3BarcodeGenerator
         if (amount < 0)
             throw new ArgumentOutOfRangeException(nameof(amount));
 
-        // HUB-3A amount is expressed in euro cents,
-        // without decimal separator.
         return ((long)Math.Round(amount * 100m))
             .ToString("000000000000000", CultureInfo.InvariantCulture);
     }
@@ -90,30 +87,34 @@ public sealed class Hub3BarcodeGenerator
             .ToUpperInvariant();
     }
 
-    private static byte[] RenderPng(BitMatrix matrix)
+    private static string RenderSvg(BitMatrix matrix)
     {
         var width = matrix.Width;
         var height = matrix.Height;
 
-        using var bitmap = new SKBitmap(width, height);
-        using var canvas = new SKCanvas(bitmap);
+        var sb = new StringBuilder();
 
-        canvas.Clear(SKColors.White);
+        sb.Append($"""
+            <svg xmlns="http://www.w3.org/2000/svg"
+                 viewBox="0 0 {width} {height}"
+                 width="{width}"
+                 height="{height}">
+                <rect width="100%" height="100%" fill="white"/>
+            """);
 
         for (var y = 0; y < height; y++)
         {
             for (var x = 0; x < width; x++)
             {
-                if (matrix[x, y])
-                {
-                    bitmap.SetPixel(x, y, SKColors.Black);
-                }
+                if (!matrix[x, y])
+                    continue;
+
+                sb.Append($"""<rect x="{x}" y="{y}" width="1" height="1" fill="black"/>""");
             }
         }
 
-        using var image = SKImage.FromBitmap(bitmap);
-        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+        sb.Append("</svg>");
 
-        return data.ToArray();
+        return sb.ToString();
     }
 }
