@@ -276,7 +276,7 @@
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 666px) {
   .container {
     --offers-header-offset: 88px;
     --offers-page-gap: 14px;
@@ -360,12 +360,21 @@
   }
 
   .actions {
-    justify-content: stretch;
+    display: flex;
+    flex-wrap: wrap;
   }
 
   .primaryBtn {
     width: 100%;
     text-align: center;
     display: block;
+    margin-bottom: 8px;
+  }
+
+  .secondaryBtn {
+    width: 100%;
+    text-align: center;
+    display: block;
+    margin-bottom: 8px;      
   }
 }

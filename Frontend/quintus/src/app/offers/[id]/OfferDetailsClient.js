@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import NavBar from "@/components/NavBar/NavBar";
 import { getOfferById, getOfferPdf, downloadPDF, getPendingOfferPdf, clearPendingOfferPdf } from "@/services/offerService";
+import { getCurrentUser } from "@/services/authService";
+import { canManageEstimates } from "@/lib/authz";
 import styles from "./page.module.css";
 
 function pickField(obj, keys, fallback = "") {
@@ -36,6 +38,7 @@ export default function OfferDetailsClient({ offerId }) {
   const [offer, setOffer] = useState(null);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [printLoading, setPrintLoading] = useState(false);
+  const [canCreateEstimate, setCanCreateEstimate] = useState(false);
 
   // Reuses the PDF cached from creation (if any) instead of asking the backend to regenerate it.
   const resolveOfferPdfBlob = async () => {
@@ -90,6 +93,17 @@ export default function OfferDetailsClient({ offerId }) {
   };
 
   const requestedId = useMemo(() => String(offerId ?? "").trim(), [offerId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    getCurrentUser().then((response) => {
+      if (cancelled) return;
+      setCanCreateEstimate(canManageEstimates(response?.data));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -339,6 +353,34 @@ export default function OfferDetailsClient({ offerId }) {
                 >
                   Izrada nove ponude
                 </button>
+                {canCreateEstimate ? (
+                  <button
+                    type="button"
+                    className={styles.primaryBtn}
+                    onClick={() => {
+                      sessionStorage.setItem(
+                        "estimatePrefill",
+                        JSON.stringify({
+                          buyerName,
+                          buyerEmail: buyerEmail === "—" ? "" : buyerEmail,
+                          buyerPhone: buyerPhone === "—" ? "" : buyerPhone,
+                          isTransactional: false,
+                          items: items.map((item) => ({
+                            id: Date.now() + Math.random(),
+                            name: item.name,
+                            unitOfMeasurement: item.unit,
+                            quantity: item.quantity,
+                            price: item.price,
+                            discountPercent: item.discountPercent,
+                          })),
+                        })
+                      );
+                      router.push("/estimates/create");
+                    }}
+                  >
+                    Izrada predračuna
+                  </button>
+                ) : null}
               </div>
             </>
           ) : null}
