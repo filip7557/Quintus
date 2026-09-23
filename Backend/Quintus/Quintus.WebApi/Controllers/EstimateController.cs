@@ -48,7 +48,7 @@ namespace Quintus.WebAPI.Controllers
             {
                 var result = await _estimateService.AddEstimateAsync(estimate);
                 var createdEstimate = await _estimateService.GetEstimateByIdAsync(result.Key);
-                var fileName = createdEstimate == null ? $"Estimate_{result.Key:N}.pdf" : EstimateFileNameFormatter.GetFileName(createdEstimate);
+                var fileName = createdEstimate == null ? $"Predracun_{result.Key:N}.pdf" : EstimateFileNameFormatter.GetFileName(createdEstimate);
                 Response.Headers["X-Estimate-Id"] = result.Key.ToString();
                 return File(result.Value, "application/pdf", fileName);
             }

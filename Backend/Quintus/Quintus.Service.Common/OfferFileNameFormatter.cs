@@ -64,8 +64,8 @@ namespace Quintus.Service.Common
                 : estimate.Id.ToString("N", CultureInfo.InvariantCulture);
 
             return string.IsNullOrWhiteSpace(buyerName)
-                ? $"Predračun_{suffix}.pdf"
-                : $"Predračun_{buyerName}_{suffix}.pdf";
+                ? $"Predracun_{suffix}.pdf"
+                : $"Predracun_{buyerName}_{suffix}.pdf";
         }
 
         private static string NormalizeFileNamePart(string value)
