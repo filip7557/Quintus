@@ -328,7 +328,7 @@ namespace Quintus.Service
                 Iban: siteSettings.Iban,
                 Amount: estimate.Total,
                 Model: "01",
-                ReferenceNumber: $"{date.Year}{date.Month:D2}{date.Day:D2}-{estimate.Number}/{estimate.Year}",
+                ReferenceNumber: $"{date.Year}{date.Month:D2}{date.Day:D2}-{estimate.Number}-{estimate.Year}",
                 PurposeCode: "COMM",
                 Description: $"Predračun {estimate.Number}/{estimate.Year}"
             );
