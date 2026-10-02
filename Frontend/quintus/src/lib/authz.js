@@ -22,6 +22,11 @@ export function canManageOffers(user) {
   return role === "admin" || role === "owner" || role === "worker";
 }
 
+export function canManageProjects(user) {
+  const role = getRoleName(user).toLowerCase();
+  return role === "admin" || role === "owner" || role === "worker";
+}
+
 export function canManageEstimates(user) {
   const role = getRoleName(user).toLowerCase();
   return role === "admin" || role === "owner";
@@ -48,6 +53,10 @@ export function getAuthorizedRedirect(path, user) {
 
   if (destination === "/users") {
     return isAdminOrOwner(user) ? destination : "/";
+  }
+
+  if (destination === "/projects" || destination.startsWith("/projects/")) {
+    return canManageProjects(user) ? destination : "/";
   }
 
   if (destination === "/estimates" || destination.startsWith("/estimates/")) {

@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     output: 'standalone',
+    distDir: process.env.NEXT_DIST_DIR || '.next',
     allowedDevOrigins: ['192.168.1.5'],
     experimental: {
         inlineCss: true,

@@ -25,12 +25,33 @@ namespace Quintus.Repository.Context
         public DbSet<PushNotificationJob> PushNotificationJobs => Set<PushNotificationJob>();
         public DbSet<StorageJob> StorageJobs => Set<StorageJob>();
         public DbSet<Certificate> Certificates => Set<Certificate>();
+        public DbSet<GalleryProject> GalleryProjects => Set<GalleryProject>();
+        public DbSet<GalleryProjectImage> GalleryProjectImages => Set<GalleryProjectImage>();
 
         public DbSet<Estimate> Estimates => Set<Estimate>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<GalleryProject>(project =>
+            {
+                project.Property(p => p.Name).HasMaxLength(200);
+                project.Property(p => p.Description).HasMaxLength(4000);
+                project.Property(p => p.Address).HasMaxLength(500);
+                project.Property(p => p.ClientName).HasMaxLength(200);
+                project.HasIndex(p => p.CreatedAt);
+            });
+
+            modelBuilder.Entity<GalleryProjectImage>(photo =>
+            {
+                photo.HasOne(p => p.Project).WithMany(p => p.Photos)
+                    .HasForeignKey(p => p.ProjectId).OnDelete(DeleteBehavior.Cascade);
+                photo.HasOne(p => p.Image).WithMany()
+                    .HasForeignKey(p => p.ImageId).OnDelete(DeleteBehavior.Restrict);
+                photo.HasIndex(p => p.ImageId).IsUnique();
+                photo.HasIndex(p => new { p.ProjectId, p.CreatedAt });
+            });
 
             modelBuilder.Entity<Appointment>()
                 .HasOne(appointment => appointment.CreatedByUser)

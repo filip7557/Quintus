@@ -37,24 +37,22 @@ Aplikacija primarno služi kao **digitalna vizitka i prezentacija usluga**, ali 
 
 ---
 
-## Web Push obavijesti rasporeda
+## Galerija projekata
 
-Admin, Owner i Worker korisnici mogu uključiti obavijesti za raspored zasebno na svakom pregledniku i uređaju. Na stranici rasporeda mogu odabrati obavijesti za nove, promijenjene ili obrisane termine. Autor promjene nikad ne prima vlastitu obavijest.
+Galeriju otvorite odabirom **Račun > Galerija projekata**. Dostupna je administratorima, vlasnicima i radnicima. Svi imaju pristup istim projektima te mogu dodavati i uređivati podatke i fotografije.
 
-Web Push zahtijeva HTTPS u produkciji. Za lokalni razvoj preglednici dopuštaju `localhost`, ali stvarni uređaji i instalirana aplikacija moraju koristiti sigurnu HTTPS domenu.
+- **Novi projekt:** Unesite naziv projekta. Po želji dodajte opis radova, adresu ili lokaciju te ime kupca ili klijenta.
+- **Pretraga:** Projekt pronađite upisivanjem naziva, adrese ili imena klijenta.
+- **Dodavanje fotografija:** Otvorite projekt i odaberite **Dodaj fotografije**. Možete odabrati više fotografija odjednom, a svaka može imati najviše 20 MB. Ako dodavanje neke fotografije ne uspije, možete pokušati ponovno bez ponovnog dodavanja već spremljenih fotografija.
+- **Pregled fotografija:** Kliknite ili dodirnite fotografiju za povećani prikaz. Ostale fotografije pregledajte strelicama ili povlačenjem prsta na mobitelu.
+- **Uređivanje i brisanje:** Podatke promijenite odabirom **Uredi**. Možete obrisati pojedinu fotografiju ili cijeli projekt. Brisanjem projekta brišu se i sve njegove fotografije, a brisanje nije moguće poništiti.
 
-Jednom generirajte VAPID par ključeva, primjerice s alatom `web-push`:
+**Privatnost:** Galerija je dostupna samo navedenim korisnicima, ali izravnu poveznicu na fotografiju može otvoriti svatko tko je ima. Nemojte dijeliti takve poveznice ako fotografije sadrže privatne podatke.
 
-```text
-npx web-push generate-vapid-keys
-```
+## Obavijesti o rasporedu
 
-Zatim postavite sljedeće varijable okruženja samo za backend (ili ekvivalentne User Secrets vrijednosti):
+Ako ste administrator, vlasnik ili radnik, na stranici **Račun > Raspored** možete uključiti obavijesti o terminima. Odaberite želite li primati obavijesti o novim terminima, promjenama postojećih termina ili njihovom brisanju.
 
-```text
-Vapid__PublicKey=<VAPID public key>
-Vapid__PrivateKey=<VAPID private key>
-Vapid__Subject=mailto:kontakt@instalacije-quintus.hr
-```
+Kada preglednik zatraži dopuštenje za slanje obavijesti, odaberite **Dopusti**. Obavijesti uključite zasebno na svakom uređaju i u svakom pregledniku u kojem ih želite primati.
 
-Privatni ključ se ne smije dodati u frontend, Git ili `docker-compose.yml`. Backend bez potpune VAPID konfiguracije i dalje radi, ali isključuje dostavu Web Push obavijesti i API vraća jasnu poruku pri pokušaju uključivanja.
+Obavijesti se odnose na promjene drugih korisnika. Za termin koji ste sami dodali, promijenili ili obrisali nećete dobiti obavijest.

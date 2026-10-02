@@ -37,6 +37,8 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(
                     "http://localhost:3000",
                   "http://127.0.0.1:3000",
+                                    "http://localhost:3001",
+                                    "http://127.0.0.1:3001",
                   "http://192.168.1.5:3000",
                   "http://192.168.1.5:3001")
               .AllowAnyMethod()
@@ -134,6 +136,8 @@ builder.Host
 
         containerBuilder.RegisterType<ImageRepository>().As<IImageRepository>();
         containerBuilder.RegisterType<ImageService>().As<IImageService>();
+        containerBuilder.RegisterType<ProjectRepository>().As<IProjectRepository>();
+        containerBuilder.RegisterType<ProjectService>().As<IProjectService>();
         containerBuilder.RegisterType<ImageReferenceRepository>().As<IImageReferenceRepository>();
         containerBuilder.RegisterType<StorageJobRepository>().As<IStorageJobRepository>();
         containerBuilder.RegisterType<StorageCleanupService>().As<IStorageCleanupService>();
