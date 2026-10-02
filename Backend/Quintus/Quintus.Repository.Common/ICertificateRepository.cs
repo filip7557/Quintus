@@ -6,6 +6,8 @@ namespace Quintus.Repository.Common
     {
         Task<IEnumerable<Certificate>> GetAllCertificatesAsync();
 
+        Task<Certificate?> GetCertificateByIdAsync(Guid id);
+
         Task<bool> AddCertificateAsync(Certificate certificate);
 
         Task<bool> DeleteCertificateAsync(Guid id);

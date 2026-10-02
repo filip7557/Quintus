@@ -8,11 +8,13 @@ namespace Quintus.Service
     {
         private readonly ISiteSettingsRepository _siteSettingsRepository;
         private readonly IImageService _imageService;
+        private readonly IStorageCleanupService _storageCleanupService;
 
-        public SiteSettingsService(ISiteSettingsRepository siteSettingsRepository, IImageService imageService)
+        public SiteSettingsService(ISiteSettingsRepository siteSettingsRepository, IImageService imageService, IStorageCleanupService storageCleanupService)
         {
             _siteSettingsRepository = siteSettingsRepository;
             _imageService = imageService;
+            _storageCleanupService = storageCleanupService;
         }
 
         public Task<SiteSettings> GetSiteSettingsAsync()
@@ -34,7 +36,9 @@ namespace Quintus.Service
             if (image == null)
                 throw new InvalidOperationException("Prijenos slike nije uspio.");
 
-            await _siteSettingsRepository.UpdateHeroBackgroundImageUrlAsync(image.Url);
+            var previousUrl = (await _siteSettingsRepository.GetSiteSettingsAsync()).HeroBackgroundImageUrl;
+            if (await _siteSettingsRepository.UpdateHeroBackgroundImageUrlAsync(image.Url))
+                await _storageCleanupService.EnqueueDeleteAsync(previousUrl);
         }
 
         public async Task UpdateHeroBackgroundImageMobileAsync(Microsoft.AspNetCore.Http.IFormFile file)
@@ -46,7 +50,9 @@ namespace Quintus.Service
             if (image == null)
                 throw new InvalidOperationException("Prijenos slike nije uspio.");
 
-            await _siteSettingsRepository.UpdateHeroBackgroundImageMobileUrlAsync(image.Url);
+            var previousUrl = (await _siteSettingsRepository.GetSiteSettingsAsync()).HeroBackgroundImageMobileUrl;
+            if (await _siteSettingsRepository.UpdateHeroBackgroundImageMobileUrlAsync(image.Url))
+                await _storageCleanupService.EnqueueDeleteAsync(previousUrl);
         }
 
         public async Task UpdateTitleAsync(string value)
@@ -73,7 +79,9 @@ namespace Quintus.Service
             if (image == null)
                 throw new InvalidOperationException("Prijenos slike nije uspio.");
 
-            await _siteSettingsRepository.UpdateAboutUsImageUrlAsync(image.Url);
+            var previousUrl = (await _siteSettingsRepository.GetSiteSettingsAsync()).AboutUsImageUrl;
+            if (await _siteSettingsRepository.UpdateAboutUsImageUrlAsync(image.Url))
+                await _storageCleanupService.EnqueueDeleteAsync(previousUrl);
         }
 
         public async Task UpdateAddressAsync(string value)
@@ -151,6 +159,7 @@ namespace Quintus.Service
             var urlsToDelete = deletedImageUrls?
                 .Where(url => !string.IsNullOrWhiteSpace(url))
                 .Select(url => url.Trim())
+                .Where(url => existing.ImageUrls.Contains(url))
                 .Distinct(StringComparer.Ordinal)
                 .ToList();
 
@@ -160,9 +169,6 @@ namespace Quintus.Service
                 updatedImageUrls.RemoveAll(url => urlsToDelete.Contains(url));
                 if (updatedImageUrls.Count != beforeCount)
                     changed = true;
-
-                foreach (var url in urlsToDelete)
-                    await _imageService.DeleteImageByUrlAsync(url);
             }
 
             if (images != null && images.Count > 0)
@@ -199,12 +205,25 @@ namespace Quintus.Service
                 ImageUrls = updatedImageUrls
             };
 
-            return await _siteSettingsRepository.UpdateServiceAsync(updated);
+            if (!await _siteSettingsRepository.UpdateServiceAsync(updated))
+                return false;
+
+            if (urlsToDelete != null)
+                await _storageCleanupService.EnqueueDeleteAsync(urlsToDelete);
+            return true;
         }
 
-        public Task<bool> DeleteServiceAsync(Guid serviceId)
+        public async Task<bool> DeleteServiceAsync(Guid serviceId)
         {
-            return _siteSettingsRepository.DeleteServiceAsync(serviceId);
+            var settings = await _siteSettingsRepository.GetSiteSettingsAsync();
+            var imageUrls = settings.Services.FirstOrDefault(s => s.Id == serviceId)?.ImageUrls.ToList();
+
+            if (!await _siteSettingsRepository.DeleteServiceAsync(serviceId))
+                return false;
+
+            if (imageUrls != null)
+                await _storageCleanupService.EnqueueDeleteAsync(imageUrls);
+            return true;
         }
 
         public Task<bool> ReorderServicesAsync(List<Guid> orderedServiceIds)

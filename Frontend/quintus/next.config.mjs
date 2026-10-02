@@ -20,6 +20,11 @@ const nextConfig = {
                 hostname: 'res.cloudinary.com',
                 pathname: '/**',
             },
+            {
+                protocol: 'https',
+                hostname: 'quintus-files.s3.eu-south-mil.io.cloud.ovh.net',
+                pathname: '/images/**',
+            },
         ],
     },
     async headers() {

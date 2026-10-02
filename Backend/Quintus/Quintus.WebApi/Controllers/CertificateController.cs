@@ -26,7 +26,15 @@ namespace Quintus.WebAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> AddCertificateAsync([FromForm] CertificateDTO certificate)
         {
-            var result = await _certificateService.AddCertificateAsync(certificate);
+            bool result;
+            try
+            {
+                result = await _certificateService.AddCertificateAsync(certificate);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
             if (!result)
             {
                 return BadRequest("Greška pri dodavanju certifikata.");
@@ -53,7 +61,15 @@ namespace Quintus.WebAPI.Controllers
         public async Task<IActionResult> UpdateCertificateImageAsync(Guid id, [FromForm] IFormFile image)
         {
             if (image == null) return BadRequest("Slika certifikata je obavezna.");
-            var result = await _certificateService.UpdateCertificateImageAsync(id, image);
+            bool result;
+            try
+            {
+                result = await _certificateService.UpdateCertificateImageAsync(id, image);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
             if (!result)
             {
                 return BadRequest("Greška pri ažuriranju slike certifikata.");

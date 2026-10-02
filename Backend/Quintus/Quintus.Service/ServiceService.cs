@@ -8,22 +8,24 @@ namespace Quintus.Service
     {
         private readonly IServiceRepository _serviceRepository;
         private readonly IImageService _imageService;
+        private readonly IStorageCleanupService _storageCleanupService;
 
-        public ServiceService(IServiceRepository serviceRepository, IImageService imageService)
+        public ServiceService(IServiceRepository serviceRepository, IImageService imageService, IStorageCleanupService storageCleanupService)
         {
             _serviceRepository = serviceRepository;
             _imageService = imageService;
+            _storageCleanupService = storageCleanupService;
         }
 
         public async Task AddServiceAsync(ServiceDTO newService)
         {
             var imageUrls = new List<string>();
-            newService.Images.ForEach(async img =>
+            foreach (var img in newService.Images)
             {
                 var image = await _imageService.AddImageAsync(img);
                 if (image != null)
                     imageUrls.Add(image.Url);
-            });
+            }
             var service = new Model.Entities.Service
             {
                 Title = newService.Title,
@@ -36,7 +38,13 @@ namespace Quintus.Service
 
         public async Task DeleteServiceAsync(Guid id)
         {
+            var existing = await _serviceRepository.GetServiceByIdAsync(id);
+            if (existing == null)
+                return;
+
+            var imageUrls = existing.ImageUrls.ToList();
             await _serviceRepository.DeleteServiceAsync(id);
+            await _storageCleanupService.EnqueueDeleteAsync(imageUrls);
         }
 
         public async Task<List<Model.Entities.Service>> GetAllServicesAsync()

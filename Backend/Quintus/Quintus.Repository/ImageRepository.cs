@@ -79,5 +79,10 @@ namespace Quintus.Repository
                 return null;
             }
         }
+
+        public Task<bool> ImageExistsAsync(Guid id)
+        {
+            return _context.Images.AnyAsync(i => i.Id == id);
+        }
     }
 }

@@ -10,12 +10,14 @@ namespace Quintus.Service
         private readonly IImageService _imageService;
         private readonly IS3Service _s3Service;
         private readonly ICertificateRepository _certificateRepository;
+        private readonly IStorageCleanupService _storageCleanupService;
 
-        public CertificateService(IImageService imageService, IS3Service s3Service, ICertificateRepository certificateRepository)
+        public CertificateService(IImageService imageService, IS3Service s3Service, ICertificateRepository certificateRepository, IStorageCleanupService storageCleanupService)
         {
             _imageService = imageService;
             _s3Service = s3Service;
             _certificateRepository = certificateRepository;
+            _storageCleanupService = storageCleanupService;
         }
 
         public async Task<bool> AddCertificateAsync(CertificateDTO certificate)
@@ -40,7 +42,15 @@ namespace Quintus.Service
 
         public async Task<bool> DeleteCertificateAsync(Guid id)
         {
-            return await _certificateRepository.DeleteCertificateAsync(id);
+            var existing = await _certificateRepository.GetCertificateByIdAsync(id);
+            if (existing == null)
+                return false;
+
+            if (!await _certificateRepository.DeleteCertificateAsync(id))
+                return false;
+
+            await _storageCleanupService.EnqueueDeleteAsync(existing.ImageUrl, existing.Url);
+            return true;
         }
 
         public async Task<IEnumerable<CertificateResponseDTO>> GetAllCertificatesAsync()
@@ -63,16 +73,38 @@ namespace Quintus.Service
 
         public async Task<bool> UpdateCertificateImageAsync(Guid id, IFormFile image)
         {
-            var imageUrl = await _imageService.AddImageAsync(image);
-            if (imageUrl == null) return false;
-            return await _certificateRepository.UpdateCertificateImageAsync(id, imageUrl.Url);
+            var existing = await _certificateRepository.GetCertificateByIdAsync(id);
+            if (existing == null) return false;
+
+            var newImage = await _imageService.AddImageAsync(image);
+            if (newImage == null) return false;
+
+            if (!await _certificateRepository.UpdateCertificateImageAsync(id, newImage.Url))
+            {
+                await _storageCleanupService.EnqueueDeleteAsync(newImage.Url);
+                return false;
+            }
+
+            await _storageCleanupService.EnqueueDeleteAsync(existing.ImageUrl);
+            return true;
         }
 
         public async Task<bool> UpdateCertificateFileAsync(Guid id, IFormFile file)
         {
+            var existing = await _certificateRepository.GetCertificateByIdAsync(id);
+            if (existing == null) return false;
+
             var fileUrl = await _s3Service.UploadFileAsync(file);
             if (fileUrl == null || fileUrl == "") return false;
-            return await _certificateRepository.UpdateCertificateFileAsync(id, fileUrl);
+
+            if (!await _certificateRepository.UpdateCertificateFileAsync(id, fileUrl))
+            {
+                await _storageCleanupService.EnqueueDeleteAsync(fileUrl);
+                return false;
+            }
+
+            await _storageCleanupService.EnqueueDeleteAsync(existing.Url);
+            return true;
         }
     }
 }
