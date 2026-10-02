@@ -23,6 +23,7 @@ namespace Quintus.Repository.Context
         public DbSet<Appointment> Appointments => Set<Appointment>();
         public DbSet<PushSubscription> PushSubscriptions => Set<PushSubscription>();
         public DbSet<PushNotificationJob> PushNotificationJobs => Set<PushNotificationJob>();
+        public DbSet<StorageJob> StorageJobs => Set<StorageJob>();
         public DbSet<Certificate> Certificates => Set<Certificate>();
 
         public DbSet<Estimate> Estimates => Set<Estimate>();
@@ -60,6 +61,9 @@ namespace Quintus.Repository.Context
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<PushNotificationJob>()
+                .HasIndex(job => new { job.CompletedAt, job.NextAttemptAt, job.ProcessingStartedAt });
+
+            modelBuilder.Entity<StorageJob>()
                 .HasIndex(job => new { job.CompletedAt, job.NextAttemptAt, job.ProcessingStartedAt });
 
             modelBuilder.Entity<Role>().HasData(

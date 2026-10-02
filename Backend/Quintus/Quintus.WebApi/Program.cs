@@ -1,7 +1,6 @@
 using Amazon.S3;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using CloudinaryDotNet;
 using dotenv.net;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -135,11 +134,10 @@ builder.Host
 
         containerBuilder.RegisterType<ImageRepository>().As<IImageRepository>();
         containerBuilder.RegisterType<ImageService>().As<IImageService>();
-
-        containerBuilder.RegisterType<Cloudinary>()
-            .As<ICloudinary>()
-            .WithParameter("cloudinaryUrl", Environment.GetEnvironmentVariable("CLOUDINARY_URL")
-            ?? throw new InvalidOperationException("Cloudinary url string is not set."));
+        containerBuilder.RegisterType<ImageReferenceRepository>().As<IImageReferenceRepository>();
+        containerBuilder.RegisterType<StorageJobRepository>().As<IStorageJobRepository>();
+        containerBuilder.RegisterType<StorageCleanupService>().As<IStorageCleanupService>();
+        containerBuilder.RegisterType<ImageOptimizer>().As<IImageOptimizer>().SingleInstance();
 
         containerBuilder.RegisterType<RequestRepository>().As<IRequestRepository>();
         containerBuilder.RegisterType<RequestService>().As<IRequestService>();
@@ -173,6 +171,10 @@ builder.Host
 builder.Services.AddSingleton<IEmailQueue, EmailQueue>();
 builder.Services.AddHostedService<EmailWorkerService>();
 builder.Services.AddHostedService<PushNotificationWorkerService>();
+builder.Services.AddSingleton<IStorageJobSignal, StorageJobSignal>();
+builder.Services.Configure<ImageMigrationOptions>(builder.Configuration.GetSection("ImageMigration"));
+builder.Services.AddHostedService<StorageWorkerService>();
+builder.Services.AddHostedService<CloudinaryMigrationService>();
 
 builder.Services.AddHttpContextAccessor();
 

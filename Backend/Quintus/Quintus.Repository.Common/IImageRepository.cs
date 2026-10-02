@@ -8,6 +8,8 @@ namespace Quintus.Repository.Common
 
         Task<Image?> GetImageByIdAsync(Guid id);
 
+        Task<bool> ImageExistsAsync(Guid id);
+
         Task<bool> DeleteImageAsync(Guid id);
 
         Task<bool> DeleteImageByUrlAsync(string url);

@@ -28,6 +28,11 @@ namespace Quintus.Repository
             }
         }
 
+        public Task<Certificate?> GetCertificateByIdAsync(Guid id)
+        {
+            return _context.Certificates.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id);
+        }
+
         public async Task<bool> DeleteCertificateAsync(Guid id)
         {
             try

@@ -24,7 +24,15 @@ namespace Quintus.WebAPI.Controllers
             if (!ModelState.IsValid)
                 return ValidationProblem(ModelState);
 
-            var result = await _requestService.CreateRequestAsync(request);
+            bool result;
+            try
+            {
+                result = await _requestService.CreateRequestAsync(request);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
             if (result)
                 return Ok("Request created successfully.");

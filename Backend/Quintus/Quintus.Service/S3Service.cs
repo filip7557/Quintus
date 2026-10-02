@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Quintus.Common;
 using Quintus.Service.Common;
+using System.Net;
 
 namespace Quintus.Service
 {
@@ -42,7 +43,62 @@ namespace Quintus.Service
 
             await _s3client.PutObjectAsync(request, cancellationToken);
 
-            return $"https://{_options.BucketName}.s3.eu-south-mil.io.cloud.ovh.net/{Uri.EscapeDataString(objectKey)}";
+            return GetPublicUrl(objectKey);
         }
+
+        public async Task PutObjectAsync(string key, Stream content, string contentType, string cacheControl, CancellationToken cancellationToken = default)
+        {
+            var request = new PutObjectRequest
+            {
+                BucketName = _options.BucketName,
+                Key = key,
+                InputStream = content,
+                ContentType = contentType,
+                CannedACL = S3CannedACL.PublicRead
+            };
+            request.Headers.CacheControl = cacheControl;
+
+            await _s3client.PutObjectAsync(request, cancellationToken);
+        }
+
+        public async Task<byte[]?> GetObjectBytesAsync(string key, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                using var response = await _s3client.GetObjectAsync(_options.BucketName, key, cancellationToken);
+                using var buffer = new MemoryStream();
+                await response.ResponseStream.CopyToAsync(buffer, cancellationToken);
+                return buffer.ToArray();
+            }
+            catch (AmazonS3Exception ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+        }
+
+        public async Task DeleteObjectAsync(string key, CancellationToken cancellationToken = default)
+        {
+            await _s3client.DeleteObjectAsync(_options.BucketName, key, cancellationToken);
+        }
+
+        public string GetPublicUrl(string key)
+        {
+            var escapedKey = string.Join('/', key.Split('/').Select(Uri.EscapeDataString));
+            return $"https://{PublicHost}/{escapedKey}";
+        }
+
+        public bool TryGetObjectKey(string? url, out string key)
+        {
+            key = string.Empty;
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) ||
+                uri.Scheme != Uri.UriSchemeHttps ||
+                !string.Equals(uri.Host, PublicHost, StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            key = Uri.UnescapeDataString(uri.AbsolutePath.TrimStart('/'));
+            return key.Length > 0;
+        }
+
+        private string PublicHost => $"{_options.BucketName}.s3.eu-south-mil.io.cloud.ovh.net";
     }
 }
