@@ -72,8 +72,8 @@
     justify-content: flex-start;
     text-align: left;
     color: #fff;
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
+    padding: 1rem;
+    font-size: 1.15rem;
     font-weight: 500;
     font-family: var(--font-body);
   }
@@ -104,7 +104,7 @@
 
   .open .accountDropdown {
     margin-top: 8px;
-    max-height: 340px;
+    max-height: none;
     opacity: 1;
     padding: 6px;
     border-width: 1px;
@@ -119,7 +119,7 @@
   }
 }
 
-@media (hover: hover) and (pointer: fine) {
+@media (min-width: 993px) and (hover: hover) and (pointer: fine) {
   .navAccount:hover .accountDropdown {
     opacity: 1;
     visibility: visible;
@@ -181,11 +181,13 @@
   overflow: hidden;
   transition: max-height 0.2s ease, opacity 0.15s ease;
   opacity: 0;
+  visibility: hidden;
 }
 
 .subMenuOpen .subMenuItems {
   max-height: 120px;
   opacity: 1;
+  visibility: visible;
 }
 
 .subMenuItem {

@@ -14,6 +14,16 @@ export default function NavBar() {
   useEffect(() => {
     if (!isMenuOpen) return;
 
+    const mobileQuery = window.matchMedia("(max-width: 992px)");
+    if (!mobileQuery.matches) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const previousRootOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    const handleBreakpointChange = () => setIsMenuOpen(false);
+    mobileQuery.addEventListener("change", handleBreakpointChange);
+
     const handleDocumentClick = (e) => {
       const navMain = navMainRef.current;
       const hamburger = hamburgerRef.current;
@@ -25,7 +35,26 @@ export default function NavBar() {
     };
 
     const handleKeyDown = (e) => {
-      if (e.key === "Escape") setIsMenuOpen(false);
+      if (e.key === "Escape") {
+        setIsMenuOpen(false);
+        hamburgerRef.current?.focus();
+      }
+      if (e.key === "Tab") {
+        const menuControls = Array.from(
+          navMainRef.current?.querySelectorAll("a[href], button:not([disabled])") || []
+        ).filter((element) => element.getClientRects().length > 0 &&
+          window.getComputedStyle(element).visibility === "visible");
+        const controls = [hamburgerRef.current, ...menuControls].filter(Boolean);
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last?.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first?.focus();
+        }
+      }
     };
 
     document.addEventListener("click", handleDocumentClick);
@@ -34,11 +63,15 @@ export default function NavBar() {
     return () => {
       document.removeEventListener("click", handleDocumentClick);
       document.removeEventListener("keydown", handleKeyDown);
+      mobileQuery.removeEventListener("change", handleBreakpointChange);
+      document.body.style.overflow = previousOverflow;
+      document.documentElement.style.overflow = previousRootOverflow;
     };
   }, [isMenuOpen]);
 
   const closeMenu = () => setIsMenuOpen(false);
   const handleToggle = () => {
+    hamburgerRef.current?.focus();
     setIsMenuOpen((v) => !v);
   };
 
@@ -61,7 +94,7 @@ export default function NavBar() {
   };
 
   return (
-    <header>
+    <header className={isMenuOpen ? "mobile-menu-open" : undefined}>
       <NavBehavior />
       <nav className="navbar">
         <div className="logo">
@@ -81,12 +114,12 @@ export default function NavBar() {
           id="hamburger"
           ref={hamburgerRef}
           type="button"
-          aria-label="Otvori izbornik"
+          aria-label={isMenuOpen ? "Zatvori izbornik" : "Otvori izbornik"}
           aria-expanded={isMenuOpen}
           aria-controls="nav-main"
           onClick={handleToggle}
         >
-          ☰
+          {isMenuOpen ? "×" : "☰"}
         </button>
 
         <ul
@@ -134,7 +167,7 @@ export default function NavBar() {
               </Link>
             </div>
           </li>
-          <AccountNav />
+          <AccountNav onNavigate={closeMenu} />
         </ul>
       </nav>
     </header>

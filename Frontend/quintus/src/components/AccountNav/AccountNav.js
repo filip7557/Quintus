@@ -13,7 +13,7 @@ import {
   isAdminOrOwner,
 } from "@/lib/authz";
 
-export default function AccountNav() {
+export default function AccountNav({ onNavigate }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [offersOpen, setOffersOpen] = useState(false);
@@ -113,6 +113,7 @@ export default function AccountNav() {
       setCanManageEstimatesUser(false);
       setCanUseScheduleUser(false);
       setIsOpen(false);
+      onNavigate?.();
       router.replace("/");
     }
   };
@@ -125,6 +126,7 @@ export default function AccountNav() {
     setIsOpen(false);
     setOffersOpen(false);
     setEstimatesOpen(false);
+    onNavigate?.();
   };
 
   return (
