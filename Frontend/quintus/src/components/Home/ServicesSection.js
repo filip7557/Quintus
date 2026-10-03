@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import ServiceCard from "@/components/Home/ServiceCard";
+import ServiceRotationProvider from "@/components/Home/ServiceRotationProvider";
 import ServiceCreateModal from "@/components/Home/ServiceCreateModal";
 import ImageRemovalModal from "@/components/Home/ImageRemovalModal";
 import useCanManageSite from "@/hooks/useCanManageSite";
@@ -21,20 +22,11 @@ export default function ServicesSection({ services, onSettingsChanged }) {
   const [editing, setEditing] = useState(null);
   const [editingWithImageRemoval, setEditingWithImageRemoval] = useState(null);
   const [removingImageUrl, setRemovingImageUrl] = useState(null);
-  const [rotationStep, setRotationStep] = useState(0);
 
   useEffect(() => {
     // Copy array to avoid accidental mutations and make debugging simpler.
     setLocalServices(Array.isArray(services) ? [...services] : services);
   }, [services]);
-
-  useEffect(() => {
-    const rotationTimer = window.setInterval(() => {
-      setRotationStep((step) => step + 1);
-    }, 4500);
-
-    return () => window.clearInterval(rotationTimer);
-  }, []);
 
   const servicesToRender = useMemo(
     () => (Array.isArray(localServices) ? localServices : []),
@@ -97,31 +89,32 @@ export default function ServicesSection({ services, onSettingsChanged }) {
         </p>
       ) : null}
 
-      <div className="services-container">
-        {dedupedServicesToRender.map((service, idx) => (
-          <ServiceCard
-            key={`${getServiceId(service) ?? "no-id"}:${service.Title ?? service.title ?? "no-title"}:${idx}`}
-            serviceId={getServiceId(service)}
-            slug={slugify(service.Title ?? service.title)}
-            title={service.Title ?? service.title}
-            description={service.Description ?? service.description}
-            imageUrls={service.ImageUrls ?? service.imageUrls}
-            keywords={service.KeyWords ?? service.keyWords ?? service.keywords}
-            rotationStep={rotationStep}
-            canEdit={canManage}
-            onEdit={() => {
-              setEditing(service);
-              setEditingWithImageRemoval(null);
-              setEditOpen(true);
-            }}
-            isEditing={editingWithImageRemoval?.Id === getServiceId(service) || editingWithImageRemoval?.id === getServiceId(service)}
-            onRemoveImage={(imageUrl) => {
-              setEditingWithImageRemoval(service);
-              setRemovingImageUrl(imageUrl);
-            }}
-          />
-        ))}
-      </div>
+      <ServiceRotationProvider>
+        <div className="services-container">
+          {dedupedServicesToRender.map((service, idx) => (
+            <ServiceCard
+              key={`${getServiceId(service) ?? "no-id"}:${service.Title ?? service.title ?? "no-title"}:${idx}`}
+              serviceId={getServiceId(service)}
+              slug={slugify(service.Title ?? service.title)}
+              title={service.Title ?? service.title}
+              description={service.Description ?? service.description}
+              imageUrls={service.ImageUrls ?? service.imageUrls}
+              keywords={service.KeyWords ?? service.keyWords ?? service.keywords}
+              canEdit={canManage}
+              onEdit={() => {
+                setEditing(service);
+                setEditingWithImageRemoval(null);
+                setEditOpen(true);
+              }}
+              isEditing={editingWithImageRemoval?.Id === getServiceId(service) || editingWithImageRemoval?.id === getServiceId(service)}
+              onRemoveImage={(imageUrl) => {
+                setEditingWithImageRemoval(service);
+                setRemovingImageUrl(imageUrl);
+              }}
+            />
+          ))}
+        </div>
+      </ServiceRotationProvider>
 
       {canManage ? (
         <div className="services-admin-footer">
