@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import useLockBodyScroll from "@/hooks/useLockBodyScroll";
 
@@ -43,9 +44,9 @@ export default function ImageRemovalModal({
     }
   };
 
-  if (!open) return null;
+  if (!open || typeof document === "undefined") return null;
 
-  return (
+  return createPortal(
     <div
       className="modal-overlay"
       role="presentation"
@@ -124,6 +125,7 @@ export default function ImageRemovalModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
