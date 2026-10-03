@@ -37,8 +37,9 @@ Both grids use four columns above
 900px, two columns through 900px, and one column through 600px. Additional
 services wrap into new rows. Incomplete desktop service rows are centered while
 keeping the same card width as a full four-card row in multi-row layouts.
-Single-row desktop sections have more heading/subtitle spacing and no forced
-viewport-height whitespace. Three cards fill the row; one or two cards are
+The services section uses the same full-viewport minimum height as the other
+homepage sections, and single-row desktop layouts have more heading/subtitle
+spacing. Three cards fill the row; one or two cards are
 enlarged up to 420px and centered. Exactly six services use
 two centered rows of three instead of four plus two. Descriptions and keywords
 are shortened on cards, with the full service content available on the detail page.
