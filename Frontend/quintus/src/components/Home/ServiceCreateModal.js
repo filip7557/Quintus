@@ -47,9 +47,32 @@ export default function ServiceCreateModal({
 
   const dialogRef = useRef(null);
   const fileInputRef = useRef(null);
+  const editSessionRef = useRef(null);
+  const imagesRef = useRef(images);
 
   useEffect(() => {
-    if (!open) return;
+    imagesRef.current = images;
+  }, [images]);
+
+  useEffect(() => {
+    return () => {
+      imagesRef.current.forEach((image) => URL.revokeObjectURL(image.url));
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!open) {
+      editSessionRef.current = null;
+      setImages((prev) => {
+        prev.forEach((image) => URL.revokeObjectURL(image.url));
+        return [];
+      });
+      return;
+    }
+
+    const serviceId = initial?.id ?? null;
+    if (editSessionRef.current?.serviceId === serviceId) return;
+    editSessionRef.current = { serviceId };
 
     setTitle(initial?.title || "");
     setDescription(initial?.description || "");
@@ -109,13 +132,8 @@ export default function ServiceCreateModal({
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
-    setImages((prev) => {
-      const next = [...prev];
-      for (const file of files) {
-        next.push({ file, url: URL.createObjectURL(file) });
-      }
-      return next;
-    });
+    const previews = files.map((file) => ({ file, url: URL.createObjectURL(file) }));
+    setImages((prev) => [...prev, ...previews]);
 
     // allow selecting the same file again later
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -177,7 +195,7 @@ export default function ServiceCreateModal({
         deletedImageUrls: deletedImageUrls,
       });
 
-      const ok = response?.status === 200 || response?.status === 201;
+      const ok = response?.status === 200 || response?.status === 201 || response?.status === 204;
       if (!ok) {
         setError(response?.data?.message || "Greška pri spremanju usluge.");
         showToast({

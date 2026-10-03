@@ -10,7 +10,7 @@ export default function NotFound() {
   return (
     <>
       <NavBar />
-      <main className="service-page">
+      <main className="service-page not-found-page">
         <div className="service-page-shell">
           <article className="service-page-card not-found-card">
             <p className="not-found-code">404</p>

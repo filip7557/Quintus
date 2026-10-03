@@ -9,13 +9,12 @@ export default function ServiceCard({
   imageUrls = [],
   keywords = [],
   rotateIntervalMs = 4500,
-  rotationStep = 0,
   canEdit = false,
   onEdit,
   isEditing = false,
   onRemoveImage,
 }) {
-  const keywordText = Array.isArray(keywords) ? keywords.join(" - ") : "";
+  const keywordTags = Array.isArray(keywords) ? keywords : [];
 
   return (
     <Link
@@ -41,17 +40,29 @@ export default function ServiceCard({
           </button>
         </div>
       ) : null}
-      <h3 className="service-title">{title}</h3>
       <RotatingServiceImage
         imageUrls={imageUrls}
         alt={title}
         intervalMs={rotateIntervalMs}
-        rotationStep={rotationStep}
         isEditing={isEditing}
         onRemoveImage={onRemoveImage}
       />
-      <p className="service-description">{description}</p>
-      {keywordText ? <p className="service-keywords">{keywordText}</p> : null}
+      <h3 className="service-title">{title}</h3>
+      <div className="service-card-content">
+        {description ? <p className="service-description">{description}</p> : null}
+        {keywordTags.length ? (
+          <ul className="service-keywords" aria-label="Ključne riječi">
+            {keywordTags.map((keyword, index) => (
+              <li className="service-keyword-tag" key={`${keyword}:${index}`}>
+                {keyword}
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        <span className="service-card-action">
+          Pogledaj uslugu <span aria-hidden="true">&rarr;</span>
+        </span>
+      </div>
     </Link>
   );
 }
