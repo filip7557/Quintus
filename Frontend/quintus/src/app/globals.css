@@ -2170,10 +2170,6 @@ header {
 }
 
 @media (min-width: 901px) {
-  .services:has(.services-container > .service:last-child:nth-child(-n + 4)) {
-    min-height: auto;
-  }
-
   .services:has(.services-container > .service:last-child:nth-child(-n + 4)) .services-header {
     margin-bottom: 40px;
   }
