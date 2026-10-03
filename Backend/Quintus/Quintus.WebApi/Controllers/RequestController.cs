@@ -19,6 +19,8 @@ namespace Quintus.WebAPI.Controllers
 
         [Authorize]
         [HttpPost]
+        [RequestSizeLimit(210 * 1024 * 1024)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 50 * 1024 * 1024)]
         public async Task<IActionResult> CreateRequest([FromForm] RequestDTO request)
         {
             if (!ModelState.IsValid)

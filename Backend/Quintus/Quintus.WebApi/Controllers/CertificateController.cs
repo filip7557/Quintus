@@ -24,6 +24,8 @@ namespace Quintus.WebAPI.Controllers
 
         [Authorize(Roles = "Admin,Owner")]
         [HttpPost]
+        [RequestSizeLimit(102 * 1024 * 1024)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 100 * 1024 * 1024)]
         public async Task<IActionResult> AddCertificateAsync([FromForm] CertificateDTO certificate)
         {
             bool result;
@@ -58,6 +60,8 @@ namespace Quintus.WebAPI.Controllers
         [Authorize(Roles = "Admin,Owner")]
         [HttpPut("image/{id}")]
         [Consumes("multipart/form-data")]
+        [RequestSizeLimit(52 * 1024 * 1024)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 50 * 1024 * 1024)]
         public async Task<IActionResult> UpdateCertificateImageAsync(Guid id, [FromForm] IFormFile image)
         {
             if (image == null) return BadRequest("Slika certifikata je obavezna.");

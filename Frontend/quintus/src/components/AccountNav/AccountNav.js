@@ -8,6 +8,7 @@ import styles from "./AccountNav.module.css";
 import {
   canManageEstimates,
   canManageOffers,
+  canManageProjects,
   canUseSchedule,
   isAdminOrOwner,
 } from "@/lib/authz";
@@ -19,6 +20,7 @@ export default function AccountNav() {
   const [estimatesOpen, setEstimatesOpen] = useState(false);
   const [isAdminOrOwnerUser, setIsAdminOrOwnerUser] = useState(false);
   const [canManageOffersUser, setCanManageOffersUser] = useState(false);
+  const [canManageProjectsUser, setCanManageProjectsUser] = useState(false);
   const [canManageEstimatesUser, setCanManageEstimatesUser] = useState(false);
   const [canUseScheduleUser, setCanUseScheduleUser] = useState(false);
   const router = useRouter();
@@ -35,12 +37,14 @@ export default function AccountNav() {
               setIsLoggedIn(true);
               setIsAdminOrOwnerUser(isAdminOrOwner(response.data));
               setCanManageOffersUser(canManageOffers(response.data));
+              setCanManageProjectsUser(canManageProjects(response.data));
               setCanManageEstimatesUser(canManageEstimates(response.data));
               setCanUseScheduleUser(canUseSchedule(response.data));
             } else {
               setIsLoggedIn(false);
               setIsAdminOrOwnerUser(false);
               setCanManageOffersUser(false);
+              setCanManageProjectsUser(false);
               setCanManageEstimatesUser(false);
               setCanUseScheduleUser(false);
             }
@@ -49,6 +53,7 @@ export default function AccountNav() {
             setIsLoggedIn(false);
             setIsAdminOrOwnerUser(false);
             setCanManageOffersUser(false);
+            setCanManageProjectsUser(false);
             setCanManageEstimatesUser(false);
             setCanUseScheduleUser(false);
           });
@@ -56,6 +61,7 @@ export default function AccountNav() {
         setIsLoggedIn(false);
         setIsAdminOrOwnerUser(false);
         setCanManageOffersUser(false);
+        setCanManageProjectsUser(false);
         setCanManageEstimatesUser(false);
       }
     };
@@ -103,6 +109,7 @@ export default function AccountNav() {
       setIsLoggedIn(false);
       setIsAdminOrOwnerUser(false);
       setCanManageOffersUser(false);
+      setCanManageProjectsUser(false);
       setCanManageEstimatesUser(false);
       setCanUseScheduleUser(false);
       setIsOpen(false);
@@ -173,6 +180,15 @@ export default function AccountNav() {
                 onClick={handleItemClick}
               >
                 Raspored
+              </Link>
+            ) : null}
+            {canManageProjectsUser ? (
+              <Link
+                href="/projects"
+                className={styles.dropdownItem}
+                onClick={handleItemClick}
+              >
+                Galerija projekata
               </Link>
             ) : null}
             {canManageOffersUser ? (
