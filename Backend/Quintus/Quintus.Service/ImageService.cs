@@ -10,7 +10,7 @@ namespace Quintus.Service
 {
     public class ImageService : IImageService
     {
-        private const long MaxFileSize = 20 * 1024 * 1024;
+        private const long MaxFileSize = 50 * 1024 * 1024;
         private const long MaxPixels = 80_000_000;
 
         private readonly IImageRepository _imageRepository;
@@ -39,7 +39,7 @@ namespace Quintus.Service
                 throw new ArgumentException("Datoteka je obavezna.");
 
             if (image.Length > MaxFileSize)
-                throw new ArgumentException("Slika je prevelika (najviše 20 MB).");
+                throw new ArgumentException("Slika je prevelika (najviše 50 MB).");
 
             using var buffer = new MemoryStream((int)image.Length);
             await using (var upload = image.OpenReadStream())
