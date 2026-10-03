@@ -3,15 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Check, ChevronLeft, ChevronRight, ImagePlus, Images, Pencil, RotateCcw, Trash2, X } from "lucide-react";
+import { ArrowLeft, Check, ChevronLeft, ChevronRight, Download, ImagePlus, Images, Pencil, RotateCcw, Trash2, X } from "lucide-react";
 import { useToast } from "@/components/Common/ToastProvider";
-import { deleteProject, deleteProjectPhoto, getProject, getProjectPhotos, projectError, uploadProjectPhoto } from "@/services/projectService";
+import { deleteProject, deleteProjectPhoto, downloadProjectPhoto, getProject, getProjectPhotos, projectError, uploadProjectPhoto } from "@/services/projectService";
 import ProjectForm from "../ProjectForm";
 import { GalleryDialog, GalleryImage, Pagination } from "../GalleryUI";
 import { formatPhotoCount } from "../labels";
 import styles from "../page.module.css";
 
-function PhotoViewer({ photos, initialIndex, projectName, onClose }) {
+function PhotoViewer({ photos, initialIndex, projectName, onClose, onDownload, downloaded, downloading }) {
   const [index, setIndex] = useState(initialIndex);
   const touch = useRef(null);
   useEffect(() => {
@@ -36,6 +36,7 @@ function PhotoViewer({ photos, initialIndex, projectName, onClose }) {
       <button className={styles.iconBtn} onClick={() => setIndex(value => value - 1)} disabled={index === 0} title="Prethodna fotografija" aria-label="Prethodna fotografija"><ChevronLeft size={22} /></button>
       <span aria-live="polite">{index + 1} / {photos.length}</span>
       <button className={styles.iconBtn} onClick={() => setIndex(value => value + 1)} disabled={index === photos.length - 1} title="Sljedeća fotografija" aria-label="Sljedeća fotografija"><ChevronRight size={22} /></button>
+      <button className={styles.iconBtn} onClick={() => onDownload(photos[index])} disabled={downloaded || downloading} title={downloaded ? "Fotografija je već preuzeta" : downloading ? "Preuzimanje fotografije" : "Preuzmi fotografiju"} aria-label={downloaded ? "Fotografija je već preuzeta" : downloading ? "Preuzimanje fotografije" : "Preuzmi fotografiju"}><Download size={20} /></button>
     </div>
   </GalleryDialog>;
 }
@@ -52,11 +53,15 @@ export default function ProjectDetailClient({ id }) {
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [viewer, setViewer] = useState(null);
+  const [downloadedPhotoIds, setDownloadedPhotoIds] = useState(() => new Set());
+  const [downloadingPhotoIds, setDownloadingPhotoIds] = useState(() => new Set());
   const [queue, setQueue] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [leaveTarget, setLeaveTarget] = useState(null);
   const input = useRef(null);
   const queueRef = useRef([]);
+  const queueItemId = useRef(0);
+  const downloadingPhotoIdsRef = useRef(new Set());
   const activeUpload = useRef(null);
   const mounted = useRef(false);
   const running = useRef(false);
@@ -151,9 +156,9 @@ export default function ProjectDetailClient({ id }) {
 
   const selectFiles = event => {
     const selected = Array.from(event.target.files || []).map(file => {
-      const valid = file.size > 0 && file.size <= 20 * 1024 * 1024;
-      return { id: crypto.randomUUID(), file, preview: URL.createObjectURL(file), valid, status: valid ? "queued" : "invalid", progress: 0,
-        error: file.size === 0 ? "Datoteka je prazna." : valid ? "" : "Najveća veličina slike je 20 MB." };
+      const valid = file.size > 0 && file.size <= 50 * 1024 * 1024;
+      return { id: ++queueItemId.current, file, preview: URL.createObjectURL(file), valid, status: valid ? "queued" : "invalid", progress: 0,
+        error: file.size === 0 ? "Datoteka je prazna." : valid ? "" : "Najveća veličina slike je 50 MB." };
     });
     event.target.value = "";
     queueRef.current = [...queueRef.current, ...selected];
@@ -186,9 +191,28 @@ export default function ProjectDetailClient({ id }) {
     finally { setDeleting(false); }
   };
 
+  const handleDownload = async photo => {
+    if (downloadedPhotoIds.has(photo.id) || downloadingPhotoIdsRef.current.has(photo.id)) return;
+
+    downloadingPhotoIdsRef.current.add(photo.id);
+    setDownloadingPhotoIds(previous => new Set(previous).add(photo.id));
+    try {
+      await downloadProjectPhoto(id, photo.id);
+      setDownloadedPhotoIds(previous => new Set(previous).add(photo.id));
+    } catch {
+      showToast({ type: "error", message: "Preuzimanje fotografije nije uspjelo." });
+    } finally {
+      downloadingPhotoIdsRef.current.delete(photo.id);
+      setDownloadingPhotoIds(previous => {
+        const next = new Set(previous);
+        next.delete(photo.id);
+        return next;
+      });
+    }
+  };
+
   return <main className={styles.container}>
     <div className={styles.content}>
-      <Link href="/projects" className={styles.back}><ArrowLeft size={18} />Galerija projekata</Link>
       {error && <div className={styles.error} role="alert">{error}<button className={styles.secondaryBtn} onClick={() => setRevision(value => value + 1)}>Pokušaj ponovno</button></div>}
       {!project ? !error && <p className={styles.notice} role="status">Učitavanje projekta...</p> : <>
         <div className={styles.header}>
@@ -197,6 +221,7 @@ export default function ProjectDetailClient({ id }) {
             <button className={styles.secondaryBtn} disabled={uploading || deleting} onClick={() => setEditing(true)}><Pencil size={18} />Uredi</button>
             <button className={styles.dangerBtn} disabled={uploading || deleting} onClick={() => { setDeleteError(""); setConfirmation({ type: "project" }); }}><Trash2 size={18} />Obriši projekt</button>
           </div>
+          <Link href="/projects" className={styles.back}><ArrowLeft size={18} />Galerija projekata</Link>
         </div>
         {(project.description || project.address || project.clientName) && <dl className={styles.metadata}>
           {project.address && <div><dt>Adresa / lokacija</dt><dd>{project.address}</dd></div>}
@@ -229,15 +254,17 @@ export default function ProjectDetailClient({ id }) {
           {loading ? <div className={styles.photoGrid} aria-busy="true">{Array.from({ length: 4 }, (_, index) => <div key={index} className={styles.skeleton} />)}</div> : !error && !photos?.items?.length ? <div className={styles.empty}><Images size={40} /><h2>Još nema fotografija</h2></div> : !error && <div className={styles.photoGrid}>
             {photos.items.map((photo, index) => <div key={photo.id} className={styles.photoTile}>
               <button className={styles.photoOpen} onClick={() => setViewer(index)} aria-label={`Otvori fotografiju ${index + 1}: ${project.name}`}><GalleryImage src={photo.url} alt={`${project.name}, fotografija ${index + 1}`} loading={index < 4 ? "eager" : "lazy"} /></button>
+              <button className={`${styles.iconBtn} ${styles.photoDownload}`} disabled={deleting || downloadedPhotoIds.has(photo.id) || downloadingPhotoIds.has(photo.id)} title={downloadedPhotoIds.has(photo.id) ? "Fotografija je već preuzeta" : downloadingPhotoIds.has(photo.id) ? "Preuzimanje fotografije" : "Preuzmi fotografiju"} aria-label={downloadedPhotoIds.has(photo.id) ? `Fotografija ${index + 1} je već preuzeta` : downloadingPhotoIds.has(photo.id) ? `Preuzimanje fotografije ${index + 1}` : `Preuzmi fotografiju ${index + 1}`} onClick={() => handleDownload(photo)}><Download size={18} /></button>
               <button className={`${styles.iconBtn} ${styles.photoDelete}`} disabled={uploading || deleting} title="Obriši fotografiju" aria-label={`Obriši fotografiju ${index + 1}`} onClick={() => { setDeleteError(""); setConfirmation({ type: "photo", photo }); }}><Trash2 size={18} /></button>
             </div>)}
           </div>}
           {!error && <Pagination data={photos} disabled={loading || uploading || deleting} onChange={value => { setPage(value); setViewer(null); }} />}
+            <p className={styles.notice}><br></br>* Fotografije su sigurno spremljene i slobodno ih možete obrisati s uređaja.</p>
         </section>
       </>}
     </div>
     {editing && <ProjectForm project={project} onClose={() => setEditing(false)} onSaved={saved => { setProject(saved); setEditing(false); showToast({ type: "success", message: "Projekt je spremljen." }); }} />}
-    {viewer !== null && photos?.items?.[viewer] && <PhotoViewer photos={photos.items} initialIndex={viewer} projectName={project.name} onClose={() => setViewer(null)} />}
+    {viewer !== null && photos?.items?.[viewer] && <PhotoViewer photos={photos.items} initialIndex={viewer} projectName={project.name} onClose={() => setViewer(null)} onDownload={handleDownload} downloaded={downloadedPhotoIds.has(photos.items[viewer].id)} downloading={downloadingPhotoIds.has(photos.items[viewer].id)} />}
     {confirmation && <GalleryDialog title={confirmation.type === "project" ? "Obriši projekt?" : "Obriši fotografiju?"} onClose={() => setConfirmation(null)} busy={deleting}>
       <p className={styles.confirmText}>{confirmation.type === "project" ? `Projekt „${project.name}” i sve njegove fotografije bit će trajno obrisani.` : "Fotografija će biti trajno obrisana iz projekta."}</p>
       {deleteError && <p className={styles.error} role="alert">{deleteError}</p>}

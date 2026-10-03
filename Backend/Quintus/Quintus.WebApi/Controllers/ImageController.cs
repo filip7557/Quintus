@@ -17,6 +17,8 @@ namespace Quintus.WebAPI.Controllers
 
         [Authorize]
         [HttpPost("upload")]
+        [RequestSizeLimit(52 * 1024 * 1024)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 50 * 1024 * 1024)]
         public async Task<IActionResult> UploadImageAsync(IFormFile image)
         {
             if (image == null || image.Length == 0)
@@ -28,7 +30,7 @@ namespace Quintus.WebAPI.Controllers
                 var result = await _imageService.AddImageAsync(image);
                 if (result != null)
                 {
-                    return Ok("Image uploaded successfully.");
+                    return Ok(new { id = result.Id, url = result.Url });
                 }
             }
             catch (ArgumentException ex)

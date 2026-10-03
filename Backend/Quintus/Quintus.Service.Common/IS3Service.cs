@@ -15,5 +15,7 @@ namespace Quintus.Service.Common
         string GetPublicUrl(string key);
 
         bool TryGetObjectKey(string? url, out string key);
+
+        string? GetDownloadUrl(string? url, string fileName);
     }
 }

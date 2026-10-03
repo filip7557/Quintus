@@ -12,12 +12,14 @@ namespace Quintus.Service
         private readonly IProjectRepository _projects;
         private readonly IImageService _images;
         private readonly IStorageCleanupService _cleanup;
+        private readonly IS3Service _s3Service;
 
-        public ProjectService(IProjectRepository projects, IImageService images, IStorageCleanupService cleanup)
+        public ProjectService(IProjectRepository projects, IImageService images, IStorageCleanupService cleanup, IS3Service s3Service)
         {
             _projects = projects;
             _images = images;
             _cleanup = cleanup;
+            _s3Service = s3Service;
         }
 
         public Task<PagedResult<ProjectResponse>> GetAsync(ProjectFilter filter) => _projects.GetAsync(filter);
@@ -59,6 +61,12 @@ namespace Quintus.Service
             if (await _projects.GetByIdAsync(id) == null)
                 return null;
             return await _projects.GetPhotosAsync(id, filter);
+        }
+
+        public async Task<string?> GetPhotoDownloadUrlAsync(Guid projectId, Guid photoId)
+        {
+            var imageUrl = await _projects.GetPhotoUrlAsync(projectId, photoId);
+            return imageUrl == null ? null : _s3Service.GetDownloadUrl(imageUrl, $"project-photo-{photoId:N}.webp");
         }
 
         public async Task<ProjectPhotoResponse?> UploadAsync(Guid id, IFormFile file)

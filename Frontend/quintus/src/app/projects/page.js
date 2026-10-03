@@ -37,7 +37,7 @@ export default function ProjectsPage() {
 
   return <main className={styles.container}>
     <div className={styles.content}>
-      <div className={styles.header}>
+      <div className={styles.projectHeading}>
         <div><h1 className={styles.title}>Galerija projekata</h1><p className={styles.notice}>{data ? formatProjectCount(data.totalCount) : "Projekti"}</p></div>
         <button className={styles.primaryBtn} onClick={() => setCreating(true)}><Plus size={20} />Novi projekt</button>
       </div>

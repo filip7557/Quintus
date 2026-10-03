@@ -59,7 +59,7 @@ public class GalleryIntegrationTests
             var cleanup = new StorageCleanupService(images, jobs, storage, signal);
             var uploader = new ImageService(images, jobs, cleanup, signal, storage);
             var repository = new ProjectRepository(database);
-            var projects = new ProjectService(repository, uploader, cleanup);
+            var projects = new ProjectService(repository, uploader, cleanup, storage);
             var first = await projects.CreateAsync(new ProjectRequest { Name = "  First site  ", Address = "Test address", ClientName = "Test client" });
             var second = await projects.CreateAsync(new ProjectRequest { Name = "Second site" });
             Assert.Equal("First site", first.Name);
@@ -73,6 +73,9 @@ public class GalleryIntegrationTests
             var photo = await projects.UploadAsync(first.Id, file);
             Assert.NotNull(photo);
             Assert.Equal(1, (await projects.GetByIdAsync(first.Id))!.PhotoCount);
+            var downloadUrl = await projects.GetPhotoDownloadUrlAsync(first.Id, photo.Id);
+            Assert.NotNull(downloadUrl);
+            Assert.Contains($"project-photo-{photo.Id:N}.webp", downloadUrl);
             Assert.Single(await database.StorageJobs.Where(job => job.Type == StorageJobType.OptimizeImage).ToListAsync());
             Assert.False(await projects.DeleteAsync(second.Id, photo.Id));
 
@@ -200,6 +203,8 @@ public class GalleryIntegrationTests
             return Task.CompletedTask;
         }
         public string GetPublicUrl(string key) => $"https://gallery-test.invalid/{key}";
+        public string? GetDownloadUrl(string? url, string fileName) =>
+            TryGetObjectKey(url, out var key) ? $"https://gallery-test.invalid/download/{key}?filename={Uri.EscapeDataString(fileName)}" : null;
         public bool TryGetObjectKey(string? url, out string key)
         {
             const string prefix = "https://gallery-test.invalid/";

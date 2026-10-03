@@ -26,6 +26,8 @@ namespace Quintus.WebAPI.Controllers
         [Authorize(Roles = "Admin,Owner")]
         [HttpPatch("heroBackgroundImage")]
         [Consumes("multipart/form-data")]
+        [RequestSizeLimit(52 * 1024 * 1024)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 50 * 1024 * 1024)]
         public async Task<IActionResult> UpdateHeroBackgroundImageAsync([FromForm] IFormFile file)
         {
             try
@@ -46,6 +48,8 @@ namespace Quintus.WebAPI.Controllers
         [Authorize(Roles = "Admin,Owner")]
         [HttpPatch("heroBackgroundImageMobile")]
         [Consumes("multipart/form-data")]
+        [RequestSizeLimit(52 * 1024 * 1024)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 50 * 1024 * 1024)]
         public async Task<IActionResult> UpdateHeroBackgroundImageMobileAsync([FromForm] IFormFile file)
         {
             try
@@ -81,6 +85,8 @@ namespace Quintus.WebAPI.Controllers
         [Authorize(Roles = "Admin,Owner")]
         [HttpPatch("aboutUsImage")]
         [Consumes("multipart/form-data")]
+        [RequestSizeLimit(52 * 1024 * 1024)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 50 * 1024 * 1024)]
         public async Task<IActionResult> UpdateAboutUsImageAsync([FromForm] IFormFile file)
         {
             try
@@ -131,6 +137,8 @@ namespace Quintus.WebAPI.Controllers
         [Authorize(Roles = "Admin,Owner")]
         [HttpPost("services")]
         [Consumes("multipart/form-data")]
+        [RequestSizeLimit(210 * 1024 * 1024)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 50 * 1024 * 1024)]
         public async Task<IActionResult> AddServiceAsync([FromForm] AddServiceToSiteSettingsRequest request)
         {
             try
@@ -153,6 +161,8 @@ namespace Quintus.WebAPI.Controllers
         [Authorize(Roles = "Admin,Owner")]
         [HttpPatch("services/{serviceId:guid}")]
         [Consumes("multipart/form-data")]
+        [RequestSizeLimit(210 * 1024 * 1024)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 50 * 1024 * 1024)]
         public async Task<IActionResult> UpdateServiceAsync(Guid serviceId, [FromForm] UpdateServiceInSiteSettingsRequest request)
         {
             try

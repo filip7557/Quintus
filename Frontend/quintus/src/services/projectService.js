@@ -20,6 +20,16 @@ export async function getProjectPhotos(id, page, signal) {
   return (await api.get(`/Project/${id}/images`, { params: { page, pageSize: 24 }, signal })).data;
 }
 
+export async function downloadProjectPhoto(projectId, photoId) {
+  const { data } = await api.get(`/Project/${projectId}/images/${photoId}/download`);
+  const link = document.createElement("a");
+  link.href = data.url;
+  link.download = `project-photo-${photoId}.webp`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+}
+
 export async function uploadProjectPhoto(id, file, onUploadProgress, signal) {
   const form = new FormData();
   form.append("file", file);
@@ -33,7 +43,7 @@ export async function deleteProjectPhoto(id, photoId) {
 export function projectError(error) {
   const data = error?.response?.data;
   if (typeof data === "string" && data && !data.trim().startsWith("<")) return data;
-  if (error?.response?.status === 413) return "Slika je prevelika. Najveća veličina je 20 MB.";
+  if (error?.response?.status === 413) return "Slika je prevelika. Najveća veličina je 50 MB.";
   if (error?.response?.status === 403) return "Nemate ovlasti za pristup galeriji.";
   if (error?.response?.status === 404) return "Projekt ili fotografija više nisu dostupni.";
   if (data?.errors) return Object.values(data.errors).flat().join(" ");

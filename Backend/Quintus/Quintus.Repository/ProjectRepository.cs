@@ -77,6 +77,12 @@ namespace Quintus.Repository
             };
         }
 
+        public Task<string?> GetPhotoUrlAsync(Guid projectId, Guid photoId) =>
+            _context.GalleryProjectImages.AsNoTracking()
+                .Where(photo => photo.ProjectId == projectId && photo.Id == photoId)
+                .Select(photo => photo.Image.Url)
+                .FirstOrDefaultAsync();
+
         private async Task<GalleryProject?> LockAsync(Guid id) =>
             (await _context.GalleryProjects.FromSqlInterpolated($"SELECT * FROM \"GalleryProjects\" WHERE \"Id\" = {id} FOR UPDATE")
                 .ToListAsync()).FirstOrDefault();

@@ -99,6 +99,25 @@ namespace Quintus.Service
             return key.Length > 0;
         }
 
+        public string? GetDownloadUrl(string? url, string fileName)
+        {
+            if (!TryGetObjectKey(url, out var key))
+                return null;
+
+            var safeFileName = Path.GetFileName(fileName);
+            return _s3client.GetPreSignedURL(new GetPreSignedUrlRequest
+            {
+                BucketName = _options.BucketName,
+                Key = key,
+                Verb = HttpVerb.GET,
+                Expires = DateTime.UtcNow.AddMinutes(5),
+                ResponseHeaderOverrides = new ResponseHeaderOverrides
+                {
+                    ContentDisposition = $"attachment; filename=\"{safeFileName}\""
+                }
+            });
+        }
+
         private string PublicHost => $"{_options.BucketName}.s3.eu-south-mil.io.cloud.ovh.net";
     }
 }

@@ -56,10 +56,17 @@ namespace Quintus.WebAPI.Controllers
             return photos == null ? NotFound("Projekt nije pronađen.") : Ok(photos);
         }
 
+        [HttpGet("{id:guid}/images/{photoId:guid}/download")]
+        public async Task<IActionResult> GetPhotoDownloadUrlAsync(Guid id, Guid photoId)
+        {
+            var url = await _projects.GetPhotoDownloadUrlAsync(id, photoId);
+            return url == null ? NotFound("Slika nije pronađena.") : Ok(new { url });
+        }
+
         [HttpPost("{id:guid}/images")]
         [Consumes("multipart/form-data")]
-        [RequestSizeLimit(22 * 1024 * 1024)]
-        [RequestFormLimits(MultipartBodyLengthLimit = 22 * 1024 * 1024)]
+        [RequestSizeLimit(52 * 1024 * 1024)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 50 * 1024 * 1024)]
         public async Task<IActionResult> UploadAsync(Guid id, [FromForm] IFormFile file)
         {
             try

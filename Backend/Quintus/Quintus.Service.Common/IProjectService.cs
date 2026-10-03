@@ -11,6 +11,7 @@ namespace Quintus.Service.Common
         Task<ProjectResponse> CreateAsync(ProjectRequest request);
         Task<ProjectResponse?> UpdateAsync(Guid id, ProjectRequest request);
         Task<PagedResult<ProjectPhotoResponse>?> GetPhotosAsync(Guid id, ProjectFilter filter);
+        Task<string?> GetPhotoDownloadUrlAsync(Guid projectId, Guid photoId);
         Task<ProjectPhotoResponse?> UploadAsync(Guid id, IFormFile file);
         Task<bool> DeleteAsync(Guid id, Guid? photoId = null);
     }
