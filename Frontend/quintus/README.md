@@ -33,6 +33,14 @@ account links remain reachable. Desktop navigation keeps its dropdown layout.
 Service cards follow the certificate cards' portrait layout, dark image overlay,
 dark theme and blue action styling. Service titles are anchored at the card's
 vertical midpoint, with descriptions, keywords, and actions below them.
+Above 600px, service cards use a taller 2:3 layout with a 536px minimum height to
+accommodate up to four description lines and two full rows of keyword tags
+without shrinking the tags. Phones retain the original 3:4 ratio without a
+minimum height and show up to three description lines.
+Exactly four desktop cards use a 3:4 ratio without a minimum height, centered
+titles, and tighter content spacing that prioritizes descriptions instead of
+showing keyword tags. Descriptions show up to three lines above 1100px and two
+lines from 901px through 1100px.
 Both grids use four columns above
 900px, two columns through 900px, and one column through 600px. Additional
 services wrap into new rows. Incomplete desktop service rows are centered while
@@ -41,7 +49,7 @@ The services section uses the same full-viewport minimum height as the other
 homepage sections, and single-row desktop layouts have more heading/subtitle
 spacing. Three cards fill the row; one or two cards are
 enlarged up to 420px and centered. Exactly six services use
-two centered rows of three instead of four plus two. Descriptions and keywords
+two centered rows of three instead of four plus two. Descriptions
 are shortened on cards, with the full service content available on the detail page.
 Keywords appear as blue pill-shaped tags, visually separate from the description.
 Service-card images load eagerly when visible or within 160px of the viewport;
@@ -57,6 +65,9 @@ Run the shared rotation timing tests from the frontend directory with
 Service editing drafts (including newly selected images) persist through card
 rotation and background re-renders. Closing and reopening the editor starts a
 fresh draft; preview URLs are released when discarded or the editor unmounts.
+Service add/edit and image-removal dialogs render above the page through a body
+portal, outside the services section's stacking context. Their contents scroll
+within the viewport while the page behind them remains locked.
 
 ## Learn More
 

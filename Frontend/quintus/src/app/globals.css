@@ -632,8 +632,8 @@ header {
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.2);
   padding: 0;
   width: 100%;
-  aspect-ratio: 3 / 4;
-  min-height: 0;
+  aspect-ratio: 2 / 3;
+  min-height: 536px;
   height: auto;
   text-align: left;
   overflow: hidden;
@@ -750,7 +750,7 @@ header {
   margin: 0;
   flex: 1 1 auto;
   min-height: 0;
-  max-height: calc(1.65em * 3);
+  max-height: calc(1.65em * 4);
   font-family: var(--font-body);
   font-size: 0.9rem;
   line-height: 1.65;
@@ -760,16 +760,15 @@ header {
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
 }
 
 .service-keywords {
   width: 100%;
   margin: 10px 0 0;
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
-  max-height: 56px;
   padding: 0;
   list-style: none;
   display: flex;
@@ -2189,6 +2188,30 @@ header {
     width: calc((100% - 48px) / 4);
   }
 
+  .services-container:has(> .service:nth-child(4):last-child) > .service {
+    aspect-ratio: 3 / 4;
+    min-height: 0;
+  }
+
+  .services-container:has(> .service:nth-child(4):last-child) .service-card-content {
+    top: calc(50% + var(--service-title-size) * 1.25 + 4px);
+    padding: 0 14px 10px;
+  }
+
+  .services-container:has(> .service:nth-child(4):last-child) .service-description {
+    max-height: calc(1.65em * 3);
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+
+  .services-container:has(> .service:nth-child(4):last-child) .service-keywords {
+    display: none;
+  }
+
+  .services-container:has(> .service:nth-child(4):last-child) .service-card-action {
+    padding-top: 6px;
+  }
+
   .services-container:has(> .service:nth-child(3):last-child) > .service {
     flex-basis: calc((100% - 32px) / 3);
     width: calc((100% - 32px) / 3);
@@ -2215,6 +2238,14 @@ header {
   }
 }
 
+@media (min-width: 901px) and (max-width: 1100px) {
+  .services-container:has(> .service:nth-child(4):last-child) .service-description {
+    max-height: calc(1.65em * 2);
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+}
+
 @media (max-width: 900px) {
   .services-container,
   .diploma-container {
@@ -2227,6 +2258,17 @@ header {
   .diploma-container {
     grid-template-columns: minmax(0, 1fr);
     max-width: 420px;
+  }
+
+  .services-container .service {
+    aspect-ratio: 3 / 4;
+    min-height: 0;
+  }
+
+  .services-container .service .service-description {
+    max-height: calc(1.65em * 3);
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
   }
 
   .diploma-cta {

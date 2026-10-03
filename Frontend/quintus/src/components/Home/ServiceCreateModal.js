@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { useToast } from "@/components/Common/ToastProvider";
 import useLockBodyScroll from "@/hooks/useLockBodyScroll";
@@ -253,9 +254,9 @@ export default function ServiceCreateModal({
     }
   };
 
-  if (!open) return null;
+  if (!open || typeof document === "undefined") return null;
 
-  return (
+  return createPortal(
     <div
       className="modal-overlay service-modal-overlay"
       role="presentation"
@@ -461,6 +462,7 @@ export default function ServiceCreateModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
