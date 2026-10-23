@@ -34,14 +34,14 @@ export default function SiteFooter({
           </Link>
         </p>
         <p className="footer-credit">
-          Web izrada i razvoj: Filip Ćurić
+          Web izrada i razvoj: FCode Systems
           <br />
           <a
-            href="https://www.fcuric.eu"
+            href="https://fcode.systems"
             target="_blank"
             rel="noreferrer"
           >
-            www.fcuric.eu
+            fcode.systems
           </a>
         </p>
       </div>
