@@ -72,10 +72,6 @@ function mondayOf(date) {
   return result;
 }
 
-function displayDate(date) {
-  return date.toLocaleDateString("hr-HR", { day: "2-digit", month: "2-digit" });
-}
-
 function dateTimeValue(value) {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? "" : date;
@@ -166,8 +162,7 @@ export default function SchedulePage() {
   const router = useRouter();
   const [currentUser, setCurrentUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
-  const [week, setWeek] = useState(() => mondayOf(new Date()));
-  const [viewMode, setViewMode] = useState("week");
+  const [month, setMonth] = useState(() => new Date());
   const [appointments, setAppointments] = useState([]);
   const [pendingAppointments, setPendingAppointments] = useState([]);
   const [selectedDate, setSelectedDate] = useState("");
@@ -182,6 +177,8 @@ export default function SchedulePage() {
   const [pushError, setPushError] = useState("");
   const [browserLabel, setBrowserLabel] = useState("ovaj preglednik");
   const [isMobile, setIsMobile] = useState(false);
+  const [mobileDay, setMobileDay] = useState(() => dateKey(new Date()));
+  const [mobileView, setMobileView] = useState("grid");
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [showPending, setShowPending] = useState(false);
   const [showCreateMenu, setShowCreateMenu] = useState(false);
@@ -192,28 +189,10 @@ export default function SchedulePage() {
 
   useLockBodyScroll(Boolean(form || confirmingDelete || ownerTransfer));
 
-  const weekDays = useMemo(
-    () =>
-      days.map((label, index) => {
-        const date = new Date(week);
-        date.setDate(week.getDate() + index);
-        return { label, date, key: dateKey(date) };
-      }),
-    [week],
+  const displayMonth = useMemo(
+    () => new Date(month.getFullYear(), month.getMonth(), 1),
+    [month],
   );
-
-  // A week can span two months, so anchor the month view to the current day
-  // when the displayed week contains it, otherwise to the week's Thursday
-  // (the month most of the week belongs to).
-  const displayMonth = useMemo(() => {
-    const today = new Date();
-    const weekEnd = new Date(week);
-    weekEnd.setDate(week.getDate() + 7);
-    if (today >= week && today < weekEnd) return today;
-    const thursday = new Date(week);
-    thursday.setDate(week.getDate() + 3);
-    return thursday;
-  }, [week]);
 
   const monthDays = useMemo(() => {
     const monthStart = new Date(
@@ -241,11 +220,28 @@ export default function SchedulePage() {
     });
   }, [displayMonth]);
 
-  const calendarDays = viewMode === "month" ? monthDays : weekDays;
-  const visibleStart = calendarDays[0].date;
-  const visibleEnd = new Date(calendarDays[calendarDays.length - 1].date);
+  const visibleStart = monthDays[0].date;
+  const visibleEnd = new Date(monthDays[monthDays.length - 1].date);
   visibleEnd.setDate(visibleEnd.getDate() + 1);
   const accountEmail = currentUser?.email ?? currentUser?.Email ?? "trenutni račun";
+  const todayKey = dateKey(new Date());
+
+  // Mobile day view: the 7-day week strip containing the selected day
+  const mobileWeekDays = useMemo(() => {
+    const selected = dateTimeValue(mobileDay) || new Date();
+    const monday = mondayOf(selected);
+    return Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + index);
+      return { label: days[index], date, key: dateKey(date) };
+    });
+  }, [mobileDay]);
+
+  // Appointments that occur on the mobile-selected day
+  const mobileDayAppointments = useMemo(
+    () => appointments.filter((a) => occursOnDay(a, mobileDay)),
+    [appointments, mobileDay],
+  );
 
   // Patches the edited appointment into local state instead of refetching the whole range.
   const applyAppointmentUpdate = (rawAppointment) => {
@@ -345,7 +341,7 @@ export default function SchedulePage() {
   useEffect(() => {
     if (currentUser && canUseSchedule(currentUser)) load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser, week, viewMode]);
+  }, [currentUser, month]);
 
   useEffect(() => {
     if (!currentUser) return undefined;
@@ -444,24 +440,9 @@ export default function SchedulePage() {
   };
 
   const movePeriod = (amount) => {
-    if (viewMode === "month") {
-      setWeek(
-        new Date(
-          displayMonth.getFullYear(),
-          displayMonth.getMonth() + amount,
-          1,
-        ),
-      );
-      return;
-    }
-
-    setWeek(
-      new Date(
-        week.getFullYear(),
-        week.getMonth(),
-        week.getDate() + amount * 7,
-      ),
-    );
+    const next = new Date(month.getFullYear(), month.getMonth() + amount, 1);
+    setMonth(next);
+    setMobileDay(dateKey(next));
   };
 
   const openCreate = (date = selectedDate || dateKey(new Date())) => {
@@ -703,11 +684,7 @@ export default function SchedulePage() {
       setForm(null);
       if (completedPendingAppointment) {
         setSelectedDate(dateKey(startDate));
-        setWeek(
-          viewMode === "month"
-            ? new Date(startDate.getFullYear(), startDate.getMonth(), 1)
-            : mondayOf(startDate),
-        );
+        setMonth(new Date(startDate.getFullYear(), startDate.getMonth(), 1));
       }
     } else {
       setError(response?.data?.message || "Greška pri spremanju termina.");
@@ -743,6 +720,191 @@ export default function SchedulePage() {
     );
   }
 
+  // Mobile day view — week strip + full-size appointment cards.
+  // Rendered at the top of the page (under the header) when the user
+  // toggles to "Dan" on a phone.
+  const mobileDayViewContent = (
+    <div className={styles.mobileDayView}>
+      {/* Week strip — horizontal day selector */}
+      <div className={styles.weekStrip} role="tablist" aria-label="Odabir dana">
+        {mobileWeekDays.map((day) => {
+          const hasAppointments = appointments.some((a) =>
+            occursOnDay(a, day.key),
+          );
+          return (
+            <button
+              key={day.key}
+              type="button"
+              role="tab"
+              aria-selected={day.key === mobileDay}
+              className={`${styles.weekDay} ${day.key === mobileDay ? styles.weekDaySelected : ""} ${day.key === todayKey ? styles.weekDayToday : ""}`}
+              onClick={() => setMobileDay(day.key)}
+            >
+              <span className={styles.weekDayLabel}>{day.label}</span>
+              <strong className={styles.weekDayNumber}>
+                {day.date.getDate()}
+              </strong>
+              {hasAppointments ? (
+                <span
+                  className={styles.weekDayDot}
+                  aria-hidden="true"
+                />
+              ) : (
+                <span className={styles.weekDayDotPlaceholder} aria-hidden="true" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Day header with date and add button */}
+      <div className={styles.mobileDayHeader}>
+        <h2 className={styles.mobileDayTitle}>
+          {dateTimeValue(mobileDay)
+            ? dateTimeValue(mobileDay).toLocaleDateString("hr-HR", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+              })
+            : mobileDay}
+        </h2>
+        <button
+          type="button"
+          className={styles.mobileDayAddButton}
+          onClick={() => openCreateForDay(mobileDay)}
+        >
+          + Novi termin
+        </button>
+      </div>
+
+      {/* Appointments for the selected day — full-width readable cards */}
+      {mobileDayAppointments.length === 0 ? (
+        <div className={styles.mobileDayEmpty}>
+          <p>Nema termina za ovaj dan.</p>
+          <button
+            type="button"
+            className={styles.mobileDayEmptyButton}
+            onClick={() => openCreateForDay(mobileDay)}
+          >
+            Dodaj termin
+          </button>
+        </div>
+      ) : (
+        <div className={styles.mobileDayList}>
+          {mobileDayAppointments.map((appointment) => {
+            const editable =
+              String(appointment.createdByUserId).toLowerCase() ===
+              String(
+                currentUser?.id ?? currentUser?.Id,
+              ).toLowerCase();
+            return (
+              <button
+                type="button"
+                key={appointment.id}
+                className={styles.mobileAppointmentCard}
+                style={{
+                  "--appointment-color": appointment.createdByColor,
+                }}
+                onClick={() => openEdit(appointment)}
+                title={
+                  editable ? "Uredi termin" : "Termin drugog korisnika"
+                }
+              >
+                <span className={styles.mobileAppointmentTime}>
+                  {localTime(appointment.startAt)}
+                  {appointment.endAt
+                    ? ` – ${localTime(appointment.endAt)}`
+                    : ""}
+                </span>
+                <strong className={styles.mobileAppointmentTitle}>
+                  {appointment.title}
+                </strong>
+                {appointment.notes ? (
+                  <span className={styles.mobileAppointmentNotes}>
+                    {appointment.notes}
+                  </span>
+                ) : null}
+                <small className={styles.mobileAppointmentCreator}>
+                  {appointment.createdByName}
+                </small>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+
+  // Month grid — the original calendar layout.
+  // Shown on desktop always, on mobile when "Mreža" view is selected.
+  const monthGridContent = (
+    <div
+      className={`${styles.grid} ${styles.calendarView} ${styles.monthGrid}`}
+    >
+      {monthDays.map((day) => (
+        <div
+          className={`${styles.day} ${day.date.getMonth() !== displayMonth.getMonth() ? styles.outsideMonth : ""}`}
+          key={day.key}
+        >
+          <button
+            type="button"
+            className={`${styles.dayHeader} ${selectedDate === day.key ? styles.selected : ""} ${day.key === todayKey ? styles.isToday : ""}`}
+            onClick={() => openCreateForDay(day.key)}
+          >
+            <strong>{day.date.getDate()}</strong>
+            <span>{day.label}</span>
+          </button>
+          <div
+            className={styles.dayBody}
+            onClick={() => {
+              if (!isMobile) openCreateForDay(day.key);
+            }}
+          >
+            {appointments
+              .filter((appointment) =>
+                occursOnDay(appointment, day.key),
+              )
+              .map((appointment) => {
+                const editable =
+                  String(appointment.createdByUserId).toLowerCase() ===
+                  String(
+                    currentUser?.id ?? currentUser?.Id,
+                  ).toLowerCase();
+                return (
+                  <button
+                    type="button"
+                    key={appointment.id}
+                    className={styles.appointment}
+                    style={{
+                      "--appointment-color": appointment.createdByColor,
+                    }}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      openEdit(appointment);
+                    }}
+                    title={
+                      editable
+                        ? "Uredi termin"
+                        : "Termin drugog korisnika"
+                    }
+                  >
+                    <span className={styles.time}>
+                      {localTime(appointment.startAt)}
+                      {appointment.endAt
+                        ? `–${localTime(appointment.endAt)}`
+                        : ""}
+                    </span>
+                    <strong>{appointment.title}</strong>
+                    <small>{appointment.createdByName}</small>
+                  </button>
+                );
+              })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <>
       <NavBar />
@@ -752,12 +914,10 @@ export default function SchedulePage() {
             <div>
               <h1 className={styles.title}>Raspored</h1>
               <p className={styles.subtitle}>
-                {viewMode === "month"
-                  ? displayMonth.toLocaleDateString("hr-HR", {
-                      month: "long",
-                      year: "numeric",
-                    })
-                  : `Tjedan od ${displayDate(weekDays[0].date)} do ${displayDate(weekDays[6].date)}`}
+                {displayMonth.toLocaleDateString("hr-HR", {
+                  month: "long",
+                  year: "numeric",
+                })}
               </p>
             </div>
             <div className={styles.actions}>
@@ -766,35 +926,40 @@ export default function SchedulePage() {
               </button>
               <button
                 type="button"
-                onClick={() => setWeek(mondayOf(new Date()))}
+                onClick={() => {
+                  setMonth(new Date());
+                  setMobileDay(dateKey(new Date()));
+                }}
               >
                 Danas
               </button>
               <button type="button" onClick={() => movePeriod(1)}>
                 Sljedeći
               </button>
-              <div
-                className={styles.viewToggle}
-                role="group"
-                aria-label="Prikaz rasporeda"
-              >
-                <button
-                  type="button"
-                  className={viewMode === "week" ? styles.activeView : ""}
-                  onClick={() => setViewMode("week")}
-                >
-                  Tjedan
-                </button>
-                <button
-                  type="button"
-                  className={viewMode === "month" ? styles.activeView : ""}
-                  onClick={() => setViewMode("month")}
-                >
-                  Mjesec
-                </button>
-              </div>
             </div>
           </div>
+          {isMobile ? (
+            <div className={styles.viewToggle} role="tablist" aria-label="Prikaz rasporeda">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mobileView === "grid"}
+                className={`${styles.viewToggleButton} ${mobileView === "grid" ? styles.viewToggleButtonActive : ""}`}
+                onClick={() => setMobileView("grid")}
+              >
+                Mreža
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mobileView === "day"}
+                className={`${styles.viewToggleButton} ${mobileView === "day" ? styles.viewToggleButtonActive : ""}`}
+                onClick={() => setMobileView("day")}
+              >
+                Dan
+              </button>
+            </div>
+          ) : null}
           <div className={styles.pushNotifications} aria-labelledby="push-notifications-title">
             <div className={styles.pushNotificationsHeader}>
               <div>
@@ -898,77 +1063,10 @@ export default function SchedulePage() {
           ) : null}
           {loading ? (
             <div className={styles.notice}>Učitavanje...</div>
+          ) : isMobile && mobileView === "day" ? (
+            mobileDayViewContent
           ) : (
-            <div
-              key={viewMode}
-              className={`${styles.grid} ${styles.calendarView} ${viewMode === "month" ? styles.monthGrid : ""}`}
-            >
-              {calendarDays.map((day) => (
-                <div
-                  className={`${styles.day} ${viewMode === "month" && day.date.getMonth() !== displayMonth.getMonth() ? styles.outsideMonth : ""}`}
-                  key={day.key}
-                >
-                  <button
-                    type="button"
-                    className={`${styles.dayHeader} ${selectedDate === day.key ? styles.selected : ""}`}
-                    onClick={() => openCreateForDay(day.key)}
-                  >
-                    <strong>
-                      {viewMode === "month" ? day.date.getDate() : day.label}
-                    </strong>
-                    <span>
-                      {viewMode === "month" ? day.label : displayDate(day.date)}
-                    </span>
-                  </button>
-                  <div
-                    className={styles.dayBody}
-                    onClick={() => {
-                      if (!isMobile) openCreateForDay(day.key);
-                    }}
-                  >
-                    {appointments
-                      .filter((appointment) =>
-                        occursOnDay(appointment, day.key),
-                      )
-                      .map((appointment) => {
-                        const editable =
-                          String(appointment.createdByUserId).toLowerCase() ===
-                          String(
-                            currentUser?.id ?? currentUser?.Id,
-                          ).toLowerCase();
-                        return (
-                          <button
-                            type="button"
-                            key={appointment.id}
-                            className={styles.appointment}
-                            style={{
-                              "--appointment-color": appointment.createdByColor,
-                            }}
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              openEdit(appointment);
-                            }}
-                            title={
-                              editable
-                                ? "Uredi termin"
-                                : "Termin drugog korisnika"
-                            }
-                          >
-                            <span className={styles.time}>
-                              {localTime(appointment.startAt)}
-                              {appointment.endAt
-                                ? `–${localTime(appointment.endAt)}`
-                                : ""}
-                            </span>
-                            <strong>{appointment.title}</strong>
-                            <small>{appointment.createdByName}</small>
-                          </button>
-                        );
-                      })}
-                  </div>
-                </div>
-              ))}
-            </div>
+            monthGridContent
           )}
           <div className={styles.createActions}>
             <div className={styles.mobileCreateMenu} ref={createMenuRef}>
