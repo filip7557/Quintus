@@ -77,8 +77,8 @@ export default function OfferForm() {
             id: item.id ?? Date.now() + Math.random(),
             name: item.name || "",
             unitOfMeasurement: item.unitOfMeasurement || "",
-            quantity: parseItemNumber(item.quantity, 1),
-            price: parseItemNumber(item.price, 0),
+            quantity: String(parseItemNumber(item.quantity, 1)),
+            price: String(parseItemNumber(item.price, 0)),
             discountPercent: normalizeDiscountPercent(
               item.discountPercent ?? item.DiscountPercent ?? 0
             ),
@@ -156,8 +156,8 @@ export default function OfferForm() {
       id: Date.now(),
       name: itemName.trim(),
       unitOfMeasurement: selectedUnit ? selectedUnit.name : "",
-      quantity: parseItemNumber(itemQuantity, 1),
-      price: parseItemNumber(itemPrice, 0),
+      quantity: itemQuantity.trim() || "1",
+      price: itemPrice.trim(),
       discountPercent: normalizeDiscountPercent(itemDiscountPercent),
     };
 
@@ -174,6 +174,12 @@ export default function OfferForm() {
     setItems(items.filter((item) => item.id !== itemId));
   };
 
+  const handleItemFieldChange = (itemId, field, value) => {
+    setItems((prev) =>
+      prev.map((item) => (item.id === itemId ? { ...item, [field]: value } : item))
+    );
+  };
+
   const handleItemDiscountChange = (itemId, value) => {
     const normalized = normalizeDiscountPercent(value);
     setItems((prev) =>
@@ -184,22 +190,24 @@ export default function OfferForm() {
   };
 
   // Calculate item total
-  const calculateItemTotal = (quantity, price, discountPercent = 0) => {
-    const discountMultiplier = 1 - normalizeDiscountPercent(discountPercent) / 100;
+  const calculateItemTotal = (item) => {
+    const quantity = parseItemNumber(item.quantity, 0);
+    const price = parseItemNumber(item.price, 0);
+    const discountMultiplier = 1 - normalizeDiscountPercent(item.discountPercent) / 100;
     return (quantity * price * discountMultiplier).toFixed(2);
   };
 
   // Calculate grand total
   const calculateGrandTotal = () => {
     return items
-      .reduce(
-        (sum, item) =>
+      .reduce((sum, item) => {
+        const quantity = parseItemNumber(item.quantity, 0);
+        const price = parseItemNumber(item.price, 0);
+        return (
           sum +
-          item.quantity *
-            item.price *
-            (1 - normalizeDiscountPercent(item.discountPercent) / 100),
-        0
-      )
+          quantity * price * (1 - normalizeDiscountPercent(item.discountPercent) / 100)
+        );
+      }, 0)
       .toFixed(2);
   };
 
@@ -223,8 +231,8 @@ export default function OfferForm() {
         items: items.map((item) => ({
           name: item.name,
           unitOfMeasurement: item.unitOfMeasurement || null,
-          quantity: item.quantity,
-          price: item.price,
+          quantity: parseItemNumber(item.quantity, 1),
+          price: parseItemNumber(item.price, 0),
           discountPercent: normalizeDiscountPercent(item.discountPercent),
         })),
         customMessage: customMessage?.trim() ? customMessage.trim() : FIXED_NOTICE_TEXT,
@@ -291,17 +299,21 @@ export default function OfferForm() {
               : !Number.isFinite(discountValue) || discountValue < 0 || discountValue > 100
                 ? "Popust mora biti broj između 0 i 100."
                 : "";
-  const invalidSavedItem = items.find(
-    (item) =>
+  const invalidSavedItem = items.find((item) => {
+    const quantityNum = parseItemNumber(item.quantity, NaN);
+    const priceNum = parseItemNumber(item.price, NaN);
+    const discountNum = normalizeDiscountPercent(item.discountPercent);
+    return (
       !item.name?.trim() ||
       !item.unitOfMeasurement?.trim() ||
-      !Number.isFinite(Number(item.quantity)) ||
-      Number(item.quantity) <= 0 ||
-      !Number.isFinite(Number(item.price)) ||
-      !Number.isFinite(Number(item.discountPercent)) ||
-      Number(item.discountPercent) < 0 ||
-      Number(item.discountPercent) > 100
-  );
+      !Number.isFinite(quantityNum) ||
+      quantityNum <= 0 ||
+      !Number.isFinite(priceNum) ||
+      !Number.isFinite(discountNum) ||
+      discountNum < 0 ||
+      discountNum > 100
+    );
+  });
   const formWarning =
     !buyerName.trim()
       ? "Unesite ime kupca."
@@ -469,7 +481,6 @@ export default function OfferForm() {
                   placeholder="0.00"
                   value={itemPrice}
                   onChange={(e) => setItemPrice(e.target.value)}
-                  min="0"
                   step="0.01"
                 />
               </div>
@@ -529,21 +540,59 @@ export default function OfferForm() {
                     </tr>
                   </thead>
                   <tbody>
-                    {items.map((item) => (
+                    {items.map((item, index) => (
                       <tr key={item.id}>
                         <td className={styles.nameCell} data-label="Naziv">
-                          <span className={styles.cellValue}>{item.name}</span>
+                          <input
+                            type="text"
+                            value={item.name}
+                            onChange={(e) => handleItemFieldChange(item.id, "name", e.target.value)}
+                            maxLength={200}
+                            className={styles.cellInput}
+                            aria-label={`Naziv proizvoda ${index + 1}`}
+                          />
                         </td>
                         <td className={styles.unitCell} data-label="Jed. mjera">
-                          <span className={styles.cellValue}>{item.unitOfMeasurement || "—"}</span>
+                          <select
+                            value={item.unitOfMeasurement || ""}
+                            onChange={(e) => handleItemFieldChange(item.id, "unitOfMeasurement", e.target.value)}
+                            className={styles.unitSelect}
+                            aria-label={`Jedinica mjere za proizvod ${index + 1}`}
+                          >
+                            <option value="">—</option>
+                            {item.unitOfMeasurement &&
+                              !units.some((u) => u.name === item.unitOfMeasurement) && (
+                                <option value={item.unitOfMeasurement}>
+                                  {item.unitOfMeasurement}
+                                </option>
+                              )}
+                            {units.map((unit) => (
+                              <option key={unit.id} value={unit.name}>
+                                {unit.name}
+                              </option>
+                            ))}
+                          </select>
                         </td>
                         <td className={styles.quantityCell} data-label="Količina">
-                          <span className={styles.cellValue}>{item.quantity}</span>
+                          <input
+                            type="number"
+                            value={item.quantity}
+                            onChange={(e) => handleItemFieldChange(item.id, "quantity", e.target.value)}
+                            min="0.01"
+                            step="0.01"
+                            className={`${styles.cellInput} ${styles.numInput}`}
+                            aria-label={`Količina za proizvod ${index + 1}`}
+                          />
                         </td>
                         <td className={styles.priceCell} data-label="Cijena (€)">
-                          <span className={styles.cellValue}>
-                            {item.price.toFixed(2)}
-                          </span>
+                          <input
+                            type="number"
+                            value={item.price}
+                            onChange={(e) => handleItemFieldChange(item.id, "price", e.target.value)}
+                            step="0.01"
+                            className={`${styles.cellInput} ${styles.numInput}`}
+                            aria-label={`Cijena za proizvod ${index + 1}`}
+                          />
                         </td>
                         <td className={styles.discountCell} data-label="Popust (%)">
                           <input
@@ -559,7 +608,7 @@ export default function OfferForm() {
                         </td>
                         <td className={styles.totalCell} data-label="Ukupno (€)">
                           <span className={styles.cellValue}>
-                            {calculateItemTotal(item.quantity, item.price, item.discountPercent)}
+                            {calculateItemTotal(item)}
                           </span>
                         </td>
                         <td className={styles.actionCell} data-label="Radnja">
