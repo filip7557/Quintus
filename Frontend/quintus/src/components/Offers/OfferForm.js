@@ -34,7 +34,7 @@ export default function OfferForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
-  const [customMessage, setCustomMessage] = useState("");
+  const [customMessage, setCustomMessage] = useState(FIXED_NOTICE_TEXT);
 
   // Unit of measurement state
   const [units, setUnits] = useState([]);
@@ -227,9 +227,7 @@ export default function OfferForm() {
           price: item.price,
           discountPercent: normalizeDiscountPercent(item.discountPercent),
         })),
-        customMessage: customMessage?.trim() 
-          ? `${FIXED_NOTICE_TEXT}\n\n${customMessage.trim()}`
-          : FIXED_NOTICE_TEXT,
+        customMessage: customMessage?.trim() ? customMessage.trim() : FIXED_NOTICE_TEXT,
       });
 
       if (response?.status === 200 || response?.status === 201) {
@@ -258,7 +256,7 @@ export default function OfferForm() {
         setItemQuantity("1");
         setItemPrice("");
         setItemDiscountPercent("0");
-        setCustomMessage(null);
+        setCustomMessage(FIXED_NOTICE_TEXT);
         setTimeout(() => setSuccess(false), 3000);
       } else {
         setError(
@@ -589,31 +587,20 @@ export default function OfferForm() {
           </div>
         </div>
 
-        {/* Custom message */}
+        {/* Notice */}
         <div className={styles.section}>
           <div className={styles.formGroup}>
-            <label htmlFor="customMessageAdditional">Napomena</label>
-            
-            {/* Fixed notice text (read-only) */}
-            <div className={styles.fixedNoticeBox}>
-              <p>{FIXED_NOTICE_TEXT}</p>
-            </div>
-
-            {/* Additional user message */}
-            <label htmlFor="customMessageAdditional" style={{ fontSize: "0.9rem", display: "block", marginTop: "12px", marginBottom: "6px", color: "#999" }}>
-              Dodajte dodatnu napomenu (opcionalno):
-            </label>
+            <label htmlFor="customMessage">Napomena</label>
             <textarea
-              id="customMessageAdditional"
+              id="customMessage"
               className={styles.notesTextarea}
-              placeholder="Upišite dodatnu napomenu ovdje..."
-              value={customMessage || ""}
+              value={customMessage}
               onChange={(e) => setCustomMessage(e.target.value)}
-              rows={3}
-              maxLength={500}
+              rows={6}
+              maxLength={1000}
             />
             <small style={{ display: "block", marginTop: "6px", color: "#666" }}>
-              {(customMessage || "").length}/500 znakova
+              {customMessage.length}/1000 znakova
             </small>
           </div>
         </div>
