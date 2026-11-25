@@ -9,6 +9,9 @@ const manufacturers = [
   { name: "Vaillant", src: "/images/vaillant-new.png", width: 613, height: 161 },
   { name: "Tesla", src: "/images/tesla.webp", width: 947, height: 232 },
   // { name: "Toshiba", src: "/images/toshiba.png", width: 747, height: 122 },
+  { name: "Viega", src: "/images/viega-logo.png", width: 2198, height: 1871 },
+  { name: "Kaisai", src: "/images/kaisai.webp", width: 480, height: 122 },
+  { name: "Hisense", src: "/images/hisense.webp", width: 3840, height: 609 },
 ];
 
 function LogoGroup({ duplicate = false }) {
